@@ -20,14 +20,17 @@
 - [x] Implementar **Swagger** para documentación interactiva
 - [x] CORS configurado para Angular (localhost:4200)
 - [x] Validación global de DTOs
+- [x] **Guardar consultas rápidas** (sistema de favoritos con selección de columnas)
+  - [x] Entidad SavedQuery en BD
+  - [x] 6 endpoints CRUD con selección dinámica de columnas
+  - [x] Endpoint para ejecutar consultas retornando solo columnas seleccionadas
+  - [x] Documentación Swagger integrada
 
 ---
 
 ## ⏳ Backend - Pendientes
 
 - [ ] Crear subnombres/aliases para tablas en una nueva tabla
-- [ ] **Guardar consultas rápidas** (sistema de favoritos con selección de columnas)
-- [ ] Endpoints para gestionar consultas rápidas (CRUD + selección dinámica de columnas)
 
 ---
 
@@ -103,14 +106,13 @@ CREATE TABLE SavedQueries (
 
 ## 🎯 Proximas Acciones
 
-1. **Este commit:**
-   - Backend: Sistema de consultas rápidas CON selección de columnas dinámicas
-   - Backend: Endpoints CRUD para SavedQueries
+1. **Próximo commit:**
+   - Backend: Subnombres/aliases de tablas con endpoints CRUD
    - Frontend: Iniciar componente tabla dinámica
 
-2. **Próximo commit:**
-   - Backend: Subnombres/aliases de tablas
+2. **Segundo commit:**
    - Frontend: Integrar con API de consultas rápidas
+   - Frontend: Integrar con endpoints de metadata
 
 3. **Antes de la semana:**
    - Frontend: Columnas calculadas
@@ -120,10 +122,11 @@ CREATE TABLE SavedQueries (
 
 ## 📊 Porcentaje de Avance
 
-**Backend:** 70% ✅
+**Backend:** 85% ✅
 - Metadata: 100%
 - Data (SELECT): 100%
-- Features (Consultas rápidas, Aliases): 0%
+- Consultas Rápidas: 100% ✨ (NUEVO)
+- Aliases/Subnombres: 0%
 - Documentación: 100%
 
 **Frontend:** 0% ⏳
@@ -131,7 +134,7 @@ CREATE TABLE SavedQueries (
 - Routing: 0%
 - Servicios: 0%
 
-**Total:** 35%
+**Total:** 43% 📈
 
 ---
 
