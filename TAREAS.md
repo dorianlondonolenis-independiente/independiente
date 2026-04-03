@@ -26,8 +26,8 @@
 ## ⏳ Backend - Pendientes
 
 - [ ] Crear subnombres/aliases para tablas en una nueva tabla
-- [ ] **Guardar consultas rápidas** (sistema de favoritos)
-- [ ] Endpoints para gestionar consultas rápidas
+- [ ] **Guardar consultas rápidas** (sistema de favoritos con selección de columnas)
+- [ ] Endpoints para gestionar consultas rápidas (CRUD + selección dinámica de columnas)
 
 ---
 
@@ -48,11 +48,13 @@
 ## 📌 Detalles de Tareas Pendientes
 
 ### Backend: Guardar Consultas Rápidas
-**Descripción:** Sistema para guardar consultas frecuentes
-- Crear tabla `SavedQueries` en BD
-- Endpoint POST para guardar consulta
+**Descripción:** Sistema para guardar consultas frecuentes con selección de columnas
+- Crear tabla `SavedQueries` en BD con campos: nombre, tableName, columnNames (array), filtros (opcional)
+- Endpoint POST para guardar consulta con columnas específicas
 - Endpoint GET para listar consultas guardadas
 - Endpoint DELETE para eliminar consulta
+- Al ejecutar consulta guardada, retornar SOLO las columnas seleccionadas
+- **Ejemplo:** Guardar consulta "TOP 10 de conceptos" → traer solo columnas: id, descripcion, estado
 
 ### Backend: Subnombres de Tablas
 **Descripción:** Asignar nombres amigables a tablas
@@ -76,19 +78,43 @@
 
 ---
 
+## 🔧 Detalles Técnicos
+
+### Estructura SavedQueries
+```sql
+CREATE TABLE SavedQueries (
+  id INT PRIMARY KEY IDENTITY(1,1),
+  nombre NVARCHAR(255) NOT NULL,
+  tableName NVARCHAR(255) NOT NULL,
+  columnNames NVARCHAR(MAX) NOT NULL, -- JSON array de columnas
+  filtros NVARCHAR(MAX), -- Opcional: WHERE conditions en JSON
+  createdAt DATETIME DEFAULT GETDATE(),
+  description NVARCHAR(500)
+)
+```
+
+### Endpoints SavedQueries
+- **POST** `/api/queries` - Guardar: `{ tableName, columnNames: ["col1", "col2"], nombre, description }`
+- **GET** `/api/queries` - Listar todas las consultas guardadas
+- **GET** `/api/queries/:id/execute` - Ejecutar consulta guardada (retorna solo columnas seleccionadas)
+- **DELETE** `/api/queries/:id` - Eliminar consulta
+
+---
+
 ## 🎯 Proximas Acciones
 
 1. **Este commit:**
-   - Backend: Sistema de consultas rápidas
+   - Backend: Sistema de consultas rápidas CON selección de columnas dinámicas
+   - Backend: Endpoints CRUD para SavedQueries
    - Frontend: Iniciar componente tabla dinámica
 
 2. **Próximo commit:**
    - Backend: Subnombres/aliases de tablas
-   - Frontend: Integrar con API de data
+   - Frontend: Integrar con API de consultas rápidas
 
 3. **Antes de la semana:**
    - Frontend: Columnas calculadas
-   - Frontend: Búsqueda y filtros
+   - Frontend: Búsqueda y filtros avanzados
 
 ---
 

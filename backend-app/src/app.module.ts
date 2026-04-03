@@ -10,6 +10,8 @@ import { MetadataController } from './controllers/metadata/metadata.controller';
 import { MetadataService } from './services/metadata/metadata.service';
 import { DataController } from './controllers/data/data.controller';
 import { DataService } from './services/data/data.service';
+import { QueriesController } from './controllers/queries/queries.controller';
+import { QueriesService } from './services/queries/queries.service';
 
 @Module({
   imports: [
@@ -61,7 +63,7 @@ import { DataService } from './services/data/data.service';
       }),
     }),
   ],
-  controllers: [AppController, MetadataController, DataController],
-  providers: [AppService, MetadataService, DataService],
+  controllers: [AppController, MetadataController, DataController, QueriesController],
+  providers: [AppService, MetadataService, DataService, QueriesService],
 })
 export class AppModule {}

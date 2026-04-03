@@ -27,6 +27,7 @@ async function bootstrap() {
     .setVersion('1.0.0')
     .addTag('Metadata', 'Endpoints para obtener estructura de la base de datos')
     .addTag('Data', 'Endpoints para obtener y manipular datos de tablas')
+    .addTag('Queries', 'Endpoints para guardar y ejecutar consultas rápidas con columnas seleccionadas')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
