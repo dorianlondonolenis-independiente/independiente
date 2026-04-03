@@ -16,7 +16,7 @@ import { QueriesService } from 'src/services/queries/queries.service';
 import { CreateSavedQueryDto, UpdateSavedQueryDto } from 'src/dtos/saved-query.dto';
 
 @ApiTags('Queries')
-@Controller('api/queries')
+@Controller('queries')
 export class QueriesController {
   constructor(private readonly queriesService: QueriesService) {}
 
