@@ -36,6 +36,14 @@
 
 ## 🔄 Frontend - En Progreso
 
+- [x] **Componente API Viewer Universal** ✨ (NUEVO - 03/04/2026)
+  - [x] Componente standalone para consumir todos los endpoints
+  - [x] Routing dinámico `/api-viewer/:endpoint/:id`
+  - [x] Visualización genérica de datos en tablas
+  - [x] Paginación integrada
+  - [x] Manejo de errors
+  - [x] Loading states
+  - [x] Servicio centralizado para todos los endpoints
 - [ ] **Componente tabla dinámica** 
   - [ ] Mostrar tablas en URL específica
   - [ ] Que el componente sea dinámico (cualquier tabla)
@@ -121,13 +129,44 @@ CREATE INDEX [IX_SavedQueries_tableName] ON [dbo].[SavedQueries]([tableName]);
 
 ## 🎯 Proximas Acciones
 
+### Frontend: API Viewer Universal
+**Ubicación:** `src/app/features/api-viewer/`
+**Archivos:**
+- `api-viewer.component.ts` (Componente standalone)
+- `api-viewer.service.ts` (Servicio centralizado)
+
+**Rutas disponibles:**
+
+| URL | Endpoint | Descripción |
+|-----|----------|-------------|
+| `/api-viewer/metadata/database` | GET /api/metadata/database | Estructura completa de BD |
+| `/api-viewer/metadata/tables` | GET /api/metadata/tables | Lista de tablas |
+| `/api-viewer/metadata/columns/t145_mc_conceptos` | GET /api/metadata/tables/:tableName/columns | Columnas de tabla |
+| `/api-viewer/metadata/row-count/t145_mc_conceptos` | GET /api/metadata/tables/:tableName/row-count | Cantidad de registros |
+| `/api-viewer/data/t145_mc_conceptos` | GET /api/data/:tableName?limit=100&offset=0 | Datos con paginación |
+| `/api-viewer/queries` | GET /api/queries | Lista de consultas guardadas |
+| `/api-viewer/queries/execute/1` | GET /api/queries/:id/execute | Ejecutar consulta guardada |
+
+**Características:**
+✅ Soporte para TODOS los endpoints del backend  
+✅ Paginación automática  
+✅ Visualización de tablas y JSON  
+✅ Manejo de errores  
+✅ Loading states  
+✅ Información de metadatos de la consulta  
+
+**Para expandir con nuevo endpoint:**
+1. Agregar método en `ApiViewerService`
+2. Agregar case en `getEndpointObservable()` del componente
+3. Agregar URL en la sección de rutas arriba
+
 1. **Próximo commit:**
+   - Frontend: API Viewer Universal (COMPLETADO)
    - Backend: Subnombres/aliases de tablas con endpoints CRUD
-   - Frontend: Iniciar componente tabla dinámica
 
 2. **Segundo commit:**
-   - Frontend: Integrar con API de consultas rápidas
-   - Frontend: Integrar con endpoints de metadata
+   - Frontend: Dashboard con selector de tabla
+   - Frontend: Integrar con API Viewer para mostrar datos dinámicamente
 
 3. **Antes de la semana:**
    - Frontend: Columnas calculadas
@@ -140,16 +179,17 @@ CREATE INDEX [IX_SavedQueries_tableName] ON [dbo].[SavedQueries]([tableName]);
 **Backend:** 85% ✅
 - Metadata: 100%
 - Data (SELECT): 100%
-- Consultas Rápidas: 100% ✨ (NUEVO)
+- Consultas Rápidas: 100% ✨
 - Aliases/Subnombres: 0%
 - Documentación: 100%
 
-**Frontend:** 0% ⏳
+**Frontend:** 20% ⏳ (UPDATED)
+- API Viewer Universal: 100% ✨ (NUEVO)
 - Componentes: 0%
-- Routing: 0%
-- Servicios: 0%
+- Routing: 50% (API Viewer routing listo)
+- Servicios: 50% (Servicio centralizado listo)
 
-**Total:** 43% 📈
+**Total:** 55% 📈 (Actualizado a 03/04/2026)
 
 ---
 
