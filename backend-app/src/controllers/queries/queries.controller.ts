@@ -143,7 +143,7 @@ export class QueriesController {
   @Put(':id')
   @ApiOperation({
     summary: 'Actualizar una consulta guardada',
-    description: 'Modifica los parámetros de una consulta rápida existente',
+    description: 'Modifica los parámetros de una consulta rápida existente. Todos los campos son opcionales.',
   })
   @ApiParam({
     name: 'id',
@@ -153,6 +153,14 @@ export class QueriesController {
   @ApiResponse({
     status: 200,
     description: 'Consulta actualizada',
+    example: {
+      id: 1,
+      nombre: 'Conceptos principales (actualizado)',
+      tableName: 't145_mc_conceptos',
+      columnNames: ['f145_id', 'f145_descripcion', 'f145_id_modulo'],
+      description: 'Consulta actualizada para conceptos',
+      createdAt: '2026-04-03T10:30:00Z',
+    },
   })
   async updateQuery(
     @Param('id', ParseIntPipe) id: number,

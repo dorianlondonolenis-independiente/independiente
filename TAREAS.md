@@ -84,17 +84,32 @@
 ## 🔧 Detalles Técnicos
 
 ### Estructura SavedQueries
+**Query de creación ejecutado en SQL Server (03/04/2026):**
 ```sql
-CREATE TABLE SavedQueries (
-  id INT PRIMARY KEY IDENTITY(1,1),
-  nombre NVARCHAR(255) NOT NULL,
-  tableName NVARCHAR(255) NOT NULL,
-  columnNames NVARCHAR(MAX) NOT NULL, -- JSON array de columnas
-  filtros NVARCHAR(MAX), -- Opcional: WHERE conditions en JSON
-  createdAt DATETIME DEFAULT GETDATE(),
-  description NVARCHAR(500)
-)
+USE UnoEE;
+
+CREATE TABLE [dbo].[SavedQueries] (
+    [id] INT PRIMARY KEY IDENTITY(1,1),
+    [nombre] NVARCHAR(255) NOT NULL,
+    [tableName] NVARCHAR(255) NOT NULL,
+    [columnNames] NVARCHAR(MAX) NOT NULL,
+    [filtros] NVARCHAR(MAX) NULL,
+    [description] NVARCHAR(500) NULL,
+    [createdAt] DATETIME DEFAULT GETDATE()
+);
+
+-- Crear índice para búsquedas por tabla
+CREATE INDEX [IX_SavedQueries_tableName] ON [dbo].[SavedQueries]([tableName]);
 ```
+
+**Campos:**
+- `id`: INT, clave primaria con auto-incremento
+- `nombre`: Nombre descriptivo de la consulta (ej: "Conceptos principales")
+- `tableName`: Nombre de la tabla a consultar (ej: "t145_mc_conceptos")
+- `columnNames`: Array JSON con nombres de columnas a seleccionar
+- `filtros`: Opcional - JSON con condiciones WHERE (ej: `{"f145_id_modulo": 1}`)
+- `description`: Descripción adicional (opcional)
+- `createdAt`: Timestamp automático de creación
 
 ### Endpoints SavedQueries
 - **POST** `/api/queries` - Guardar: `{ tableName, columnNames: ["col1", "col2"], nombre, description }`

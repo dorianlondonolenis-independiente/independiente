@@ -21,38 +21,19 @@ import { QueriesService } from './services/queries/queries.service';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        const isProduction = configService.get<string>('NODE_ENV') === 'production';
-        
-        if (isProduction) {
-          // Producción: SQL Server
-          const port = parseInt(configService.get<string>('DB_PORT') || '3306', 10);
-          return {
-            type: 'mssql',
-            host: configService.get<string>('DB_HOST'),
-            username: configService.get<string>('DB_USERNAME'),
-            password: configService.get<string>('DB_PASSWORD'),
-            database: configService.get<string>('DB_NAME'),
-            entities: [__dirname + '/**/*.entity{.ts,.js}'],
-            synchronize: false,
-            options: {
-              port: port,
-              encrypt: false,
-              trustServerCertificate: false,
-              enableArithAbort: true,
-            },
-          };
-        } else {
-          // Desarrollo: SQLite en memoria
-          return {
-            type: 'sqlite',
-            database: ':memory:',
-            entities: [__dirname + '/**/*.entity{.ts,.js}'],
-            synchronize: true,
-          };
-        }
+    TypeOrmModule.forRoot({
+      type: 'mssql',
+      host: '10.10.1.48',
+      port: 1433,
+      username: 'sa',
+      password: 'Sa123456',
+      database: 'UnoEE',
+      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      synchronize: false,
+      options: {
+        encrypt: false,
+        trustServerCertificate: false,
+        enableArithAbort: true,
       },
     }),
     JwtModule.registerAsync({

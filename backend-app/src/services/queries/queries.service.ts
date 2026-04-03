@@ -142,11 +142,12 @@ export class QueriesService {
 
     // Construir query dinámico
     const sql = `
-      SELECT TOP ${limit} OFFSET ${offset} ROWS
-        ${selectColumns}
+      SELECT ${selectColumns}
       FROM ${tableName}
       ${whereClause}
       ORDER BY (SELECT NULL)
+      OFFSET ${offset} ROWS
+      FETCH NEXT ${limit} ROWS ONLY
     `;
 
     try {
