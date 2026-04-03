@@ -1,0 +1,139 @@
+<div class="col-12" *ngIf="buscadorTree">
+    <div class="row p-0 m-0">
+
+
+        <div class="col-6">
+            <input type="text" [(ngModel)]="treeNode" class="form-control form-control-sm" placeholder="Buscador">
+        </div>
+        <div class="col-6">
+            <button class="btn btn-sm  btn-conaltura-dark mr-2" (click)="revealEstructure()">Buscar o Expandir Todo</button>
+
+            <button class="btn btn-sm  btn-conaltura-dark mr-2" (click)="treeControl.collapseAll()">Contraer Todo</button>
+
+
+        </div>
+    </div>
+</div>
+<!-- <hr class="bg-conaltura-dark w-100" style="height: 1px;"> -->
+
+<mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+
+    <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding class="text-conaltura  font-weight-bold">
+
+        <button mat-icon-button disabled></button>
+        <a (click)="openModal(node.nombre,node.urllink,node.urllinkext)" data-mdb-toggle="modal" data-mdb-target="#viewFileModal" class="text-conaltura" target="_blank">
+            <i class="far fa-file-pdf"></i> {{node.nombre}} {{node.registro}}
+            <span class="text-secondary" *ngIf="node.estadoflujo == -2"><i class="fas fa-thin fa-mouse-pointer"></i> Pendiente por cargar</span>
+            <span class="text-danger" *ngIf="node.estadoflujo == -1"> <i class="fas exclamation"></i> Rechazado</span>
+            <span class="text-primary" *ngIf="node.estadoflujo == 0"> <i class="fas exclamation"></i> Cargado pendiente por aprobar</span>
+            <span class="text-conaltura" *ngIf="node.estadoflujo == 1"> <i class="fas exclamation"></i> Aprobado</span>
+        </a>
+        <!-- <a *ngIf="node.idregistro" class="btn mx-2 btn-warning btn-sm text-white" title="Registro"> <i class="far fa-file"></i> </a> -->
+        <!-- <a *ngIf="node.idregistro" (click)="loadData(node.idregistro)" class="btn mx-2 btn-warning btn-sm text-white" title="Registro"> <i class="far fa-file"></i> </a> -->
+    </mat-tree-node>
+
+    <mat-tree-node *matTreeNodeDef="let node;when: hasChild" matTreeNodePadding class="text-conaltura-dark font-weight-bold">
+        <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'toggle ' + node.nombre">
+      <mat-icon class="mat-icon-rtl-mirror">
+        <i class="fas fa-caret-right" style="position: relative; top: -1px;" *ngIf="!treeControl.isExpanded(node)"></i>
+        <i class="fas fa-sort-down" style="position: relative; top: -1px;" *ngIf="treeControl.isExpanded(node)"></i>
+       
+      </mat-icon>
+    </button> &nbsp;
+        <i class="fas fa-folder-open" *ngIf="treeControl.isExpanded(node)"></i>
+        <i class="fas fa-folder" *ngIf="!treeControl.isExpanded(node)"></i> &nbsp;{{node.nombre}}
+    </mat-tree-node>
+</mat-tree>
+
+
+<!-- Modal -->
+<div class="modal fade" id="viewFileModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+
+            <div class="modal-body" *ngIf="obj_flujo_file">
+                <ng-container *ngIf="obj_flujo.includes('.pdf') || obj_flujo.includes('.PDF')">
+                    <object type="application/pdf" [attr.data]="obj_flujo_file" [data]="obj_flujo_file" width="100%" style="height: 100vh;"></object>
+                </ng-container>
+                <ng-container *ngIf="obj_flujo.includes('.xls') || obj_flujo.includes('.XLS')">
+                    <iframe [src]="obj_flujo_file" width="100%" style="height: 100vh;" frameborder='0'> </iframe>
+                </ng-container>
+            </div>
+            <div class="modal-footer p-0">
+                <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal" (click)="closeModal()">
+                  Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="viewFileLogModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12 p-4">
+                        <h4 class="text-conaltura ">Operaciones</h4>
+                        <table *ngIf="objDataInforme" class="table  table-bordered table-sm row-border hover " [dtTrigger]="dtTrigger" datatable [dtOptions]="dtOptionsDetail">
+                            <thead>
+                                <tr class="text-white bg-conaltura-dark">
+
+                                    <th>#</th>
+                                    <th>Tipo Regístro</th>
+                                    <th>Detalle</th>
+                                    <th>Estado</th>
+                                    <th>Fecha Operación</th>
+                                    <th>Nombre Adjunto</th>
+                                    <th>Operación</th>
+                                    <th>Origen</th>
+                                    <th>Tipo</th>
+                                    <th>Usuario</th>
+                                    <th>Vigente Hasta</th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ng-container>
+                                    <tr *ngFor="let item of objDataInforme">
+
+                                        <td>{{ item.id }}</td>
+                                        <td>{{ item.TipoRegistro }}</td>
+                                        <td>{{ item.detalle }}</td>
+                                        <td>{{ item.estado }}</td>
+                                        <td>{{ item.fechaOperacion }}</td>
+                                        <td>{{ item.nombreadjunto }}</td>
+                                        <td>{{ item.operacion }}</td>
+                                        <td>{{ item.origenconexion }}</td>
+                                        <td>{{ item.tipoobj }}</td>
+                                        <td>{{ item.usuariooperacion }}</td>
+                                        <td>{{ item.vigentehasta }}</td>
+
+
+                                    </tr>
+                                </ng-container>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer p-0">
+                <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal" (click)="closeLogModal()">
+                  Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- <ng-container *ngIf="obj_flujo['adjunto'][subposicion]['nombrearchivo'].includes('.pdf')">
+  <object type="application/pdf" [attr.data]="obj_flujo_file" [data]="obj_flujo_file" width="100%" style="height: 100vh;"></object>
+</ng-container>
+<ng-container *ngIf="obj_flujo['adjunto'][subposicion]['nombrearchivo'].includes('.xls')">
+  <iframe [src]="obj_flujo_file" width="100%" style="height: 100vh;" frameborder='0'> </iframe>
+</ng-container> -->
