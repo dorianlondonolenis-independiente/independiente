@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DataSourceOptions, DataSource } from 'typeorm';
 import { SavedQuery } from 'src/entities/saved-query.entity';
 import { CreateSavedQueryDto, UpdateSavedQueryDto } from 'src/dtos/saved-query.dto';
+import { TableResponseDto, ColumnDefinitionDto } from 'src/dtos/table-response.dto';
 
 @Injectable()
 export class QueriesService {
@@ -111,7 +112,7 @@ export class QueriesService {
     id: number,
     limit: number = 100,
     offset: number = 0,
-  ): Promise<any[]> {
+  ): Promise<TableResponseDto[]> {
     const queryRepository = this.sqlServerDataSource.getRepository(SavedQuery);
 
     const query = await queryRepository.findOneBy({ id });
@@ -151,8 +152,30 @@ export class QueriesService {
     `;
 
     try {
-      const result = await this.sqlServerDataSource.query(sql);
-      return result;
+      const datos = await this.sqlServerDataSource.query(sql);
+
+      // Convertir información de columnas al formato requerido
+      const columnas: ColumnDefinitionDto[] = sanitizedColumns.map((col, index) => ({
+        id: col,
+        descripcion: col.charAt(0).toUpperCase() + col.slice(1),
+        orden: index + 1,
+      }));
+
+      // Construir respuesta en el formato requerido
+      const response: TableResponseDto = {
+        titulo: query.nombre || tableName,
+        subtitulo: query.description || 'consulta desde backend',
+        buscador: true,
+        columnasBuscador: true,
+        columnasVisibles: true,
+        exportar: true,
+        contextoMenu: [],
+        boton: [],
+        columnas,
+        datos,
+      };
+
+      return [response];
     } catch (error) {
       throw new Error(`Error executing query: ${error.message}`);
     }

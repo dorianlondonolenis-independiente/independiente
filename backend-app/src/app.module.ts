@@ -30,10 +30,13 @@ import { QueriesService } from './services/queries/queries.service';
       database: 'UnoEE',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: false,
+      retryAttempts: 0,
+      retryDelay: 500,
       options: {
         encrypt: false,
         trustServerCertificate: false,
         enableArithAbort: true,
+        connectTimeout: 1000,
       },
     }),
     JwtModule.registerAsync({

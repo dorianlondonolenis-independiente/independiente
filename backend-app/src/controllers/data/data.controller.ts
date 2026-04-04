@@ -38,6 +38,7 @@ export class DataController {
         );
       }
 
+      // El servicio ahora retorna el formato requerido directamente
       return await this.dataService.getTableData(tableName, parsedLimit, parsedOffset);
     } catch (error) {
       throw new HttpException(

@@ -237,12 +237,22 @@ export class QueriesController {
     description: 'Resultado de la consulta con columnas seleccionadas',
     example: [
       {
-        id: 1,
-        descripcion: 'Concepto 1',
-      },
-      {
-        id: 2,
-        descripcion: 'Concepto 2',
+        titulo: 'Consulta ejemplo',
+        subtitulo: 'consulta desde backend',
+        buscador: true,
+        columnasBuscador: true,
+        columnasVisibles: true,
+        exportar: true,
+        contextoMenu: [],
+        boton: [],
+        columnas: [
+          { id: 'id', descripcion: 'Id', orden: 1 },
+          { id: 'descripcion', descripcion: 'Descripcion', orden: 2 },
+        ],
+        datos: [
+          { id: 1, descripcion: 'Concepto 1' },
+          { id: 2, descripcion: 'Concepto 2' },
+        ],
       },
     ],
   })
@@ -255,13 +265,8 @@ export class QueriesController {
       const parsedLimit = limit ? parseInt(limit, 10) : 100;
       const parsedOffset = offset ? parseInt(offset, 10) : 0;
 
-      const result = await this.queriesService.executeQuery(id, parsedLimit, parsedOffset);
-      return {
-        data: result,
-        count: result.length,
-        limit: parsedLimit,
-        offset: parsedOffset,
-      };
+      // El servicio ahora retorna el formato requerido directamente
+      return await this.queriesService.executeQuery(id, parsedLimit, parsedOffset);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
