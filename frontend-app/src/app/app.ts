@@ -1,12 +1,18 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  standalone: true,
+  imports: [CommonModule, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App {
-  protected readonly title = signal('frontend-app');
+  protected readonly title = 'frontend-app';
+
+  constructor() {
+    console.log('%c🟢 APP COMPONENT CARGADO', 'color: green; font-size: 16px; font-weight: bold;');
+  }
 }

@@ -1,42 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { DataSourceOptions, DataSource } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { SavedQuery } from 'src/entities/saved-query.entity';
 import { CreateSavedQueryDto, UpdateSavedQueryDto } from 'src/dtos/saved-query.dto';
 import { TableResponseDto, ColumnDefinitionDto } from 'src/dtos/table-response.dto';
 
 @Injectable()
 export class QueriesService {
-  private sqlServerDataSource: DataSource;
-
-  constructor() {
-    // Inicializar conexión a SQL Server
-    const options: DataSourceOptions = {
-      type: 'mssql',
-      host: process.env.DB_HOST || '10.10.1.48',
-      username: process.env.DB_USERNAME || 'sa',
-      password: process.env.DB_PASSWORD || 'Sa123456',
-      database: process.env.DB_NAME || 'UnoEE',
-      port: parseInt(process.env.DB_PORT || '1433', 10),
-      entities: [SavedQuery],
-      synchronize: false,
-      options: {
-        encrypt: false,
-        trustServerCertificate: false,
-        enableArithAbort: true,
-      },
-    };
-
-    this.sqlServerDataSource = new DataSource(options);
-    this.sqlServerDataSource.initialize().catch((err) => {
-      console.error('Error initializing SQL Server DataSource for Queries:', err);
-    });
-  }
+  constructor(private dataSource: DataSource) {}
 
   /**
    * Crear una nueva consulta rápida
    */
   async createQuery(dto: CreateSavedQueryDto): Promise<SavedQuery> {
-    const queryRepository = this.sqlServerDataSource.getRepository(SavedQuery);
+    const queryRepository = this.dataSource.getRepository(SavedQuery);
 
     const newQuery = new SavedQuery();
     newQuery.nombre = dto.nombre;
@@ -52,7 +28,7 @@ export class QueriesService {
    * Obtener todas las consultas guardadas
    */
   async getAllQueries(): Promise<SavedQuery[]> {
-    const queryRepository = this.sqlServerDataSource.getRepository(SavedQuery);
+    const queryRepository = this.dataSource.getRepository(SavedQuery);
     return await queryRepository.find({
       order: {
         createdAt: 'DESC',
@@ -64,7 +40,7 @@ export class QueriesService {
    * Obtener una consulta por ID
    */
   async getQueryById(id: number): Promise<SavedQuery | null> {
-    const queryRepository = this.sqlServerDataSource.getRepository(SavedQuery);
+    const queryRepository = this.dataSource.getRepository(SavedQuery);
     return await queryRepository.findOneBy({ id });
   }
 
@@ -72,7 +48,7 @@ export class QueriesService {
    * Actualizar una consulta
    */
   async updateQuery(id: number, dto: UpdateSavedQueryDto): Promise<SavedQuery> {
-    const queryRepository = this.sqlServerDataSource.getRepository(SavedQuery);
+    const queryRepository = this.dataSource.getRepository(SavedQuery);
 
     const query = await queryRepository.findOneBy({ id });
     if (!query) {
@@ -91,7 +67,7 @@ export class QueriesService {
    * Eliminar una consulta
    */
   async deleteQuery(id: number): Promise<{ message: string }> {
-    const queryRepository = this.sqlServerDataSource.getRepository(SavedQuery);
+    const queryRepository = this.dataSource.getRepository(SavedQuery);
 
     const query = await queryRepository.findOneBy({ id });
     if (!query) {
@@ -113,7 +89,7 @@ export class QueriesService {
     limit: number = 100,
     offset: number = 0,
   ): Promise<TableResponseDto[]> {
-    const queryRepository = this.sqlServerDataSource.getRepository(SavedQuery);
+    const queryRepository = this.dataSource.getRepository(SavedQuery);
 
     const query = await queryRepository.findOneBy({ id });
     if (!query) {
@@ -152,7 +128,7 @@ export class QueriesService {
     `;
 
     try {
-      const datos = await this.sqlServerDataSource.query(sql);
+      const datos = await this.dataSource.query(sql);
 
       // Convertir información de columnas al formato requerido
       const columnas: ColumnDefinitionDto[] = sanitizedColumns.map((col, index) => ({

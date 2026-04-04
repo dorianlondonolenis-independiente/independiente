@@ -1,22 +1,35 @@
 import { Routes } from '@angular/router';
-import { ApiViewerComponent } from './features/api-viewer/api-viewer.component';
+import { ListTableDynamicComponent } from './components/list-table-dynamic/list-table-dynamic.component';
+import { TablesListComponent } from './components/tables-list/tables-list.component';
+import { QueriesListComponent } from './components/queries-list/queries-list.component';
 
 export const routes: Routes = [
   {
-    path: 'api-viewer/:endpoint',
-    component: ApiViewerComponent,
+    path: 'tables',
+    component: TablesListComponent
   },
   {
-    path: 'api-viewer/:endpoint/:id',
-    component: ApiViewerComponent,
+    path: 'queries',
+    component: QueriesListComponent
+  },
+  {
+    path: 'test',
+    component: ListTableDynamicComponent
+  },
+  {
+    path: 'table/:endpoint',
+    component: ListTableDynamicComponent
+  },
+  {
+    path: 'table',
+    redirectTo: 'table/metadata/tables',
+    pathMatch: 'full'
   },
   {
     path: '',
-    redirectTo: 'api-viewer/metadata/database',
-    pathMatch: 'full',
-  },
-  {
-    path: '**',
-    redirectTo: 'api-viewer/metadata/database',
-  },
+    redirectTo: 'tables',
+    pathMatch: 'full'
+  }
 ];
+
+
