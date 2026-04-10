@@ -73,4 +73,109 @@ export class ApiViewerService {
     const url = `${this.apiUrl}/queries`;
     return this.http.get<any>(url);
   }
+
+  /**
+   * Obtiene las columnas de una tabla
+   */
+  getTableColumns(tableName: string): Observable<any[]> {
+    const url = `${this.apiUrl}/metadata/tables/${tableName}/columns`;
+    return this.http.get<any[]>(url).pipe(
+      catchError(error => {
+        console.error('❌ Error obteniendo columnas:', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Obtiene las primary keys de una tabla
+   */
+  getTablePrimaryKeys(tableName: string): Observable<any> {
+    const url = `${this.apiUrl}/data/${tableName}/primary-keys`;
+    return this.http.get<any>(url).pipe(
+      catchError(error => {
+        console.error('❌ Error obteniendo PKs:', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Crea un registro en una tabla
+   */
+  createRecord(tableName: string, data: Record<string, any>): Observable<any> {
+    const url = `${this.apiUrl}/data/${tableName}`;
+    return this.http.post<any>(url, data).pipe(
+      catchError(error => {
+        console.error('❌ Error creando registro:', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Actualiza un registro por PK
+   */
+  updateRecord(tableName: string, idField: string, idValue: string, data: Record<string, any>): Observable<any> {
+    const url = `${this.apiUrl}/data/${tableName}/${idField}/${idValue}`;
+    return this.http.put<any>(url, data).pipe(
+      catchError(error => {
+        console.error('❌ Error actualizando registro:', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Actualiza un registro usando todos los campos originales en el WHERE (sin PK)
+   */
+  updateRecordByRow(tableName: string, original: Record<string, any>, updated: Record<string, any>): Observable<any> {
+    const url = `${this.apiUrl}/data/${tableName}/by-row`;
+    return this.http.put<any>(url, { original, updated }).pipe(
+      catchError(error => {
+        console.error('❌ Error actualizando registro por fila:', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Elimina un registro por PK
+   */
+  deleteRecord(tableName: string, idField: string, idValue: string): Observable<any> {
+    const url = `${this.apiUrl}/data/${tableName}/${idField}/${idValue}`;
+    return this.http.delete<any>(url).pipe(
+      catchError(error => {
+        console.error('❌ Error eliminando registro:', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Elimina un registro usando todos los campos en el WHERE (sin PK)
+   */
+  deleteRecordByRow(tableName: string, conditions: Record<string, any>): Observable<any> {
+    const url = `${this.apiUrl}/data/${tableName}/delete-by-row`;
+    return this.http.post<any>(url, { conditions }).pipe(
+      catchError(error => {
+        console.error('❌ Error eliminando registro por fila:', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Crea una nueva consulta guardada
+   */
+  createQuery(data: { nombre: string; tableName: string; columnNames: string[]; description?: string }): Observable<any> {
+    const url = `${this.apiUrl}/queries`;
+    return this.http.post<any>(url, data).pipe(
+      tap(response => console.log('✅ Query creada:', response)),
+      catchError(error => {
+        console.error('❌ Error creando query:', error);
+        throw error;
+      })
+    );
+  }
 }

@@ -1,5 +1,5 @@
-import { Controller, Get, Param, Query, HttpException, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { Controller, Get, Post, Put, Delete, Param, Query, Body, HttpException, HttpStatus } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { DataService } from '../../services/data/data.service';
 
 @ApiTags('Data')
@@ -27,17 +27,6 @@ export class DataController {
       const parsedLimit = limit ? parseInt(limit, 10) : 100;
       const parsedOffset = offset ? parseInt(offset, 10) : 0;
 
-      // Validar que limit no sea muy grande
-      if (parsedLimit > 10000) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.BAD_REQUEST,
-            message: 'El límite máximo es 10000 registros',
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
       // El servicio ahora retorna el formato requerido directamente
       return await this.dataService.getTableData(tableName, parsedLimit, parsedOffset);
     } catch (error) {
@@ -47,6 +36,25 @@ export class DataController {
           message: error.message || 'Error al obtener datos',
           error: error.response?.error || error.message,
         },
+        error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET /api/data/:tableName/primary-keys
+   * Obtiene las primary keys de una tabla (MUST be before :idField/:idValue)
+   */
+  @ApiOperation({ summary: 'Obtener primary keys de una tabla' })
+  @ApiParam({ name: 'tableName', description: 'Nombre de la tabla' })
+  @Get(':tableName/primary-keys')
+  async getPrimaryKeys(@Param('tableName') tableName: string) {
+    try {
+      const keys = await this.dataService.getTablePrimaryKeys(tableName);
+      return { tableName, primaryKeys: keys };
+    } catch (error) {
+      throw new HttpException(
+        { statusCode: error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR, message: error.message },
         error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -81,6 +89,153 @@ export class DataController {
           statusCode: error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR,
           message: error.message || 'Error al obtener registro',
         },
+        error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * POST /api/data/:tableName
+   * Crea un registro en la tabla
+   */
+  @ApiOperation({ summary: 'Crear un registro en una tabla' })
+  @ApiParam({ name: 'tableName', description: 'Nombre de la tabla' })
+  @ApiBody({ description: 'Datos del registro', schema: { type: 'object' } })
+  @Post(':tableName')
+  async createRecord(
+    @Param('tableName') tableName: string,
+    @Body() data: Record<string, any>,
+  ) {
+    try {
+      const record = await this.dataService.createRecord(tableName, data);
+      return { success: true, record };
+    } catch (error) {
+      throw new HttpException(
+        { statusCode: error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR, message: error.message },
+        error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * PUT /api/data/:tableName/by-row
+   * Actualiza un registro usando todos los campos originales en el WHERE
+   * Body: { original: {...}, updated: {...} }
+   */
+  @ApiOperation({ summary: 'Actualizar registro por todas las columnas (sin PK)' })
+  @ApiParam({ name: 'tableName', description: 'Nombre de la tabla' })
+  @ApiBody({ description: '{ original: datos originales, updated: datos nuevos }' })
+  @Put(':tableName/by-row')
+  async updateRecordByRow(
+    @Param('tableName') tableName: string,
+    @Body() body: { original: Record<string, any>; updated: Record<string, any> },
+  ) {
+    try {
+      if (!body.original || !body.updated) {
+        throw new HttpException(
+          { statusCode: 400, message: 'Se requiere "original" y "updated" en el body' },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      const record = await this.dataService.updateRecordByRow(tableName, body.original, body.updated);
+      if (!record) {
+        throw new HttpException({ statusCode: 404, message: 'Registro no encontrado' }, HttpStatus.NOT_FOUND);
+      }
+      return { success: true, record };
+    } catch (error) {
+      throw new HttpException(
+        { statusCode: error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR, message: error.message },
+        error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * PUT /api/data/:tableName/:idField/:idValue
+   * Actualiza un registro por PK
+   */
+  @ApiOperation({ summary: 'Actualizar un registro' })
+  @ApiParam({ name: 'tableName', description: 'Nombre de la tabla' })
+  @ApiParam({ name: 'idField', description: 'Campo identificador' })
+  @ApiParam({ name: 'idValue', description: 'Valor del identificador' })
+  @ApiBody({ description: 'Datos a actualizar', schema: { type: 'object' } })
+  @Put(':tableName/:idField/:idValue')
+  async updateRecord(
+    @Param('tableName') tableName: string,
+    @Param('idField') idField: string,
+    @Param('idValue') idValue: string,
+    @Body() data: Record<string, any>,
+  ) {
+    try {
+      const record = await this.dataService.updateRecord(tableName, idField, idValue, data);
+      if (!record) {
+        throw new HttpException({ statusCode: 404, message: 'Registro no encontrado' }, HttpStatus.NOT_FOUND);
+      }
+      return { success: true, record };
+    } catch (error) {
+      throw new HttpException(
+        { statusCode: error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR, message: error.message },
+        error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * POST /api/data/:tableName/delete-by-row
+   * Elimina un registro usando todos los campos en el WHERE (POST porque DELETE no acepta body en todos los clientes)
+   * Body: { conditions: {...} }
+   */
+  @ApiOperation({ summary: 'Eliminar registro por todas las columnas (sin PK)' })
+  @ApiParam({ name: 'tableName', description: 'Nombre de la tabla' })
+  @ApiBody({ description: '{ conditions: datos del registro a eliminar }' })
+  @Post(':tableName/delete-by-row')
+  async deleteRecordByRow(
+    @Param('tableName') tableName: string,
+    @Body() body: { conditions: Record<string, any> },
+  ) {
+    try {
+      if (!body.conditions) {
+        throw new HttpException(
+          { statusCode: 400, message: 'Se requiere "conditions" en el body' },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      const record = await this.dataService.deleteRecordByRow(tableName, body.conditions);
+      if (!record) {
+        throw new HttpException({ statusCode: 404, message: 'Registro no encontrado' }, HttpStatus.NOT_FOUND);
+      }
+      return { success: true, deleted: record };
+    } catch (error) {
+      throw new HttpException(
+        { statusCode: error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR, message: error.message },
+        error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * DELETE /api/data/:tableName/:idField/:idValue
+   * Elimina un registro por PK
+   */
+  @ApiOperation({ summary: 'Eliminar un registro' })
+  @ApiParam({ name: 'tableName', description: 'Nombre de la tabla' })
+  @ApiParam({ name: 'idField', description: 'Campo identificador' })
+  @ApiParam({ name: 'idValue', description: 'Valor del identificador' })
+  @Delete(':tableName/:idField/:idValue')
+  async deleteRecord(
+    @Param('tableName') tableName: string,
+    @Param('idField') idField: string,
+    @Param('idValue') idValue: string,
+  ) {
+    try {
+      const record = await this.dataService.deleteRecord(tableName, idField, idValue);
+      if (!record) {
+        throw new HttpException({ statusCode: 404, message: 'Registro no encontrado' }, HttpStatus.NOT_FOUND);
+      }
+      return { success: true, deleted: record };
+    } catch (error) {
+      throw new HttpException(
+        { statusCode: error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR, message: error.message },
         error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

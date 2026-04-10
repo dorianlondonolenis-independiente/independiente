@@ -1,7 +1,7 @@
 # 📋 Tareas del Proyecto - UnoEE
 
 **Período:** 1 semana (sin login por ahora)
-**Última actualización:** 03/04/2026
+**Última actualización:** 09/04/2026
 
 ---
 
@@ -13,9 +13,15 @@
   - [x] GET `/api/metadata/tables` - Lista de tablas
   - [x] GET `/api/metadata/tables/:tableName/columns` - Columnas
   - [x] GET `/api/metadata/tables/:tableName/row-count` - Cantidad de registros
-- [x] Crear API de **Data** (2 endpoints)
-  - [x] GET `/api/data/:tableName` - SELECT con paginación
+- [x] Crear API de **Data** (endpoints base + CRUD completo)
+  - [x] GET `/api/data/:tableName` - SELECT con paginación (sin límite máximo)
   - [x] GET `/api/data/:tableName/:idField/:idValue` - Registro específico
+  - [x] GET `/api/data/:tableName/primary-keys` - Primary Keys (usa sys tables + fallback IDENTITY)
+  - [x] POST `/api/data/:tableName` - Crear registro
+  - [x] PUT `/api/data/:tableName/:idField/:idValue` - Actualizar por PK
+  - [x] PUT `/api/data/:tableName/by-row` - Actualizar usando todos los campos en WHERE (tablas sin PK, TOP 1)
+  - [x] DELETE `/api/data/:tableName/:idField/:idValue` - Eliminar por PK
+  - [x] POST `/api/data/:tableName/delete-by-row` - Eliminar usando todos los campos en WHERE (tablas sin PK, TOP 1)
 - [x] Documentación completa en `docs/API.md`
 - [x] Implementar **Swagger** para documentación interactiva
 - [x] CORS configurado para Angular (localhost:4200)
@@ -25,18 +31,23 @@
   - [x] 6 endpoints CRUD con selección dinámica de columnas
   - [x] Endpoint para ejecutar consultas retornando solo columnas seleccionadas
   - [x] Documentación Swagger integrada
+- [x] **Modelo relacional** generado automáticamente en `docs/MODELO-RELACIONAL.md`
+  - [x] 1,477 tablas documentadas con columnas, tipos, PKs
+  - [x] 9,669 Foreign Keys mapeadas
+  - [x] Índices, conteo de filas, resumen de relaciones
 
 ---
 
-## ⏳ Backend - Pendientes
+## ⏳ Pendientes
 
 - [ ] Crear subnombres/aliases para tablas en una nueva tabla
-
----
+- [ ] Implementar columnas calculadas (sumas, totales, etc.)
+- [ ] Evaluar posibilidad de insertar **Stored Procedures** (SP)
+- [ ] Aplicación de **tableros y gráficos comparativos de inventario** (PRD en `nuevas_aplicaciones/docs/prd.md`)
 
 ## 🔄 Frontend - En Progreso
 
-- [x] **Componente API Viewer Universal** ✨ (NUEVO - 03/04/2026)
+- [x] **Componente API Viewer Universal** ✨
   - [x] Componente standalone para consumir todos los endpoints
   - [x] Routing dinámico `/api-viewer/:endpoint/:id`
   - [x] Visualización genérica de datos en tablas
@@ -44,15 +55,30 @@
   - [x] Manejo de errors
   - [x] Loading states
   - [x] Servicio centralizado para todos los endpoints
-- [ ] **Componente tabla dinámica** 
-  - [ ] Mostrar tablas en URL específica
-  - [ ] Que el componente sea dinámico (cualquier tabla)
-  - [ ] Paginación
-- [ ] Implementar columnas calculadas (sumas, totales, etc.)
-- [ ] Evaluar posibilidad de insertar **Stored Procedures** (SP)
-- [ ] Consumir endpoints de metadata
-- [ ] Consumir endpoints de data
-- [ ] Seleccionar tabla y mostrar datos
+- [x] **Componente tabla dinámica con CRUD completo** ✨ (09/04/2026)
+  - [x] Ruta `/table/:nombretabla` - Visualización dinámica de cualquier tabla
+  - [x] Paginación con computed signals (sin loops de change detection)
+  - [x] Buscador en tiempo real sobre todos los campos
+  - [x] Selector de límite de registros (50, 100, 250, 500, 1000, Todos)
+  - [x] Modal de **Crear registro** - Genera formulario dinámico por columnas
+  - [x] Modal de **Editar registro** - Precarga datos, PKs deshabilitadas
+  - [x] Modal de **Eliminar registro** - Confirmación antes de borrar
+  - [x] Soporte tablas **con PK** (update/delete por PK)
+  - [x] Soporte tablas **sin PK** (update/delete por TODOS los campos, TOP 1)
+  - [x] `formData` como objeto plano para compatibilidad con `ngModel`
+  - [x] Columnas metadata derivadas de datos cargados (no depende de endpoint metadata)
+- [x] **Lista de tablas** (`/tables`)
+  - [x] Carga desde metadata, muestra nombre/schema/filas
+  - [x] Navegación directa a `/table/:nombre`
+---
+
+## 📌 Bugs Resueltos (09/04/2026)
+
+- **Datos no cargaban (loop infinito):** `paginatedRows()` se llamaba como método en template y seteaba signals dentro, causando loops de change detection. Solución: convertir a `computed()`.
+- **Modal CRUD no mostraba datos:** `[(ngModel)]="formData()[col.name]"` con signals no funciona (devuelve snapshot). Solución: `formData` como objeto plano con `[ngModel]` + `(ngModelChange)`.
+- **UPDATE masivo (todos los registros):** Tablas sin PK usaban solo un campo en el WHERE. Solución: nuevo endpoint `by-row` que usa TODOS los campos en WHERE + `TOP(1)`.
+- **Columnas metadata vacías:** Endpoint `/metadata/tables/:name/columns` devolvía 0 columnas. Solución: derivar columnas del `tableData()` ya cargado en vez del endpoint de metadata.
+- **Primary Keys vacías:** Query con `INFORMATION_SCHEMA` no encontraba PKs. Solución: migrar a `sys.index_columns` + fallback a `sys.columns` (IDENTITY).
 
 ---
 

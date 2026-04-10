@@ -88,8 +88,6 @@ export class TablesListComponent implements OnInit {
   }
 
   viewTable(tableName: string) {
-    this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
-      this.router.navigate(['/table', tableName]);
-    });
+    this.router.navigate(['/table', tableName]);
   }
 }
