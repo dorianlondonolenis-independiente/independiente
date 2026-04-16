@@ -58,16 +58,15 @@ export class MetadataService {
       
       const columnsQuery = `
         SELECT 
-          COLUMN_NAME,
-          DATA_TYPE,
-          IS_NULLABLE,
-          CHARACTER_MAXIMUM_LENGTH
-        FROM 
-          INFORMATION_SCHEMA.COLUMNS
-        WHERE 
-          TABLE_NAME = '${cleanTableName}'
-        ORDER BY 
-          ORDINAL_POSITION
+          c.name AS COLUMN_NAME,
+          TYPE_NAME(c.system_type_id) AS DATA_TYPE,
+          c.is_nullable AS IS_NULLABLE,
+          c.max_length AS CHARACTER_MAXIMUM_LENGTH,
+          c.is_identity,
+          c.is_computed
+        FROM sys.columns c
+        WHERE c.object_id = OBJECT_ID('${cleanTableName}')
+        ORDER BY c.column_id
       `;
 
       const columns = await this.dataSource.query(columnsQuery);
@@ -86,9 +85,10 @@ export class MetadataService {
       return columns.map((col) => ({
         name: col.COLUMN_NAME,
         type: col.DATA_TYPE,
-        nullable: col.IS_NULLABLE === 'YES',
+        nullable: !!col.IS_NULLABLE,
         isPrimaryKey: pkSet.has(col.COLUMN_NAME),
-        isIdentity: false,
+        isIdentity: !!col.is_identity,
+        isComputed: !!col.is_computed,
         maxLength: col.CHARACTER_MAXIMUM_LENGTH || undefined,
       }));
     } catch (error) {

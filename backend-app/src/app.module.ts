@@ -12,6 +12,22 @@ import { DataController } from './controllers/data/data.controller';
 import { DataService } from './services/data/data.service';
 import { QueriesController } from './controllers/queries/queries.controller';
 import { QueriesService } from './services/queries/queries.service';
+import { MaestrasController } from './controllers/maestras/maestras.controller';
+import { MaestrasService } from './services/maestras/maestras.service';
+import { InventarioController } from './controllers/inventario/inventario.controller';
+import { InventarioService } from './services/inventario/inventario.service';
+import { VentasController } from './controllers/ventas/ventas.controller';
+import { VentasService } from './services/ventas/ventas.service';
+import { ComprasController } from './controllers/compras/compras.controller';
+import { ComprasService } from './services/compras/compras.service';
+import { CarteraController } from './controllers/cartera/cartera.controller';
+import { CarteraService } from './services/cartera/cartera.service';
+import { KardexController } from './controllers/kardex/kardex.controller';
+import { KardexService } from './services/kardex/kardex.service';
+import { TercerosController } from './controllers/terceros/terceros.controller';
+import { TercerosService } from './services/terceros/terceros.service';
+import { BulkUploadController } from './controllers/bulk-upload/bulk-upload.controller';
+import { BulkUploadService } from './services/bulk-upload/bulk-upload.service';
 
 @Module({
   imports: [
@@ -47,7 +63,15 @@ import { QueriesService } from './services/queries/queries.service';
       }),
     }),
   ],
-  controllers: [AppController, MetadataController, DataController, QueriesController],
-  providers: [AppService, MetadataService, DataService, QueriesService],
+  controllers: [
+    AppController, MetadataController, DataController, QueriesController,
+    MaestrasController, InventarioController, VentasController, ComprasController,
+    CarteraController, KardexController, TercerosController, BulkUploadController,
+  ],
+  providers: [
+    AppService, MetadataService, DataService, QueriesService,
+    MaestrasService, InventarioService, VentasService, ComprasService,
+    CarteraService, KardexService, TercerosService, BulkUploadService,
+  ],
 })
 export class AppModule {}

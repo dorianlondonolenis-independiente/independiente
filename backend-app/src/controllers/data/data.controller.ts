@@ -1,11 +1,34 @@
-import { Controller, Get, Post, Put, Delete, Param, Query, Body, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Query, Body, HttpException, HttpStatus, Res } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { DataService } from '../../services/data/data.service';
+import type { Response } from 'express';
 
 @ApiTags('Data')
 @Controller('data')
 export class DataController {
   constructor(private readonly dataService: DataService) {}
+
+  /**
+   * GET /api/data/search/global
+   * Búsqueda global en múltiples tablas
+   */
+  @ApiOperation({ summary: 'Búsqueda global en múltiples tablas' })
+  @ApiQuery({ name: 'q', description: 'Término a buscar', required: true })
+  @Get('search/global')
+  async globalSearch(@Query('q') term: string) {
+    try {
+      if (!term || term.length < 2) {
+        return { results: [], message: 'El término debe tener al menos 2 caracteres' };
+      }
+      const results = await this.dataService.globalSearch(term);
+      return { results, total: results.reduce((acc, r) => acc + r.matches, 0) };
+    } catch (error) {
+      throw new HttpException(
+        { statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: error.message },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 
   /**
    * GET /api/data/:tableName
@@ -36,6 +59,46 @@ export class DataController {
           message: error.message || 'Error al obtener datos',
           error: error.response?.error || error.message,
         },
+        error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET /api/data/:tableName/export-csv
+   * Exporta los datos de una tabla como CSV
+   */
+  @ApiOperation({ summary: 'Exportar datos de tabla como CSV' })
+  @ApiParam({ name: 'tableName', description: 'Nombre de la tabla' })
+  @Get(':tableName/export-csv')
+  async exportCsv(@Param('tableName') tableName: string, @Res() res: Response) {
+    try {
+      const csv = await this.dataService.exportTableCsv(tableName);
+      const cleanName = tableName.replace(/[^a-zA-Z0-9_]/g, '');
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="${cleanName}.csv"`);
+      res.send('\uFEFF' + csv); // BOM for Excel UTF-8 compat
+    } catch (error) {
+      throw new HttpException(
+        { statusCode: error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR, message: error.message },
+        error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET /api/data/:tableName/relations
+   * Obtiene las relaciones FK de una tabla
+   */
+  @ApiOperation({ summary: 'Obtener relaciones FK de una tabla' })
+  @ApiParam({ name: 'tableName', description: 'Nombre de la tabla' })
+  @Get(':tableName/relations')
+  async getRelations(@Param('tableName') tableName: string) {
+    try {
+      return await this.dataService.getTableRelations(tableName);
+    } catch (error) {
+      throw new HttpException(
+        { statusCode: error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR, message: error.message },
         error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

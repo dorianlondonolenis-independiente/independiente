@@ -17,6 +17,34 @@
   --gradient-primary: linear-gradient(135deg, #0d6efd 0%, #0d57d8 100%);
   --gradient-success: linear-gradient(135deg, #198754 0%, #146c43 100%);
   --gradient-danger: linear-gradient(135deg, #dc3545 0%, #bd2130 100%);
+
+  /* Theme tokens (light) */
+  --bg-body: #f5f7fa;
+  --bg-card: #ffffff;
+  --bg-input: #ffffff;
+  --bg-table-header: #212529;
+  --bg-topbar: #ffffff;
+  --text-primary: #212529;
+  --text-secondary: #495057;
+  --text-muted: #6c757d;
+  --border-color: #dee2e6;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Dark mode overrides */
+.dark-mode {
+  --bg-body: #0f1117;
+  --bg-card: #1a1d27;
+  --bg-input: #242833;
+  --bg-table-header: #0d1017;
+  --bg-topbar: #151820;
+  --text-primary: #e4e6eb;
+  --text-secondary: #b0b3b8;
+  --text-muted: #8a8d91;
+  --border-color: #2d3039;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
 }
 
 /* Base Styles */
@@ -31,9 +59,37 @@ body {
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
     Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
-  background-color: #f5f7fa;
-  color: #212529;
+  background-color: var(--bg-body);
+  color: var(--text-primary);
 }
+
+/* Dark mode: Bootstrap + form overrides */
+.dark-mode .card { background: var(--bg-card); border-color: var(--border-color); color: var(--text-primary); }
+.dark-mode .card-header { border-color: var(--border-color); }
+.dark-mode .card-footer { background: var(--bg-card); border-color: var(--border-color); }
+.dark-mode .table { --bs-table-bg: var(--bg-card); --bs-table-color: var(--text-primary); --bs-table-striped-bg: rgba(255,255,255,0.03); --bs-table-hover-bg: rgba(255,255,255,0.06); }
+.dark-mode .table-dark { --bs-table-bg: var(--bg-table-header); --bs-table-color: #e4e6eb; }
+.dark-mode .form-control, .dark-mode .form-select { background: var(--bg-input); color: var(--text-primary); border-color: var(--border-color); }
+.dark-mode .form-control:focus, .dark-mode .form-select:focus { background: var(--bg-input); color: var(--text-primary); border-color: var(--primary); }
+.dark-mode .input-group-text { background: var(--bg-input); color: var(--text-secondary); border-color: var(--border-color); }
+.dark-mode .modal-content { background: var(--bg-card); color: var(--text-primary); }
+.dark-mode .modal-header { border-color: var(--border-color); }
+.dark-mode .modal-footer { border-color: var(--border-color); }
+.dark-mode .alert { border-color: var(--border-color); }
+.dark-mode .bg-light { background: rgba(255,255,255,0.05) !important; }
+.dark-mode .text-muted { color: var(--text-muted) !important; }
+.dark-mode .page-link { background: var(--bg-input); color: var(--text-primary); border-color: var(--border-color); }
+.dark-mode .breadcrumb { --bs-breadcrumb-divider-color: var(--text-muted); }
+.dark-mode .breadcrumb-item a { color: var(--primary); }
+.dark-mode .breadcrumb-item.active { color: var(--text-muted); }
+.search-results-dropdown { background: var(--bg-card, #fff); border: 1px solid var(--border-color, #dee2e6); color: var(--text-primary, #212529); }
+.dark-mode .search-results-dropdown, .dark-mode .dropdown-menu { background: var(--bg-card); border-color: var(--border-color); color: var(--text-primary); }
+.dark-mode .btn-outline-secondary { color: var(--text-secondary); border-color: var(--border-color); }
+.dark-mode .btn-outline-secondary:hover { background: rgba(255,255,255,0.08); color: var(--text-primary); }
+.dark-mode .sidebar { background: var(--bg-card) !important; border-color: var(--border-color) !important; }
+.dark-mode .nav-item { color: var(--text-secondary) !important; }
+.dark-mode .nav-item:hover { background: rgba(255,255,255,0.06) !important; }
+.dark-mode .nav-item.active { color: var(--primary) !important; background: rgba(99,102,241,0.12) !important; }
 
 /* Scrollbar Styles */
 ::-webkit-scrollbar {
@@ -113,12 +169,11 @@ code {
   border: none;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  transition: box-shadow 0.3s ease;
 }
 
 .card:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .card-header {

@@ -40,10 +40,9 @@
 
 ## ⏳ Pendientes
 
-- [ ] Crear subnombres/aliases para tablas en una nueva tabla
 - [ ] Implementar columnas calculadas (sumas, totales, etc.)
 - [ ] Evaluar posibilidad de insertar **Stored Procedures** (SP)
-- [ ] Aplicación de **tableros y gráficos comparativos de inventario** (PRD en `nuevas_aplicaciones/docs/prd.md`)
+
 
 ## 🔄 Frontend - En Progreso
 

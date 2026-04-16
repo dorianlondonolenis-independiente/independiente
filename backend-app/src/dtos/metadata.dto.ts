@@ -4,6 +4,7 @@ export class ColumnMetadataDto {
   nullable: boolean;
   isPrimaryKey: boolean;
   isIdentity: boolean;
+  isComputed: boolean;
   maxLength?: number;
 }
 

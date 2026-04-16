@@ -77,9 +77,9 @@ export class ApiViewerService {
   /**
    * Obtiene las columnas de una tabla
    */
-  getTableColumns(tableName: string): Observable<any[]> {
+  getTableColumns(tableName: string): Observable<any> {
     const url = `${this.apiUrl}/metadata/tables/${tableName}/columns`;
-    return this.http.get<any[]>(url).pipe(
+    return this.http.get<any>(url).pipe(
       catchError(error => {
         console.error('❌ Error obteniendo columnas:', error);
         throw error;
@@ -176,6 +176,85 @@ export class ApiViewerService {
         console.error('❌ Error creando query:', error);
         throw error;
       })
+    );
+  }
+
+  /**
+   * Exporta los datos de una tabla como CSV (devuelve blob)
+   */
+  exportCsv(tableName: string): Observable<Blob> {
+    const url = `${this.apiUrl}/data/${tableName}/export-csv`;
+    return this.http.get(url, { responseType: 'blob' }).pipe(
+      catchError(error => {
+        console.error('❌ Error exportando CSV:', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Búsqueda global en múltiples tablas
+   */
+  globalSearch(term: string): Observable<any> {
+    const url = `${this.apiUrl}/data/search/global?q=${encodeURIComponent(term)}`;
+    return this.http.get<any>(url).pipe(
+      catchError(error => {
+        console.error('❌ Error en búsqueda global:', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Obtiene las relaciones FK de una tabla
+   */
+  getTableRelations(tableName: string): Observable<any> {
+    const url = `${this.apiUrl}/data/${tableName}/relations`;
+    return this.http.get<any>(url).pipe(
+      catchError(error => {
+        console.error('❌ Error obteniendo relaciones:', error);
+        throw error;
+      })
+    );
+  }
+
+  // --- Bulk Upload ---
+
+  bulkUploadParse(tableName: string, file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<any>(`${this.apiUrl}/bulk-upload/${tableName}/parse`, formData).pipe(
+      catchError(error => { throw error; })
+    );
+  }
+
+  bulkUploadValidate(tableName: string, file: File, mapping: Record<string, string>): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('mapping', JSON.stringify(mapping));
+    return this.http.post<any>(`${this.apiUrl}/bulk-upload/${tableName}/validate-file`, formData).pipe(
+      catchError(error => { throw error; })
+    );
+  }
+
+  bulkUploadExecute(tableName: string, file: File, mapping: Record<string, string>): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('mapping', JSON.stringify(mapping));
+    return this.http.post<any>(`${this.apiUrl}/bulk-upload/${tableName}/execute-file`, formData).pipe(
+      catchError(error => { throw error; })
+    );
+  }
+
+  bulkUploadTemplate(tableName: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/bulk-upload/${tableName}/template`, { responseType: 'blob' }).pipe(
+      catchError(error => { throw error; })
+    );
+  }
+
+  getAllTables(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/metadata/tables`).pipe(
+      catchError(error => { throw error; })
     );
   }
 }

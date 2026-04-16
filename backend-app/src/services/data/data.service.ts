@@ -361,15 +361,212 @@ export class DataService {
   }
 
   /**
-   * Obtiene la lista de columnas válidas de una tabla
+   * Obtiene la lista de columnas válidas de una tabla (excluye identity, computed y timestamp)
    */
   private async getValidColumns(cleanTableName: string): Promise<string[]> {
-    // Usar sys.columns que es más confiable que INFORMATION_SCHEMA
     const cols = await this.dataSource.query(`
       SELECT c.name
       FROM sys.columns c
       WHERE c.object_id = OBJECT_ID('${cleanTableName}')
+        AND c.is_identity = 0
+        AND c.is_computed = 0
+        AND TYPE_NAME(c.system_type_id) <> 'timestamp'
     `);
     return cols.map((c: any) => c.name);
+  }
+
+  /**
+   * Exporta todos los datos de una tabla como CSV
+   */
+  async exportTableCsv(tableName: string): Promise<string> {
+    const cleanTableName = tableName.replace(/[^a-zA-Z0-9_]/g, '');
+    await this.validateTableExists(cleanTableName);
+
+    const columnsInfo = await this.dataSource.query(`
+      SELECT COLUMN_NAME as name
+      FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_NAME = '${cleanTableName}'
+      ORDER BY ORDINAL_POSITION
+    `);
+    const colNames = columnsInfo.map((c: any) => c.name);
+
+    const datos = await this.dataSource.query(`SELECT * FROM [${cleanTableName}]`);
+
+    // Build CSV
+    const escapeCsv = (val: any) => {
+      if (val === null || val === undefined) return '';
+      const str = String(val);
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return '"' + str.replace(/"/g, '""') + '"';
+      }
+      return str;
+    };
+
+    const header = colNames.map(escapeCsv).join(',');
+    const rows = datos.map((row: any) => colNames.map((col: string) => escapeCsv(row[col])).join(','));
+    return [header, ...rows].join('\r\n');
+  }
+
+  /**
+   * Búsqueda global: busca un término en las primeras columnas de texto de múltiples tablas
+   */
+  async globalSearch(term: string, maxResults: number = 50): Promise<any[]> {
+    const cleanTerm = term.replace(/'/g, "''");
+    if (!cleanTerm || cleanTerm.length < 2) return [];
+
+    // Get tables with row count > 0 that start with 't' (business tables)
+    const tables = await this.dataSource.query(`
+      SELECT TOP 30 t.name AS tableName
+      FROM sys.tables t
+      INNER JOIN sys.dm_db_partition_stats s ON t.object_id = s.object_id AND s.index_id IN (0, 1)
+      WHERE t.name LIKE 't%' AND s.row_count > 0
+      ORDER BY s.row_count DESC
+    `);
+
+    const results: any[] = [];
+
+    for (const tbl of tables) {
+      if (results.length >= maxResults) break;
+
+      // Get first 3 varchar/nvarchar columns of this table
+      const cols = await this.dataSource.query(`
+        SELECT TOP 3 c.name
+        FROM sys.columns c
+        WHERE c.object_id = OBJECT_ID('${tbl.tableName}')
+          AND TYPE_NAME(c.system_type_id) IN ('varchar', 'nvarchar', 'char', 'nchar')
+          AND c.max_length > 0
+        ORDER BY c.column_id
+      `);
+
+      if (cols.length === 0) continue;
+
+      const whereClauses = cols.map((c: any) => `[${c.name}] LIKE '%${cleanTerm}%'`).join(' OR ');
+      const selectCols = cols.map((c: any) => `[${c.name}]`).join(', ');
+      const remaining = maxResults - results.length;
+
+      try {
+        const rows = await this.dataSource.query(`
+          SELECT TOP ${remaining} ${selectCols}
+          FROM [${tbl.tableName}]
+          WHERE ${whereClauses}
+        `);
+
+        if (rows.length > 0) {
+          results.push({
+            tableName: tbl.tableName,
+            matches: rows.length,
+            columns: cols.map((c: any) => c.name),
+            preview: rows.slice(0, 5),
+          });
+        }
+      } catch {
+        // Skip tables that fail (e.g. permission issues)
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Obtiene las relaciones (FK) de una tabla
+   */
+  async getTableRelations(tableName: string): Promise<any> {
+    const cleanTableName = tableName.replace(/[^a-zA-Z0-9_]/g, '');
+    await this.validateTableExists(cleanTableName);
+
+    // FKs where this table references other tables (outgoing)
+    const outgoing = await this.dataSource.query(`
+      SELECT
+        fk.name AS fk_name,
+        tp.name AS parent_table,
+        cp.name AS parent_column,
+        tr.name AS referenced_table,
+        cr.name AS referenced_column
+      FROM sys.foreign_keys fk
+      INNER JOIN sys.foreign_key_columns fkc ON fk.object_id = fkc.constraint_object_id
+      INNER JOIN sys.tables tp ON fkc.parent_object_id = tp.object_id
+      INNER JOIN sys.columns cp ON fkc.parent_object_id = cp.object_id AND fkc.parent_column_id = cp.column_id
+      INNER JOIN sys.tables tr ON fkc.referenced_object_id = tr.object_id
+      INNER JOIN sys.columns cr ON fkc.referenced_object_id = cr.object_id AND fkc.referenced_column_id = cr.column_id
+      WHERE tp.name = '${cleanTableName}'
+      ORDER BY fk.name
+    `);
+
+    // FKs where other tables reference this table (incoming)
+    const incoming = await this.dataSource.query(`
+      SELECT
+        fk.name AS fk_name,
+        tp.name AS referencing_table,
+        cp.name AS referencing_column,
+        cr.name AS referenced_column
+      FROM sys.foreign_keys fk
+      INNER JOIN sys.foreign_key_columns fkc ON fk.object_id = fkc.constraint_object_id
+      INNER JOIN sys.tables tp ON fkc.parent_object_id = tp.object_id
+      INNER JOIN sys.columns cp ON fkc.parent_object_id = cp.object_id AND fkc.parent_column_id = cp.column_id
+      INNER JOIN sys.tables tr ON fkc.referenced_object_id = tr.object_id
+      INNER JOIN sys.columns cr ON fkc.referenced_object_id = cr.object_id AND fkc.referenced_column_id = cr.column_id
+      WHERE tr.name = '${cleanTableName}'
+      ORDER BY tp.name
+    `);
+
+    // Known maestras table names (for priority sorting)
+    const maestrasTables = new Set([
+      't120_mc_items', 't121_mc_items_extensiones', 't126_mc_items_precios',
+      't400_cm_existencia', 't401_cm_existencia_lote', 't402_cm_costos', 't150_mc_bodegas',
+      't200_mm_terceros', 't201_mm_clientes', 't202_mm_proveedores',
+      't420_cm_oc_docto', 't430_cm_pv_docto',
+      't116_mc_extensiones1', 't117_mc_extensiones1_detalle',
+      't118_mc_extensiones2', 't119_mc_extensiones2_detalle', 't145_mc_conceptos',
+    ]);
+
+    // Collect all related table names for row count
+    const relatedTables = new Set<string>();
+    outgoing.forEach((r: any) => relatedTables.add(r.referenced_table));
+    incoming.forEach((r: any) => relatedTables.add(r.referencing_table));
+
+    // Fetch row counts in parallel
+    const countMap: Record<string, number> = {};
+    const countPromises = Array.from(relatedTables).map(async (tbl) => {
+      try {
+        const res = await this.dataSource.query(`SELECT COUNT(*) AS cnt FROM [${tbl}]`);
+        countMap[tbl] = res[0]?.cnt ?? 0;
+      } catch {
+        countMap[tbl] = -1; // error / inaccessible
+      }
+    });
+    await Promise.all(countPromises);
+
+    const enrichOutgoing = outgoing.map((r: any) => ({
+      fkName: r.fk_name,
+      column: r.parent_column,
+      referencedTable: r.referenced_table,
+      referencedColumn: r.referenced_column,
+      rowCount: countMap[r.referenced_table] ?? -1,
+      isMaestra: maestrasTables.has(r.referenced_table),
+    }));
+
+    const enrichIncoming = incoming.map((r: any) => ({
+      fkName: r.fk_name,
+      referencingTable: r.referencing_table,
+      referencingColumn: r.referencing_column,
+      column: r.referenced_column,
+      rowCount: countMap[r.referencing_table] ?? -1,
+      isMaestra: maestrasTables.has(r.referencing_table),
+    }));
+
+    // Sort: maestras first, then by table name
+    const sortFn = (a: any, b: any) => {
+      const tblA = a.referencedTable || a.referencingTable;
+      const tblB = b.referencedTable || b.referencingTable;
+      if (a.isMaestra && !b.isMaestra) return -1;
+      if (!a.isMaestra && b.isMaestra) return 1;
+      return tblA.localeCompare(tblB);
+    };
+
+    return {
+      tableName: cleanTableName,
+      outgoing: enrichOutgoing.sort(sortFn),
+      incoming: enrichIncoming.sort(sortFn),
+    };
   }
 }

@@ -1,6 +1,187 @@
-<div style="min-height: 100vh; position: relative;">
-  <div style="position: fixed; top: 10px; right: 10px; background: #e7f3ff; padding: 10px; border-radius: 5px; font-size: 12px; z-index: 9999;">
-    🟢 App Ready
+<div class="app-layout" [class.sidebar-collapsed]="sidebarCollapsed()">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="brand-icon">
+          <i class="bi bi-database-fill-gear"></i>
+        </div>
+        <span class="brand-text">Independiente</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">PRINCIPAL</div>
+      <a class="nav-item" routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+        <i class="bi bi-speedometer2"></i>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a class="nav-item" routerLink="/maestras" routerLinkActive="active">
+        <i class="bi bi-grid-3x3-gap-fill"></i>
+        <span class="nav-label">Maestras</span>
+      </a>
+
+      <div class="nav-section-label">OPERACIONES</div>
+      <a class="nav-item" routerLink="/inventario" routerLinkActive="active">
+        <i class="bi bi-box-seam"></i>
+        <span class="nav-label">Inventario</span>
+      </a>
+      <a class="nav-item" routerLink="/ventas" routerLinkActive="active">
+        <i class="bi bi-cart-check"></i>
+        <span class="nav-label">Ventas</span>
+      </a>
+      <a class="nav-item" routerLink="/compras" routerLinkActive="active">
+        <i class="bi bi-truck"></i>
+        <span class="nav-label">Compras</span>
+      </a>
+      <a class="nav-item" routerLink="/cartera" routerLinkActive="active">
+        <i class="bi bi-wallet2"></i>
+        <span class="nav-label">Cartera</span>
+      </a>
+      <a class="nav-item" routerLink="/kardex" routerLinkActive="active">
+        <i class="bi bi-arrow-left-right"></i>
+        <span class="nav-label">Kardex</span>
+      </a>
+      <a class="nav-item" routerLink="/terceros" routerLinkActive="active">
+        <i class="bi bi-people-fill"></i>
+        <span class="nav-label">Terceros</span>
+      </a>
+
+      <div class="nav-section-label">DATOS</div>
+      <a class="nav-item" routerLink="/tables" routerLinkActive="active">
+        <i class="bi bi-table"></i>
+        <span class="nav-label">Explorar Tablas</span>
+      </a>
+      <a class="nav-item" routerLink="/queries" routerLinkActive="active">
+        <i class="bi bi-code-square"></i>
+        <span class="nav-label">Consultas SQL</span>
+      </a>
+
+      <div class="nav-section-label">ACCIONES</div>
+      <a class="nav-item" routerLink="/maestras/producto/nuevo" routerLinkActive="active">
+        <i class="bi bi-plus-circle-fill"></i>
+        <span class="nav-label">Crear Producto</span>
+      </a>
+      <a class="nav-item" routerLink="/bulk-upload" routerLinkActive="active">
+        <i class="bi bi-cloud-arrow-up"></i>
+        <span class="nav-label">Carga Masiva</span>
+      </a>
+
+      <!-- Favorites -->
+      <div *ngIf="favorites().length > 0">
+        <div class="nav-section-label" style="cursor: pointer;" (click)="showFavSection.set(!showFavSection())">
+          <i class="bi me-1" [class.bi-chevron-down]="showFavSection()" [class.bi-chevron-right]="!showFavSection()" style="font-size: 0.6rem;"></i>
+          FAVORITOS
+        </div>
+        <div *ngIf="showFavSection()">
+          <a *ngFor="let fav of favorites()" class="sidebar-fav-item" [routerLink]="['/table', fav]">
+            <i class="bi bi-star-fill fav-icon" style="color: #ffc107;"></i>
+            <span class="nav-label">{{ fav }}</span>
+            <i class="bi bi-x-lg fav-icon ms-auto" style="font-size: 0.6rem; opacity: 0.5;" (click)="removeFavorite(fav, $event)"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Recientes -->
+      <div *ngIf="recentTables().length > 0">
+        <div class="nav-section-label" style="cursor: pointer;" (click)="showRecentSection.set(!showRecentSection())">
+          <i class="bi me-1" [class.bi-chevron-down]="showRecentSection()" [class.bi-chevron-right]="!showRecentSection()" style="font-size: 0.6rem;"></i>
+          RECIENTES
+        </div>
+        <div *ngIf="showRecentSection()">
+          <a *ngFor="let tbl of recentTables().slice(0, 5)" class="sidebar-fav-item" [routerLink]="['/table', tbl]">
+            <i class="bi bi-clock-history fav-icon" style="opacity: 0.5;"></i>
+            <span class="nav-label">{{ tbl }}</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-badge">
+        <i class="bi bi-server"></i>
+        <span class="nav-label">SQL Server</span>
+        <span class="status-dot"></span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-wrapper">
+    <!-- Top bar -->
+    <header class="topbar">
+      <button class="btn-toggle" (click)="toggleSidebar()">
+        <i class="bi" [class.bi-list]="sidebarCollapsed()" [class.bi-x-lg]="!sidebarCollapsed()"></i>
+      </button>
+
+      <!-- Global Search -->
+      <div class="global-search-wrapper" style="position: relative; flex: 1; max-width: 500px; margin: 0 24px;">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" class="form-control border-start-0" placeholder="Buscar en todas las tablas..."
+                 [(ngModel)]="searchTerm" (input)="onSearchInput()" (focus)="searchTerm.length >= 2 && showSearchResults.set(true)">
+          <button *ngIf="searchTerm" class="btn btn-outline-secondary border-start-0 bg-white" (click)="searchTerm=''; closeSearch()">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+
+        <!-- Search Results Dropdown -->
+        <div *ngIf="showSearchResults()" class="search-results-dropdown"
+             style="position: absolute; top: 100%; left: 0; right: 0; z-index: 2000; max-height: 420px; overflow-y: auto; border-radius: 0 0 8px 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);">
+
+          <div *ngIf="isSearching()" class="text-center p-3">
+            <div class="spinner-border spinner-border-sm text-primary"></div>
+            <span class="text-muted ms-2 small">Buscando...</span>
+          </div>
+
+          <div *ngIf="!isSearching() && searchResults().length === 0" class="text-center text-muted p-3 small">
+            <i class="bi bi-search me-1"></i>Sin resultados para "{{ searchTerm }}"
+          </div>
+
+          <div *ngFor="let result of searchResults()" class="search-result-group">
+            <div class="px-3 py-2 bg-light border-bottom d-flex justify-content-between align-items-center" style="cursor: pointer;" (click)="goToTable(result.tableName)">
+              <span class="fw-semibold small"><i class="bi bi-table me-1 text-primary"></i>{{ result.tableName }}</span>
+              <span class="badge bg-primary rounded-pill">{{ result.matches }}</span>
+            </div>
+            <div *ngFor="let row of result.preview" class="px-3 py-1 border-bottom small" style="cursor: pointer;" (click)="goToTable(result.tableName)">
+              <span *ngFor="let col of result.columns; let last = last" class="text-muted">
+                {{ row[col] }}<span *ngIf="!last"> | </span>
+              </span>
+            </div>
+          </div>
+
+          <div *ngIf="!isSearching() && searchTotal() > 0" class="text-center p-2 bg-light border-top">
+            <small class="text-muted">{{ searchTotal() }} coincidencias en {{ searchResults().length }} tablas</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <button class="dark-toggle" (click)="toggleDarkMode()" title="Alternar modo oscuro">
+          <i class="bi" [class.bi-moon-fill]="!darkMode()" [class.bi-sun-fill]="darkMode()"></i>
+        </button>
+        <span class="topbar-badge">
+          <i class="bi bi-database-fill me-1"></i>UnoEE
+        </span>
+      </div>
+    </header>
+
+    <!-- Breadcrumbs -->
+    <div class="breadcrumb-bar" *ngIf="breadcrumbs().length > 0">
+      <ol class="breadcrumb mb-0">
+        <li *ngFor="let crumb of breadcrumbs(); let last = last" class="breadcrumb-item" [class.active]="last">
+          <a *ngIf="!last && crumb.url" [routerLink]="crumb.url">{{ crumb.label }}</a>
+          <span *ngIf="last || !crumb.url">{{ crumb.label }}</span>
+        </li>
+      </ol>
+    </div>
+
+    <!-- Click overlay to close search -->
+    <div *ngIf="showSearchResults()" (click)="closeSearch()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1999;"></div>
+
+    <!-- Page content -->
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
   </div>
-  <router-outlet></router-outlet>
 </div>
