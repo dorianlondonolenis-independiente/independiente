@@ -53,6 +53,7 @@ export class App implements OnInit {
     queries: 'Consultas SQL',
     table: 'Tabla',
     'bulk-upload': 'Carga Masiva',
+    'siesa-xml': 'XML Siesa',
   };
 
   ngOnInit() {

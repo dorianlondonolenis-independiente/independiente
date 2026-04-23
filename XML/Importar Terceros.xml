@@ -1,0 +1,11 @@
+<Importar>  
+  <NombreConexion>SQL-NEO</NombreConexion>  
+  <IdCia>1</IdCia> 
+  <Usuario>jairc</Usuario> 
+  <Clave>jairc</Clave> 
+  <Datos>
+    <Linea>000000100000001001</Linea>
+    <Linea>000000202000002001180431764       80431764        C1CARDENAS MARTINEZ JAIR GUSTAVO                    CARDENAS       MARTINEZ       JAIR GUSTAVO        CARDENAS MARTINEZ JAIR GUSTAVO                    111000JAIR GUSTAVO CARDENAS MARTINEZ                    AV. 3A NORTE No. 26N-83                                                                                                 16976001                                        6534343                                           Jairc@siesa.com                                   20101008</Linea>
+    <Linea>000999999990001001</Linea>
+  </Datos> 
+</Importar>

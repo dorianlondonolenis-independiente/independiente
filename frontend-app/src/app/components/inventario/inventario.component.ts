@@ -86,6 +86,7 @@ import { HttpClient } from '@angular/common/http';
                   <th>Referencia</th>
                   <th>Producto</th>
                   <th>Bodega</th>
+                  <th class="text-center">Estado Bodega</th>
                   <th class="text-end">Existencia</th>
                   <th class="text-end">Costo Uni.</th>
                   <th class="text-end">Valor Total</th>
@@ -97,6 +98,11 @@ import { HttpClient } from '@angular/common/http';
                   <td><code class="text-primary">{{ row.referencia }}</code></td>
                   <td>{{ row.producto }}</td>
                   <td><span class="badge bg-secondary bg-opacity-10 text-dark">{{ row.bodega_id }} - {{ row.bodega }}</span></td>
+                  <td class="text-center">
+                    <span class="badge rounded-pill" [class.bg-success]="row.bodega_estado === 1" [class.bg-danger]="row.bodega_estado !== 1">
+                      {{ row.bodega_estado === 1 ? 'Activa' : 'Inactiva' }}
+                    </span>
+                  </td>
                   <td class="text-end fw-semibold" [class.text-danger]="row.existencia <= 0">{{ formatNum(row.existencia) }}</td>
                   <td class="text-end">{{ formatMoney(row.costo_unitario) }}</td>
                   <td class="text-end fw-semibold">{{ formatMoney(row.valor_total) }}</td>

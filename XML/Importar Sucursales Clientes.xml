@@ -1,0 +1,12 @@
+<Importar>  
+  <NombreConexion>SQL-NEO</NombreConexion>  
+  <IdCia>1</IdCia> 
+  <Usuario>jairc</Usuario> 
+  <Clave>jairc</Clave> 
+  <Datos>
+    <Linea>000000100000001001</Linea>
+    <Linea>000000202010003001180431764       0071CARDENAS MARTINEZ JAIR GUSTAVO(BOGOTA)  COP092 A30D365+000000000000000.0000                  0001D1  00100050.000000.000100.01001001                                                                                                                                                                                                                                                                CONTACTO 1                                        DIRECCION 1                                                                                                             COL76001SAN VICENTE                             TEL 1               FAX 1               POSTAL 1  EMAIL 1                                           20080117</Linea>
+    <Linea>000000302010003001180431764       0111CARDENAS MARTINEZ JAIR GUSTAVO BOGOTA   COP    A30D000+000000099999999.0000                  0001D1  00100000.000000.000100.000000                                                                                                                                                                                                                                                                  JAIR GUSTAVO CARDENAS MARTINEZ                    AV. 3A NORTE No. 26N-83                                                                                                 COL11001                                        6534343                                           Jairc@siesa.com                                   20071016</Linea>
+    <Linea>000000499990001001</Linea>
+  </Datos> 
+</Importar>

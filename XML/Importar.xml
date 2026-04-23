@@ -1,0 +1,19 @@
+<Importar>  
+  <NombreConexion>SQL-NEO</NombreConexion>  
+  <IdCia>1</IdCia> 
+  <Usuario>jairc</Usuario> 
+  <Clave>jairc</Clave> 
+  <Datos> 
+	  <Linea>000000100000001001</Linea> 
+	  <Linea>000000200460001001116786088       00100101    </Linea> 
+	  <Linea>000000300460001001180431764       09900101    </Linea> 
+	  <Linea>000000400460001001100000          00100201    </Linea> 
+	  <Linea>000000500460001001180431764       00100101    </Linea> 
+	  <Linea>000000600460001001180431764       00500201    </Linea> 
+	  <Linea>000000700460001001120040129       00100101    </Linea> 
+	  <Linea>000000800460001001180431764       01100201    </Linea> 
+	  <Linea>000000900460001001114890621       00100101    </Linea> 
+	  <Linea>000001000460001001114890621       00200101    </Linea> 
+	  <Linea>000001199990001001</Linea> 
+  </Datos> 
+</Importar>

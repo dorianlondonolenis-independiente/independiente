@@ -133,6 +133,20 @@ import { HttpClient } from '@angular/common/http';
 
       <!-- Facturas -->
       <div *ngIf="tab() === 'facturas'">
+        <div class="card border-0 shadow-sm mb-3">
+          <div class="card-body py-3">
+            <div class="row g-2 align-items-end">
+              <div class="col-md-4">
+                <input type="text" class="form-control form-control-sm" placeholder="Buscar nit o razón social..."
+                       [(ngModel)]="filtrosFacturas.buscar" (keyup.enter)="cargarFacturas()">
+              </div>
+              <div class="col-auto">
+                <button class="btn btn-sm btn-primary" (click)="cargarFacturas()"><i class="bi bi-search"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="card border-0 shadow-sm">
           <div class="card-body p-0">
             <div *ngIf="loadingFacturas()" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
@@ -160,6 +174,13 @@ import { HttpClient } from '@angular/common/http';
             </div>
             <div *ngIf="!loadingFacturas() && facturas().length === 0" class="text-center py-5 text-muted">
               <i class="bi bi-inbox display-4"></i><p class="mt-2">Sin facturas</p>
+            </div>
+          </div>
+          <div class="card-footer bg-white d-flex justify-content-between" *ngIf="totalFacturas() > 0">
+            <small class="text-muted">{{ facturas().length }} de {{ totalFacturas() }}</small>
+            <div>
+              <button class="btn btn-sm btn-outline-primary me-1" [disabled]="offsetFacturas() === 0" (click)="paginarFacturas(-1)">Anterior</button>
+              <button class="btn btn-sm btn-outline-primary" [disabled]="offsetFacturas() + 100 >= totalFacturas()" (click)="paginarFacturas(1)">Siguiente</button>
             </div>
           </div>
         </div>
@@ -237,6 +258,9 @@ export class VentasComponent implements OnInit {
   // Facturas
   loadingFacturas = signal(false);
   facturas = signal<any[]>([]);
+  totalFacturas = signal(0);
+  offsetFacturas = signal(0);
+  filtrosFacturas = { buscar: '' };
 
   // Detalle
   detalleVisible = signal(false);
@@ -262,10 +286,18 @@ export class VentasComponent implements OnInit {
 
   cargarFacturas() {
     this.loadingFacturas.set(true);
-    this.http.get<any>(`${this.api}/facturas`, { params: { limit: 100 } }).subscribe({
-      next: (r) => { this.facturas.set(r.datos || []); this.loadingFacturas.set(false); },
+    const params: any = { limit: 100, offset: this.offsetFacturas() };
+    if (this.filtrosFacturas.buscar) params.buscar = this.filtrosFacturas.buscar;
+
+    this.http.get<any>(`${this.api}/facturas`, { params }).subscribe({
+      next: (r) => { this.facturas.set(r.datos || []); this.totalFacturas.set(r.total || 0); this.loadingFacturas.set(false); },
       error: () => this.loadingFacturas.set(false),
     });
+  }
+
+  paginarFacturas(dir: number) {
+    this.offsetFacturas.set(Math.max(0, this.offsetFacturas() + dir * 100));
+    this.cargarFacturas();
   }
 
   verDetallePedido(rowid: number) {

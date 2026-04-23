@@ -12,6 +12,7 @@ import { CarteraComponent } from './components/cartera/cartera.component';
 import { KardexComponent } from './components/kardex/kardex.component';
 import { TercerosComponent } from './components/terceros/terceros.component';
 import { BulkUploadComponent } from './components/bulk-upload/bulk-upload.component';
+import { SiesaXmlComponent } from './components/siesa-xml/siesa-xml.component';
 
 export const routes: Routes = [
   {
@@ -61,6 +62,10 @@ export const routes: Routes = [
   {
     path: 'bulk-upload',
     component: BulkUploadComponent
+  },
+  {
+    path: 'siesa-xml',
+    component: SiesaXmlComponent
   },
   {
     path: 'test',

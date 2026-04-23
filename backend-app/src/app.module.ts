@@ -28,6 +28,8 @@ import { TercerosController } from './controllers/terceros/terceros.controller';
 import { TercerosService } from './services/terceros/terceros.service';
 import { BulkUploadController } from './controllers/bulk-upload/bulk-upload.controller';
 import { BulkUploadService } from './services/bulk-upload/bulk-upload.service';
+import { SiesaXmlController } from './controllers/siesa-xml/siesa-xml.controller';
+import { SiesaXmlService } from './services/siesa-xml/siesa-xml.service';
 
 @Module({
   imports: [
@@ -66,12 +68,12 @@ import { BulkUploadService } from './services/bulk-upload/bulk-upload.service';
   controllers: [
     AppController, MetadataController, DataController, QueriesController,
     MaestrasController, InventarioController, VentasController, ComprasController,
-    CarteraController, KardexController, TercerosController, BulkUploadController,
+    CarteraController, KardexController, TercerosController, BulkUploadController, SiesaXmlController,
   ],
   providers: [
     AppService, MetadataService, DataService, QueriesService,
     MaestrasService, InventarioService, VentasService, ComprasService,
-    CarteraService, KardexService, TercerosService, BulkUploadService,
+    CarteraService, KardexService, TercerosService, BulkUploadService, SiesaXmlService,
   ],
 })
 export class AppModule {}

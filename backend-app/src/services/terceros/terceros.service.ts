@@ -99,16 +99,16 @@ export class TercerosService {
     // Saldos abiertos del tercero
     const saldos = await this.dataSource.query(`
       SELECT TOP 20
-        s.f353_id_tipo_docto as tipo_docto,
-        s.f353_consec_docto as consecutivo,
-        s.f353_fecha_docto as fecha_documento,
+        s.f353_id_tipo_docto_cruce as tipo_docto,
+        s.f353_consec_docto_cruce as consecutivo,
+        s.f353_fecha as fecha_documento,
         s.f353_fecha_vcto as fecha_vencimiento,
-        s.f353_vlr_saldo as saldo,
-        s.f353_vlr_documento as valor_documento,
-        s.f353_ind_db_cr as tipo_saldo
+        (s.f353_total_db - s.f353_total_cr) as saldo,
+        (s.f353_total_db + s.f353_total_cr) as valor_documento,
+        CASE WHEN (s.f353_total_db - s.f353_total_cr) > 0 THEN 'DB' ELSE 'CR' END as tipo_saldo
       FROM t353_co_saldo_abierto s
       WHERE s.f353_rowid_tercero = @0
-        AND s.f353_vlr_saldo <> 0
+        AND (s.f353_total_db - s.f353_total_cr) <> 0
       ORDER BY s.f353_fecha_vcto DESC
     `, [rowid]);
 

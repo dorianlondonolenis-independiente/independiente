@@ -160,7 +160,8 @@ export class VentasService {
     const datos = await this.dataSource.query(`
       SELECT
         f.f461_rowid_docto as rowid,
-        f.f461_id_clase_docto as tipo_docto,
+        d.f350_id_tipo_docto as tipo_docto,
+        d.f350_consec_docto as consecutivo,
         f.f461_id_fecha as fecha,
         t.f200_razon_social as cliente,
         t.f200_nit as nit,
@@ -168,6 +169,7 @@ export class VentasService {
         f.f461_vlr_neto as valor
       FROM t461_cm_docto_factura_venta f
       LEFT JOIN t200_mm_terceros t ON f.f461_rowid_tercero_fact = t.f200_rowid
+      LEFT JOIN t350_co_docto_contable d ON f.f461_rowid_docto = d.f350_rowid
       ${where}
       ORDER BY f.f461_id_fecha DESC
       OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
