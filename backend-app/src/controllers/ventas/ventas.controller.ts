@@ -65,4 +65,44 @@ export class VentasController {
       throw new HttpException({ message: error.message }, error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  @ApiOperation({ summary: 'Remisiones de venta' })
+  @Get('remisiones')
+  async getRemisiones(
+    @Query('buscar') buscar?: string,
+    @Query('fechaDesde') fechaDesde?: string,
+    @Query('fechaHasta') fechaHasta?: string,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
+    try {
+      return await this.ventasService.getRemisiones({
+        buscar, fechaDesde, fechaHasta,
+        limit: limit ? parseInt(limit, 10) : 100,
+        offset: offset ? parseInt(offset, 10) : 0,
+      });
+    } catch (error) {
+      throw new HttpException({ message: error.message }, error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @ApiOperation({ summary: 'Devoluciones de venta' })
+  @Get('devoluciones')
+  async getDevoluciones(
+    @Query('buscar') buscar?: string,
+    @Query('fechaDesde') fechaDesde?: string,
+    @Query('fechaHasta') fechaHasta?: string,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
+    try {
+      return await this.ventasService.getDevoluciones({
+        buscar, fechaDesde, fechaHasta,
+        limit: limit ? parseInt(limit, 10) : 100,
+        offset: offset ? parseInt(offset, 10) : 0,
+      });
+    } catch (error) {
+      throw new HttpException({ message: error.message }, error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 }

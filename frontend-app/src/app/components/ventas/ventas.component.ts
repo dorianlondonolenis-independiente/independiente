@@ -54,6 +54,16 @@ import { HttpClient } from '@angular/common/http';
             <i class="bi bi-receipt me-1"></i>Facturas
           </a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="tab() === 'remisiones'" (click)="tab.set('remisiones'); cargarRemisiones()" role="button">
+            <i class="bi bi-truck me-1"></i>Remisiones
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="tab() === 'devoluciones'" (click)="tab.set('devoluciones'); cargarDevoluciones()" role="button">
+            <i class="bi bi-arrow-return-left me-1"></i>Devoluciones
+          </a>
+        </li>
       </ul>
 
       <!-- Pedidos -->
@@ -91,6 +101,7 @@ import { HttpClient } from '@angular/common/http';
                     <th>Cliente</th>
                     <th>Sucursal</th>
                     <th>Motivo</th>
+                    <th>Descripción Motivo</th>
                     <th class="text-end">Valor Bruto</th>
                     <th class="text-end">Valor Neto</th>
                     <th class="text-center">Estado</th>
@@ -105,6 +116,7 @@ import { HttpClient } from '@angular/common/http';
                     <td>{{ p.cliente }}</td>
                     <td>{{ p.sucursal || '-' }}</td>
                     <td>{{ p.motivo || '-' }}</td>
+                    <td>{{ p.motivo_descripcion || '-' }}</td>
                     <td class="text-end">\${{ p.valor_bruto | number:'1.0-0' }}</td>
                     <td class="text-end fw-semibold">\${{ p.valor_neto | number:'1.0-0' }}</td>
                     <td class="text-center">
@@ -163,6 +175,8 @@ import { HttpClient } from '@angular/common/http';
                     <th>Fecha</th>
                     <th>Cliente</th>
                     <th>Sucursal</th>
+                    <th>Motivo</th>
+                    <th>Descripción Motivo</th>
                     <th class="text-end">Valor</th>
                   </tr>
                 </thead>
@@ -173,6 +187,8 @@ import { HttpClient } from '@angular/common/http';
                     <td>{{ f.fecha | date:'dd/MM/yyyy' }}</td>
                     <td>{{ f.cliente }}</td>
                     <td>{{ f.sucursal || '-' }}</td>
+                    <td>{{ f.motivo || '-' }}</td>
+                    <td>{{ f.motivo_descripcion || '-' }}</td>
                     <td class="text-end fw-semibold">\${{ f.valor | number:'1.0-0' }}</td>
                   </tr>
                 </tbody>
@@ -187,6 +203,146 @@ import { HttpClient } from '@angular/common/http';
             <div>
               <button class="btn btn-sm btn-outline-primary me-1" [disabled]="offsetFacturas() === 0" (click)="paginarFacturas(-1)">Anterior</button>
               <button class="btn btn-sm btn-outline-primary" [disabled]="offsetFacturas() + 100 >= totalFacturas()" (click)="paginarFacturas(1)">Siguiente</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Remisiones -->
+      <div *ngIf="tab() === 'remisiones'">
+        <div class="card border-0 shadow-sm mb-3">
+          <div class="card-body py-3">
+            <div class="row g-2 align-items-end">
+              <div class="col-md-3">
+                <input type="text" class="form-control form-control-sm" placeholder="Buscar nit o raz&oacute;n social..."
+                       [(ngModel)]="filtrosRemisiones.buscar" (keyup.enter)="cargarRemisiones()">
+              </div>
+              <div class="col-md-2">
+                <input type="date" class="form-control form-control-sm" [(ngModel)]="filtrosRemisiones.fechaDesde">
+              </div>
+              <div class="col-md-2">
+                <input type="date" class="form-control form-control-sm" [(ngModel)]="filtrosRemisiones.fechaHasta">
+              </div>
+              <div class="col-auto">
+                <button class="btn btn-sm btn-primary" (click)="cargarRemisiones()"><i class="bi bi-search"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-0">
+            <div *ngIf="loadingRemisiones()" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+            <div class="table-responsive" *ngIf="!loadingRemisiones() && remisiones().length > 0">
+              <table class="table table-hover table-sm mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Tipo Doc</th>
+                    <th>Consecutivo</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Sucursal</th>
+                    <th class="text-center">Estado</th>
+                    <th class="text-end">Valor Bruto</th>
+                    <th class="text-end">Valor Neto</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let r of remisiones()">
+                    <td><code>{{ r.tipo_docto }}</code></td>
+                    <td class="fw-semibold">{{ r.consecutivo }}</td>
+                    <td>{{ r.fecha | date:'dd/MM/yyyy' }}</td>
+                    <td>{{ r.cliente }}</td>
+                    <td>{{ r.sucursal || '-' }}</td>
+                    <td class="text-center">
+                      <span class="badge rounded-pill" [class.bg-success]="r.estado === 1" [class.bg-warning]="r.estado !== 1">
+                        {{ r.estado === 1 ? 'Facturado' : 'Pendiente' }}
+                      </span>
+                    </td>
+                    <td class="text-end">\${{ r.valor_bruto | number:'1.0-0' }}</td>
+                    <td class="text-end fw-semibold">\${{ r.valor_neto | number:'1.0-0' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div *ngIf="!loadingRemisiones() && remisiones().length === 0" class="text-center py-5 text-muted">
+              <i class="bi bi-inbox display-4"></i><p class="mt-2">Sin remisiones</p>
+            </div>
+          </div>
+          <div class="card-footer bg-white d-flex justify-content-between" *ngIf="totalRemisiones() > 0">
+            <small class="text-muted">{{ remisiones().length }} de {{ totalRemisiones() }}</small>
+            <div>
+              <button class="btn btn-sm btn-outline-primary me-1" [disabled]="offsetRemisiones() === 0" (click)="paginarRemisiones(-1)">Anterior</button>
+              <button class="btn btn-sm btn-outline-primary" [disabled]="offsetRemisiones() + 100 >= totalRemisiones()" (click)="paginarRemisiones(1)">Siguiente</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Devoluciones -->
+      <div *ngIf="tab() === 'devoluciones'">
+        <div class="card border-0 shadow-sm mb-3">
+          <div class="card-body py-3">
+            <div class="row g-2 align-items-end">
+              <div class="col-md-3">
+                <input type="text" class="form-control form-control-sm" placeholder="Buscar nit o raz&oacute;n social..."
+                       [(ngModel)]="filtrosDevoluciones.buscar" (keyup.enter)="cargarDevoluciones()">
+              </div>
+              <div class="col-md-2">
+                <input type="date" class="form-control form-control-sm" [(ngModel)]="filtrosDevoluciones.fechaDesde">
+              </div>
+              <div class="col-md-2">
+                <input type="date" class="form-control form-control-sm" [(ngModel)]="filtrosDevoluciones.fechaHasta">
+              </div>
+              <div class="col-auto">
+                <button class="btn btn-sm btn-primary" (click)="cargarDevoluciones()"><i class="bi bi-search"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-0">
+            <div *ngIf="loadingDevoluciones()" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+            <div class="table-responsive" *ngIf="!loadingDevoluciones() && devoluciones().length > 0">
+              <table class="table table-hover table-sm mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Tipo Doc</th>
+                    <th>Consecutivo</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Sucursal</th>
+                    <th class="text-center">Estado</th>
+                    <th class="text-end">Valor Bruto</th>
+                    <th class="text-end">Valor Neto</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let d of devoluciones()">
+                    <td><code>{{ d.tipo_docto }}</code></td>
+                    <td class="fw-semibold">{{ d.consecutivo }}</td>
+                    <td>{{ d.fecha | date:'dd/MM/yyyy' }}</td>
+                    <td>{{ d.cliente }}</td>
+                    <td>{{ d.sucursal || '-' }}</td>
+                    <td class="text-center">
+                      <span class="badge rounded-pill" [class.bg-danger]="d.estado === 1" [class.bg-secondary]="d.estado !== 1">
+                        {{ d.estado === 1 ? 'Aplicada' : 'Pendiente' }}
+                      </span>
+                    </td>
+                    <td class="text-end">\${{ d.valor_bruto | number:'1.0-0' }}</td>
+                    <td class="text-end fw-semibold">\${{ d.valor_neto | number:'1.0-0' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div *ngIf="!loadingDevoluciones() && devoluciones().length === 0" class="text-center py-5 text-muted">
+              <i class="bi bi-inbox display-4"></i><p class="mt-2">Sin devoluciones</p>
+            </div>
+          </div>
+          <div class="card-footer bg-white d-flex justify-content-between" *ngIf="totalDevoluciones() > 0">
+            <small class="text-muted">{{ devoluciones().length }} de {{ totalDevoluciones() }}</small>
+            <div>
+              <button class="btn btn-sm btn-outline-primary me-1" [disabled]="offsetDevoluciones() === 0" (click)="paginarDevoluciones(-1)">Anterior</button>
+              <button class="btn btn-sm btn-outline-primary" [disabled]="offsetDevoluciones() + 100 >= totalDevoluciones()" (click)="paginarDevoluciones(1)">Siguiente</button>
             </div>
           </div>
         </div>
@@ -251,7 +407,7 @@ export class VentasComponent implements OnInit {
   private http = inject(HttpClient);
   private api = 'http://localhost:3000/api/ventas';
 
-  tab = signal<'pedidos' | 'facturas'>('pedidos');
+  tab = signal<'pedidos' | 'facturas' | 'remisiones' | 'devoluciones'>('pedidos');
   stats = signal<any>(null);
 
   // Pedidos
@@ -267,6 +423,20 @@ export class VentasComponent implements OnInit {
   totalFacturas = signal(0);
   offsetFacturas = signal(0);
   filtrosFacturas = { buscar: '' };
+
+  // Remisiones
+  loadingRemisiones = signal(false);
+  remisiones = signal<any[]>([]);
+  totalRemisiones = signal(0);
+  offsetRemisiones = signal(0);
+  filtrosRemisiones = { buscar: '', fechaDesde: '', fechaHasta: '' };
+
+  // Devoluciones
+  loadingDevoluciones = signal(false);
+  devoluciones = signal<any[]>([]);
+  totalDevoluciones = signal(0);
+  offsetDevoluciones = signal(0);
+  filtrosDevoluciones = { buscar: '', fechaDesde: '', fechaHasta: '' };
 
   // Detalle
   detalleVisible = signal(false);
@@ -316,5 +486,39 @@ export class VentasComponent implements OnInit {
   paginarPedidos(dir: number) {
     this.offsetPedidos.set(Math.max(0, this.offsetPedidos() + dir * 100));
     this.cargarPedidos();
+  }
+
+  cargarRemisiones() {
+    this.loadingRemisiones.set(true);
+    const params: any = { limit: 100, offset: this.offsetRemisiones() };
+    if (this.filtrosRemisiones.buscar) params.buscar = this.filtrosRemisiones.buscar;
+    if (this.filtrosRemisiones.fechaDesde) params.fechaDesde = this.filtrosRemisiones.fechaDesde;
+    if (this.filtrosRemisiones.fechaHasta) params.fechaHasta = this.filtrosRemisiones.fechaHasta;
+    this.http.get<any>(`${this.api}/remisiones`, { params }).subscribe({
+      next: (r) => { this.remisiones.set(r.datos || []); this.totalRemisiones.set(r.total || 0); this.loadingRemisiones.set(false); },
+      error: () => this.loadingRemisiones.set(false),
+    });
+  }
+
+  paginarRemisiones(dir: number) {
+    this.offsetRemisiones.set(Math.max(0, this.offsetRemisiones() + dir * 100));
+    this.cargarRemisiones();
+  }
+
+  cargarDevoluciones() {
+    this.loadingDevoluciones.set(true);
+    const params: any = { limit: 100, offset: this.offsetDevoluciones() };
+    if (this.filtrosDevoluciones.buscar) params.buscar = this.filtrosDevoluciones.buscar;
+    if (this.filtrosDevoluciones.fechaDesde) params.fechaDesde = this.filtrosDevoluciones.fechaDesde;
+    if (this.filtrosDevoluciones.fechaHasta) params.fechaHasta = this.filtrosDevoluciones.fechaHasta;
+    this.http.get<any>(`${this.api}/devoluciones`, { params }).subscribe({
+      next: (r) => { this.devoluciones.set(r.datos || []); this.totalDevoluciones.set(r.total || 0); this.loadingDevoluciones.set(false); },
+      error: () => this.loadingDevoluciones.set(false),
+    });
+  }
+
+  paginarDevoluciones(dir: number) {
+    this.offsetDevoluciones.set(Math.max(0, this.offsetDevoluciones() + dir * 100));
+    this.cargarDevoluciones();
   }
 }

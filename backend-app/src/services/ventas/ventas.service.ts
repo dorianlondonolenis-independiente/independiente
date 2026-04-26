@@ -82,10 +82,12 @@ export class VentasService {
         d.f430_notas as notas,
         d.f430_id_sucursal_fact as sucursal,
         d.f430_id_motivo_otros as motivo,
+        mot.f1461_descripcion as motivo_descripcion,
         ISNULL(totales.vlr_bruto, 0) as valor_bruto,
         ISNULL(totales.vlr_neto, 0) as valor_neto
       FROM t430_cm_pv_docto d
       LEFT JOIN t200_mm_terceros t ON d.f430_rowid_tercero_fact = t.f200_rowid
+      LEFT JOIN t1461_mc_motivos_otros mot ON mot.f1461_id = d.f430_id_motivo_otros AND mot.f1461_id_cia = 1
       LEFT JOIN (
         SELECT f431_rowid_pv_docto, SUM(f431_vlr_bruto) as vlr_bruto, SUM(f431_vlr_neto) as vlr_neto
         FROM t431_cm_pv_movto GROUP BY f431_rowid_pv_docto
@@ -147,7 +149,7 @@ export class VentasService {
     let paramIdx = 0;
 
     if (filters?.buscar) {
-      where += ` AND (t.f200_razon_social LIKE @${paramIdx} OR t.f200_nit LIKE @${paramIdx})`;
+      where += ` AND (t.f200_razon_social LIKE @${paramIdx} OR t.f200_nit LIKE @${paramIdx} OR CAST(d.f350_consec_docto AS VARCHAR) LIKE @${paramIdx})`;
       params.push(`%${filters.buscar}%`);
       paramIdx++;
     }
@@ -156,6 +158,7 @@ export class VentasService {
       SELECT COUNT(*) as total
       FROM t461_cm_docto_factura_venta f
       LEFT JOIN t200_mm_terceros t ON f.f461_rowid_tercero_fact = t.f200_rowid
+      LEFT JOIN t350_co_docto_contable d ON f.f461_rowid_docto = d.f350_rowid
       ${where}
     `, params);
 
@@ -168,13 +171,138 @@ export class VentasService {
         t.f200_razon_social as cliente,
         t.f200_nit as nit,
         f.f461_id_sucursal_fact as sucursal,
+        d.f350_id_motivo_otros as motivo,
+        mot.f1461_descripcion as motivo_descripcion,
         f.f461_vlr_bruto as valor_bruto,
         f.f461_vlr_neto as valor
       FROM t461_cm_docto_factura_venta f
       LEFT JOIN t200_mm_terceros t ON f.f461_rowid_tercero_fact = t.f200_rowid
       LEFT JOIN t350_co_docto_contable d ON f.f461_rowid_docto = d.f350_rowid
+      LEFT JOIN t1461_mc_motivos_otros mot ON mot.f1461_id = d.f350_id_motivo_otros AND mot.f1461_id_cia = 1
       ${where}
       ORDER BY f.f461_id_fecha DESC
+      OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
+    `, params);
+
+    return { total: countResult[0]?.total || 0, datos, limit, offset };
+  }
+
+  async getRemisiones(filters?: {
+    buscar?: string;
+    fechaDesde?: string;
+    fechaHasta?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<any> {
+    const limit = filters?.limit || 100;
+    const offset = filters?.offset || 0;
+
+    let where = 'WHERE 1=1';
+    const params: any[] = [];
+    let paramIdx = 0;
+
+    if (filters?.buscar) {
+      where += ` AND (t.f200_razon_social LIKE @${paramIdx} OR t.f200_nit LIKE @${paramIdx} OR CAST(d.f350_consec_docto AS VARCHAR) LIKE @${paramIdx})`;
+      params.push(`%${filters.buscar}%`);
+      paramIdx++;
+    }
+    if (filters?.fechaDesde) {
+      where += ` AND r.f460_id_fecha >= @${paramIdx}`;
+      params.push(filters.fechaDesde);
+      paramIdx++;
+    }
+    if (filters?.fechaHasta) {
+      where += ` AND r.f460_id_fecha <= @${paramIdx}`;
+      params.push(filters.fechaHasta);
+      paramIdx++;
+    }
+
+    const countResult = await this.dataSource.query(`
+      SELECT COUNT(*) as total
+      FROM t460_cm_docto_remision_venta r
+      LEFT JOIN t200_mm_terceros t ON r.f460_rowid_tercero_fact = t.f200_rowid
+      LEFT JOIN t350_co_docto_contable d ON r.f460_rowid_docto = d.f350_rowid
+      ${where}
+    `, params);
+
+    const datos = await this.dataSource.query(`
+      SELECT
+        r.f460_rowid_docto as rowid,
+        d.f350_id_tipo_docto as tipo_docto,
+        d.f350_consec_docto as consecutivo,
+        r.f460_id_fecha as fecha,
+        t.f200_razon_social as cliente,
+        t.f200_nit as nit,
+        r.f460_id_sucursal_fact as sucursal,
+        r.f460_ind_estado_cm as estado,
+        r.f460_vlr_bruto as valor_bruto,
+        r.f460_vlr_neto as valor_neto
+      FROM t460_cm_docto_remision_venta r
+      LEFT JOIN t200_mm_terceros t ON r.f460_rowid_tercero_fact = t.f200_rowid
+      LEFT JOIN t350_co_docto_contable d ON r.f460_rowid_docto = d.f350_rowid
+      ${where}
+      ORDER BY r.f460_id_fecha DESC
+      OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
+    `, params);
+
+    return { total: countResult[0]?.total || 0, datos, limit, offset };
+  }
+
+  async getDevoluciones(filters?: {
+    buscar?: string;
+    fechaDesde?: string;
+    fechaHasta?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<any> {
+    const limit = filters?.limit || 100;
+    const offset = filters?.offset || 0;
+
+    let where = 'WHERE r.f460_rowid_docto_fact_base IS NOT NULL';
+    const params: any[] = [];
+    let paramIdx = 0;
+
+    if (filters?.buscar) {
+      where += ` AND (t.f200_razon_social LIKE @${paramIdx} OR t.f200_nit LIKE @${paramIdx} OR CAST(d.f350_consec_docto AS VARCHAR) LIKE @${paramIdx})`;
+      params.push(`%${filters.buscar}%`);
+      paramIdx++;
+    }
+    if (filters?.fechaDesde) {
+      where += ` AND r.f460_id_fecha >= @${paramIdx}`;
+      params.push(filters.fechaDesde);
+      paramIdx++;
+    }
+    if (filters?.fechaHasta) {
+      where += ` AND r.f460_id_fecha <= @${paramIdx}`;
+      params.push(filters.fechaHasta);
+      paramIdx++;
+    }
+
+    const countResult = await this.dataSource.query(`
+      SELECT COUNT(*) as total
+      FROM t460_cm_docto_remision_venta r
+      LEFT JOIN t200_mm_terceros t ON r.f460_rowid_tercero_fact = t.f200_rowid
+      LEFT JOIN t350_co_docto_contable d ON r.f460_rowid_docto = d.f350_rowid
+      ${where}
+    `, params);
+
+    const datos = await this.dataSource.query(`
+      SELECT
+        r.f460_rowid_docto as rowid,
+        d.f350_id_tipo_docto as tipo_docto,
+        d.f350_consec_docto as consecutivo,
+        r.f460_id_fecha as fecha,
+        t.f200_razon_social as cliente,
+        t.f200_nit as nit,
+        r.f460_id_sucursal_fact as sucursal,
+        r.f460_ind_estado_cm as estado,
+        r.f460_vlr_bruto as valor_bruto,
+        r.f460_vlr_neto as valor_neto
+      FROM t460_cm_docto_remision_venta r
+      LEFT JOIN t200_mm_terceros t ON r.f460_rowid_tercero_fact = t.f200_rowid
+      LEFT JOIN t350_co_docto_contable d ON r.f460_rowid_docto = d.f350_rowid
+      ${where}
+      ORDER BY r.f460_id_fecha DESC
       OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
     `, params);
 
