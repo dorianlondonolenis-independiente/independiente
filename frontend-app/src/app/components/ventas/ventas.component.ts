@@ -100,11 +100,11 @@ import { HttpClient } from '@angular/common/http';
                     <th>Fecha</th>
                     <th>Cliente</th>
                     <th>Sucursal</th>
-                    <th>Motivo</th>
-                    <th>Descripción Motivo</th>
+                    <!-- Motivo y Descripción Motivo eliminados -->
                     <th class="text-end">Valor Bruto</th>
                     <th class="text-end">Valor Neto</th>
                     <th class="text-center">Estado</th>
+                    <th></th>
                     <th></th>
                   </tr>
                 </thead>
@@ -115,8 +115,7 @@ import { HttpClient } from '@angular/common/http';
                     <td>{{ p.fecha | date:'dd/MM/yyyy' }}</td>
                     <td>{{ p.cliente }}</td>
                     <td>{{ p.sucursal || '-' }}</td>
-                    <td>{{ p.motivo || '-' }}</td>
-                    <td>{{ p.motivo_descripcion || '-' }}</td>
+                    <!-- Motivo y Descripción Motivo eliminados -->
                     <td class="text-end">\${{ p.valor_bruto | number:'1.0-0' }}</td>
                     <td class="text-end fw-semibold">\${{ p.valor_neto | number:'1.0-0' }}</td>
                     <td class="text-center">
@@ -125,7 +124,7 @@ import { HttpClient } from '@angular/common/http';
                       </span>
                     </td>
                     <td>
-                      <button class="btn btn-sm btn-outline-primary py-0" (click)="verDetallePedido(p.rowid)">
+                      <button class="btn btn-sm btn-outline-primary py-0" (click)="irDetallePedido(p.rowid)">
                         <i class="bi bi-eye"></i>
                       </button>
                     </td>
@@ -175,8 +174,7 @@ import { HttpClient } from '@angular/common/http';
                     <th>Fecha</th>
                     <th>Cliente</th>
                     <th>Sucursal</th>
-                    <th>Motivo</th>
-                    <th>Descripción Motivo</th>
+                    <!-- Motivo y Descripción Motivo eliminados -->
                     <th class="text-end">Valor</th>
                     <th></th>
                   </tr>
@@ -188,11 +186,10 @@ import { HttpClient } from '@angular/common/http';
                     <td>{{ f.fecha | date:'dd/MM/yyyy' }}</td>
                     <td>{{ f.cliente }}</td>
                     <td>{{ f.sucursal || '-' }}</td>
-                    <td>{{ f.motivo || '-' }}</td>
-                    <td>{{ f.motivo_descripcion || '-' }}</td>
+                    <!-- Motivo y Descripción Motivo eliminados -->
                     <td class="text-end fw-semibold">\${{ f.valor | number:'1.0-0' }}</td>
                     <td>
-                      <button class="btn btn-sm btn-outline-primary py-0" (click)="verDetalleFactura(f.rowid)">
+                      <button class="btn btn-sm btn-outline-primary py-0" (click)="irDetalleFactura(f.rowid)">
                         <i class="bi bi-eye"></i>
                       </button>
                     </td>
@@ -266,6 +263,12 @@ import { HttpClient } from '@angular/common/http';
                     </td>
                     <td class="text-end">\${{ r.valor_bruto | number:'1.0-0' }}</td>
                     <td class="text-end fw-semibold">\${{ r.valor_neto | number:'1.0-0' }}</td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary py-0" (click)="irDetalleRemision(r.rowid)">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                    </td>
+                    <th></th>
                   </tr>
                 </tbody>
               </table>
@@ -336,6 +339,18 @@ import { HttpClient } from '@angular/common/http';
                     </td>
                     <td class="text-end">\${{ d.valor_bruto | number:'1.0-0' }}</td>
                     <td class="text-end fw-semibold">\${{ d.valor_neto | number:'1.0-0' }}</td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary py-0" (click)="irDetalleDevolucion(d.rowid)">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                    </td>
+                    irDetalleRemision(rowid: number) {
+                      this.router.navigate(['/ventas/remision', rowid]);
+                    }
+
+                    irDetalleDevolucion(rowid: number) {
+                      this.router.navigate(['/ventas/devolucion', rowid]);
+                    }
                   </tr>
                 </tbody>
               </table>
@@ -545,18 +560,13 @@ export class VentasComponent implements OnInit {
     this.cargarFacturas();
   }
 
-  verDetallePedido(rowid: number) {
-    this.http.get<any>(`${this.api}/pedidos/${rowid}`).subscribe(d => {
-      this.detalleData.set(d);
-      this.detalleVisible.set(true);
-    });
+
+  irDetallePedido(rowid: number) {
+    this.router.navigate(['/ventas/pedido', rowid]);
   }
 
-  verDetalleFactura(rowid: number) {
-    this.http.get<any>(`${this.api}/facturas/${rowid}`).subscribe(d => {
-      this.detalleFacturaData.set(d);
-      this.detalleFacturaVisible.set(true);
-    });
+  irDetalleFactura(rowid: number) {
+    this.router.navigate(['/ventas/factura', rowid]);
   }
 
   paginarPedidos(dir: number) {

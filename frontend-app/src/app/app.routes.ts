@@ -14,10 +14,32 @@ import { TercerosComponent } from './components/terceros/terceros.component';
 import { BulkUploadComponent } from './components/bulk-upload/bulk-upload.component';
 import { SiesaXmlComponent } from './components/siesa-xml/siesa-xml.component';
 
+// Importar componentes de detalle
+import { DetalleFacturaComponent } from './features/ventas/detalle-factura.component';
+import { DetallePedidoComponent } from './features/ventas/detalle-pedido.component';
+import { DetalleRemisionComponent } from './features/ventas/detalle-remision.component';
+import { DetalleDevolucionComponent } from './features/ventas/detalle-devolucion.component';
+
 export const routes: Routes = [
   {
     path: 'dashboard',
     component: DashboardComponent
+  },
+  {
+    path: 'ventas/factura/:rowid',
+    component: DetalleFacturaComponent
+  },
+  {
+    path: 'ventas/pedido/:rowid',
+    component: DetallePedidoComponent
+  },
+  {
+    path: 'ventas/remision/:rowid',
+    component: DetalleRemisionComponent
+  },
+  {
+    path: 'ventas/devolucion/:rowid',
+    component: DetalleDevolucionComponent
   },
   {
     path: 'tables',
