@@ -66,6 +66,17 @@ export class VentasController {
     }
   }
 
+  @ApiOperation({ summary: 'Detalle de una factura con líneas' })
+  @ApiParam({ name: 'rowid', description: 'Row ID de la factura' })
+  @Get('facturas/:rowid')
+  async getFacturaDetalle(@Param('rowid') rowid: string) {
+    try {
+      return await this.ventasService.getFacturaDetalle(parseInt(rowid, 10));
+    } catch (error) {
+      throw new HttpException({ message: error.message }, error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   @ApiOperation({ summary: 'Remisiones de venta' })
   @Get('remisiones')
   async getRemisiones(

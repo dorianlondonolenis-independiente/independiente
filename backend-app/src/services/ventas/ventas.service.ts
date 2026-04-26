@@ -187,6 +187,50 @@ export class VentasService {
     return { total: countResult[0]?.total || 0, datos, limit, offset };
   }
 
+  async getFacturaDetalle(rowid: number): Promise<any> {
+    const header = await this.dataSource.query(`
+      SELECT
+        f.f461_rowid_docto as rowid,
+        d.f350_id_tipo_docto as tipo_docto,
+        d.f350_consec_docto as consecutivo,
+        f.f461_id_fecha as fecha,
+        d.f350_id_motivo_otros as motivo,
+        mot.f1461_descripcion as motivo_descripcion,
+        t.f200_razon_social as cliente,
+        t.f200_nit as nit,
+        f.f461_id_sucursal_fact as sucursal,
+        f.f461_vlr_bruto as valor_bruto,
+        f.f461_vlr_neto as valor_neto,
+        f.f461_notas as notas
+      FROM t461_cm_docto_factura_venta f
+      LEFT JOIN t200_mm_terceros t ON f.f461_rowid_tercero_fact = t.f200_rowid
+      LEFT JOIN t350_co_docto_contable d ON f.f461_rowid_docto = d.f350_rowid
+      LEFT JOIN t1461_mc_motivos_otros mot ON mot.f1461_id = d.f350_id_motivo_otros AND mot.f1461_id_cia = 1
+      WHERE f.f461_rowid_docto = @0
+    `, [rowid]);
+
+    const lineas = await this.dataSource.query(`
+      SELECT
+        m.f431_rowid as rowid,
+        i.f120_referencia as referencia,
+        i.f120_descripcion as producto,
+        m.f431_id_unidad_medida as unidad,
+        m.f431_cant_pedida_base as cantidad,
+        m.f431_precio_unitario_base as precio,
+        m.f431_vlr_bruto as valor_bruto,
+        m.f431_vlr_neto as valor_total,
+        b.f150_descripcion as bodega
+      FROM t461_cm_docto_factura_venta f
+      JOIN t431_cm_pv_movto m ON m.f431_rowid_pv_docto = f.f461_rowid_pv_docto
+      LEFT JOIN t121_mc_items_extensiones ext ON m.f431_rowid_item_ext = ext.f121_rowid
+      LEFT JOIN t120_mc_items i ON ext.f121_rowid_item = i.f120_rowid
+      LEFT JOIN t150_mc_bodegas b ON m.f431_rowid_bodega = b.f150_rowid
+      WHERE f.f461_rowid_docto = @0
+    `, [rowid]);
+
+    return { documento: header[0] || null, lineas };
+  }
+
   async getRemisiones(filters?: {
     buscar?: string;
     fechaDesde?: string;

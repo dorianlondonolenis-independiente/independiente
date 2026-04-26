@@ -178,6 +178,7 @@ import { HttpClient } from '@angular/common/http';
                     <th>Motivo</th>
                     <th>Descripción Motivo</th>
                     <th class="text-end">Valor</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -190,6 +191,11 @@ import { HttpClient } from '@angular/common/http';
                     <td>{{ f.motivo || '-' }}</td>
                     <td>{{ f.motivo_descripcion || '-' }}</td>
                     <td class="text-end fw-semibold">\${{ f.valor | number:'1.0-0' }}</td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary py-0" (click)="verDetalleFactura(f.rowid)">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -391,6 +397,65 @@ import { HttpClient } from '@angular/common/http';
         </div>
       </div>
       <div class="modal-backdrop fade show" *ngIf="detalleVisible()" (click)="detalleVisible.set(false)"></div>
+
+      <!-- Modal detalle factura -->
+      <div class="modal fade" [class.show]="detalleFacturaVisible()" [style.display]="detalleFacturaVisible() ? 'block' : 'none'" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title"><i class="bi bi-receipt me-2 text-primary"></i>Detalle de Factura</h5>
+              <button type="button" class="btn-close" (click)="detalleFacturaVisible.set(false)"></button>
+            </div>
+            <div class="modal-body">
+              <div *ngIf="detalleFacturaData()">
+                <div class="row mb-3 g-2">
+                  <div class="col-md-3"><strong>Documento:</strong> {{ detalleFacturaData().documento?.tipo_docto }} - {{ detalleFacturaData().documento?.consecutivo }}</div>
+                  <div class="col-md-2"><strong>Fecha:</strong> {{ detalleFacturaData().documento?.fecha | date:'dd/MM/yyyy' }}</div>
+                  <div class="col-md-4"><strong>Cliente:</strong> {{ detalleFacturaData().documento?.cliente }}</div>
+                  <div class="col-md-2"><strong>NIT:</strong> {{ detalleFacturaData().documento?.nit }}</div>
+                  <div class="col-md-1"><strong>Sucursal:</strong> {{ detalleFacturaData().documento?.sucursal || '-' }}</div>
+                  <div class="col-md-2"><strong>Motivo:</strong> {{ detalleFacturaData().documento?.motivo || '-' }}</div>
+                  <div class="col-md-4"><strong>Desc. Motivo:</strong> {{ detalleFacturaData().documento?.motivo_descripcion || '-' }}</div>
+                  <div class="col-md-2 text-end"><strong>Bruto:</strong> \${{ detalleFacturaData().documento?.valor_bruto | number:'1.0-0' }}</div>
+                  <div class="col-md-2 text-end"><strong>Neto:</strong> \${{ detalleFacturaData().documento?.valor_neto | number:'1.0-0' }}</div>
+                </div>
+                <div *ngIf="detalleFacturaData().lineas?.length > 0">
+                  <table class="table table-sm table-hover">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Referencia</th>
+                        <th>Producto</th>
+                        <th>Bodega</th>
+                        <th>Unidad</th>
+                        <th class="text-end">Cantidad</th>
+                        <th class="text-end">Precio</th>
+                        <th class="text-end">Bruto</th>
+                        <th class="text-end">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let l of detalleFacturaData().lineas">
+                        <td><code>{{ l.referencia }}</code></td>
+                        <td>{{ l.producto }}</td>
+                        <td>{{ l.bodega }}</td>
+                        <td>{{ l.unidad }}</td>
+                        <td class="text-end">{{ l.cantidad }}</td>
+                        <td class="text-end">\${{ l.precio | number:'1.0-0' }}</td>
+                        <td class="text-end">\${{ l.valor_bruto | number:'1.0-0' }}</td>
+                        <td class="text-end fw-semibold">\${{ l.valor_total | number:'1.0-0' }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div *ngIf="!detalleFacturaData().lineas?.length" class="text-center py-3 text-muted">
+                  <i class="bi bi-info-circle me-1"></i>Esta factura no tiene líneas vinculadas a un pedido
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-backdrop fade show" *ngIf="detalleFacturaVisible()" (click)="detalleFacturaVisible.set(false)"></div>
     </div>
   `,
   styles: [`
@@ -438,9 +503,13 @@ export class VentasComponent implements OnInit {
   offsetDevoluciones = signal(0);
   filtrosDevoluciones = { buscar: '', fechaDesde: '', fechaHasta: '' };
 
-  // Detalle
+  // Detalle pedido
   detalleVisible = signal(false);
   detalleData = signal<any>(null);
+
+  // Detalle factura
+  detalleFacturaVisible = signal(false);
+  detalleFacturaData = signal<any>(null);
 
   ngOnInit() {
     this.http.get<any>(`${this.api}/stats`).subscribe(s => this.stats.set(s));
@@ -480,6 +549,13 @@ export class VentasComponent implements OnInit {
     this.http.get<any>(`${this.api}/pedidos/${rowid}`).subscribe(d => {
       this.detalleData.set(d);
       this.detalleVisible.set(true);
+    });
+  }
+
+  verDetalleFactura(rowid: number) {
+    this.http.get<any>(`${this.api}/facturas/${rowid}`).subscribe(d => {
+      this.detalleFacturaData.set(d);
+      this.detalleFacturaVisible.set(true);
     });
   }
 
