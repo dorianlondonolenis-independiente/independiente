@@ -425,6 +425,46 @@ export class SiesaXmlService {
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
+  // ENVIAR TERCEROS ROW-BY-ROW VÍA HTTP AL API SIESA
+  // ─────────────────────────────────────────────────────────────────────────────
+  async enviarXmlToSiesa(
+    rows: TerceroRow[],
+    options: { conexion: string; idCia: string; usuario: string; clave: string; url: string },
+  ): Promise<{ enviados: number; errores: Array<{ nit: string; status?: number; message: string }> }> {
+    let enviados = 0;
+    const errores: Array<{ nit: string; status?: number; message: string }> = [];
+
+    for (const row of rows) {
+      const nit = row.NIT || 'SIN_NIT';
+      try {
+        const xml = this.generateTercerosXml([row], {
+          conexion: options.conexion,
+          idCia: options.idCia,
+          usuario: options.usuario,
+          clave: options.clave,
+        });
+
+        const res = await fetch(options.url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/xml; charset=utf-8' },
+          body: xml,
+        });
+
+        if (!res.ok) {
+          const body = await res.text().catch(() => '');
+          errores.push({ nit, status: res.status, message: `HTTP ${res.status}: ${body.substring(0, 200)}` });
+        } else {
+          enviados++;
+        }
+      } catch (err: any) {
+        errores.push({ nit, message: err.message || String(err) });
+      }
+    }
+
+    return { enviados, errores };
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
   // ACTUALIZAR TIPO DE UN TERCERO EXISTENTE
   // ─────────────────────────────────────────────────────────────────────────────
   async updateTerceroTipo(nit: string, tipoIdentKey: string, tipoPersonaKey: string, idCia = 1) {

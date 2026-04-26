@@ -80,6 +80,8 @@ export class VentasService {
         t.f200_nit as nit_cliente,
         d.f430_ind_estado as estado,
         d.f430_notas as notas,
+        d.f430_id_sucursal_fact as sucursal,
+        d.f430_id_motivo_otros as motivo,
         ISNULL(totales.vlr_bruto, 0) as valor_bruto,
         ISNULL(totales.vlr_neto, 0) as valor_neto
       FROM t430_cm_pv_docto d
@@ -165,6 +167,7 @@ export class VentasService {
         f.f461_id_fecha as fecha,
         t.f200_razon_social as cliente,
         t.f200_nit as nit,
+        f.f461_id_sucursal_fact as sucursal,
         f.f461_vlr_bruto as valor_bruto,
         f.f461_vlr_neto as valor
       FROM t461_cm_docto_factura_venta f

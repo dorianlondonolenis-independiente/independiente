@@ -89,6 +89,8 @@ import { HttpClient } from '@angular/common/http';
                     <th>Consecutivo</th>
                     <th>Fecha</th>
                     <th>Cliente</th>
+                    <th>Sucursal</th>
+                    <th>Motivo</th>
                     <th class="text-end">Valor Bruto</th>
                     <th class="text-end">Valor Neto</th>
                     <th class="text-center">Estado</th>
@@ -101,6 +103,8 @@ import { HttpClient } from '@angular/common/http';
                     <td class="fw-semibold">{{ p.consecutivo }}</td>
                     <td>{{ p.fecha | date:'dd/MM/yyyy' }}</td>
                     <td>{{ p.cliente }}</td>
+                    <td>{{ p.sucursal || '-' }}</td>
+                    <td>{{ p.motivo || '-' }}</td>
                     <td class="text-end">\${{ p.valor_bruto | number:'1.0-0' }}</td>
                     <td class="text-end fw-semibold">\${{ p.valor_neto | number:'1.0-0' }}</td>
                     <td class="text-center">
@@ -158,6 +162,7 @@ import { HttpClient } from '@angular/common/http';
                     <th>Consecutivo</th>
                     <th>Fecha</th>
                     <th>Cliente</th>
+                    <th>Sucursal</th>
                     <th class="text-end">Valor</th>
                   </tr>
                 </thead>
@@ -167,6 +172,7 @@ import { HttpClient } from '@angular/common/http';
                     <td class="fw-semibold">{{ f.consecutivo }}</td>
                     <td>{{ f.fecha | date:'dd/MM/yyyy' }}</td>
                     <td>{{ f.cliente }}</td>
+                    <td>{{ f.sucursal || '-' }}</td>
                     <td class="text-end fw-semibold">\${{ f.valor | number:'1.0-0' }}</td>
                   </tr>
                 </tbody>

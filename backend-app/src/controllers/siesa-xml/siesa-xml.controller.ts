@@ -181,4 +181,54 @@ export class SiesaXmlController {
       body.idCia || 1,
     );
   }
+
+  /**
+   * POST /api/siesa-xml/terceros/enviar-xml
+   * Sube un Excel y envía cada tercero row-by-row al API Siesa como XML
+   */
+  @ApiOperation({ summary: 'Enviar Terceros al API Siesa (XML por fila)' })
+  @ApiConsumes('multipart/form-data')
+  @Post('terceros/enviar-xml')
+  @UseInterceptors(FileInterceptor('file', {
+    limits: { fileSize: MAX_FILE_SIZE },
+    fileFilter: (_req, file, cb) => {
+      const ext = (file.originalname || '').toLowerCase().split('.').pop() || '';
+      if (['xlsx', 'xls'].includes(ext)) cb(null, true);
+      else cb(new HttpException('Solo se permiten archivos Excel (.xlsx/.xls)', HttpStatus.BAD_REQUEST), false);
+    },
+  }))
+  async enviarTercerosXml(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: {
+      url: string;
+      nombreConexion: string;
+      idCia?: string;
+      usuario: string;
+      clave: string;
+    },
+  ) {
+    if (!file) throw new HttpException('No se recibió ningún archivo', HttpStatus.BAD_REQUEST);
+    if (!body.url) throw new HttpException('Se requiere la URL del API Siesa', HttpStatus.BAD_REQUEST);
+
+    const { rows, errors: parseErrors } = this.siesaXmlService.parseTercerosExcel(file.buffer, file.originalname);
+    const validRows = rows.filter(r => r.NIT);
+
+    if (validRows.length === 0) {
+      throw new HttpException({ message: 'No se encontraron filas válidas en el Excel', errors: parseErrors }, HttpStatus.BAD_REQUEST);
+    }
+
+    const result = await this.siesaXmlService.enviarXmlToSiesa(validRows, {
+      url: body.url,
+      conexion: body.nombreConexion || 'SQL-NEO',
+      idCia: body.idCia || '1',
+      usuario: body.usuario,
+      clave: body.clave,
+    });
+
+    return {
+      totalLeidos: rows.length,
+      enviados: result.enviados,
+      errores: [...parseErrors.map(e => ({ nit: 'parse', message: e })), ...result.errores],
+    };
+  }
 }
