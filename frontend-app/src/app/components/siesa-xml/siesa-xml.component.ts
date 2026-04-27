@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 
 interface PreviewRow {
@@ -39,7 +40,7 @@ interface EnvioResult {
 @Component({
   selector: 'app-siesa-xml',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
     <div class="container-fluid py-4 px-4" style="max-width: 1100px;">
 
@@ -55,6 +56,11 @@ interface EnvioResult {
           <button class="nav-link" [class.active]="entidad() === 'terceros'" (click)="entidad.set('terceros')">
             <i class="bi bi-people me-1"></i>Terceros
           </button>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/siesa-xml/comprobantes">
+            <i class="bi bi-journal-text me-1"></i>Comprobantes Contables
+          </a>
         </li>
         <!-- Aqui se agregan futuras entidades -->
       </ul>

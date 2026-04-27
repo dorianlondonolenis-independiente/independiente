@@ -106,13 +106,17 @@ export class VentasService {
         d.f430_rowid as rowid, d.f430_id_tipo_docto as tipo_docto,
         d.f430_consec_docto as consecutivo, d.f430_id_fecha as fecha,
         d.f430_notas as notas, d.f430_ind_estado as estado,
-        t.f200_razon_social as cliente, t.f200_nit as nit
+        t.f200_razon_social as cliente, t.f200_nit as nit,
+        d.f430_id_sucursal_pv as sucursal,
+        d.f430_id_motivo_otros as motivo,
+        mot.f1461_descripcion as motivo_descripcion
       FROM t430_cm_pv_docto d
       LEFT JOIN t200_mm_terceros t ON d.f430_rowid_tercero_fact = t.f200_rowid
+      LEFT JOIN t1461_mc_motivos_otros mot ON mot.f1461_id = d.f430_id_motivo_otros AND mot.f1461_id_cia = 1
       WHERE d.f430_rowid = @0
     `, [rowid]);
 
-    const lineas = await this.dataSource.query(`
+    const lineasRaw = await this.dataSource.query(`
       SELECT
         m.f431_rowid as rowid,
         i.f120_referencia as referencia,
@@ -122,16 +126,27 @@ export class VentasService {
         m.f431_precio_unitario_base as precio,
         m.f431_vlr_bruto as valor_bruto,
         m.f431_vlr_neto as valor_total,
-        b.f150_descripcion as bodega
+        b.f150_descripcion as bodega,
+        m.f431_id_motivo as motivo,
+        mot.f146_descripcion as motivo_descripcion
       FROM t431_cm_pv_movto m
       LEFT JOIN t121_mc_items_extensiones ext ON m.f431_rowid_item_ext = ext.f121_rowid
       LEFT JOIN t120_mc_items i ON ext.f121_rowid_item = i.f120_rowid
       LEFT JOIN t150_mc_bodegas b ON m.f431_rowid_bodega = b.f150_rowid
+      LEFT JOIN t146_mc_motivos mot ON mot.f146_id_cia = m.f431_id_cia
+        AND mot.f146_id_concepto = m.f431_id_concepto
+        AND mot.f146_id = m.f431_id_motivo
       WHERE m.f431_rowid_pv_docto = @0
     `, [rowid]);
 
+    const doc = header[0] || null;
+    const lineas = lineasRaw.map((l: any) => ({
+      ...l,
+      sucursal: doc?.sucursal ?? null,
+    }));
+
     return {
-      documento: header[0] || null,
+      documento: doc,
       lineas,
     };
   }
@@ -209,7 +224,7 @@ export class VentasService {
       WHERE f.f461_rowid_docto = @0
     `, [rowid]);
 
-    const lineas = await this.dataSource.query(`
+    const lineasRaw = await this.dataSource.query(`
       SELECT
         mv.f470_rowid as rowid,
         i.f120_referencia as referencia,
@@ -220,15 +235,25 @@ export class VentasService {
         mv.f470_vlr_bruto as valor_bruto,
         mv.f470_vlr_neto as valor_total,
         b.f150_descripcion as bodega,
-        mv.f470_id_motivo as motivo
+        mv.f470_id_motivo as motivo,
+        mot.f146_descripcion as motivo_descripcion
       FROM t470_cm_movto_invent mv
       LEFT JOIN t121_mc_items_extensiones ext ON mv.f470_rowid_item_ext = ext.f121_rowid
       LEFT JOIN t120_mc_items i ON ext.f121_rowid_item = i.f120_rowid
       LEFT JOIN t150_mc_bodegas b ON mv.f470_rowid_bodega = b.f150_rowid
+      LEFT JOIN t146_mc_motivos mot ON mot.f146_id_cia = mv.f470_id_cia
+        AND mot.f146_id_concepto = mv.f470_id_concepto
+        AND mot.f146_id = mv.f470_id_motivo
       WHERE mv.f470_rowid_docto_fact = @0
     `, [rowid]);
 
-    return { documento: header[0] || null, lineas };
+    const doc = header[0] || null;
+    const lineas = lineasRaw.map((l: any) => ({
+      ...l,
+      sucursal: doc?.sucursal ?? null,
+    }));
+
+    return { documento: doc, lineas };
   }
 
   async getRemisiones(filters?: {
@@ -351,5 +376,126 @@ export class VentasService {
     `, params);
 
     return { total: countResult[0]?.total || 0, datos, limit, offset };
+  }
+
+  async getRemisionDetalle(rowid: number): Promise<any> {
+    const header = await this.dataSource.query(`
+      SELECT
+        r.f460_rowid_docto as rowid,
+        d.f350_id_tipo_docto as tipo_docto,
+        d.f350_consec_docto as consecutivo,
+        r.f460_id_fecha as fecha,
+        d.f350_id_motivo_otros as motivo,
+        mot.f1461_descripcion as motivo_descripcion,
+        t.f200_razon_social as cliente,
+        t.f200_nit as nit,
+        r.f460_id_sucursal_fact as sucursal,
+        r.f460_ind_estado_cm as estado,
+        r.f460_vlr_bruto as valor_bruto,
+        r.f460_vlr_neto as valor_neto,
+        r.f460_notas as notas
+      FROM t460_cm_docto_remision_venta r
+      LEFT JOIN t200_mm_terceros t ON r.f460_rowid_tercero_fact = t.f200_rowid
+      LEFT JOIN t350_co_docto_contable d ON r.f460_rowid_docto = d.f350_rowid
+      LEFT JOIN t1461_mc_motivos_otros mot ON mot.f1461_id = d.f350_id_motivo_otros AND mot.f1461_id_cia = 1
+      WHERE r.f460_rowid_docto = @0
+    `, [rowid]);
+
+    // Líneas de remisión - intento con f470_rowid_docto_remi, fallback a array vacío
+    let lineas: any[] = [];
+    try {
+      lineas = await this.dataSource.query(`
+        SELECT
+          mv.f470_rowid as rowid,
+          i.f120_referencia as referencia,
+          i.f120_descripcion as producto,
+          mv.f470_id_unidad_medida as unidad,
+          mv.f470_cant_1 as cantidad,
+          mv.f470_precio_uni as precio,
+          mv.f470_vlr_bruto as valor_bruto,
+          mv.f470_vlr_neto as valor_total,
+          b.f150_descripcion as bodega,
+          mv.f470_id_motivo as motivo,
+          mot.f146_descripcion as motivo_descripcion
+        FROM t470_cm_movto_invent mv
+        LEFT JOIN t121_mc_items_extensiones ext ON mv.f470_rowid_item_ext = ext.f121_rowid
+        LEFT JOIN t120_mc_items i ON ext.f121_rowid_item = i.f120_rowid
+        LEFT JOIN t150_mc_bodegas b ON mv.f470_rowid_bodega = b.f150_rowid
+        LEFT JOIN t146_mc_motivos mot ON mot.f146_id_cia = mv.f470_id_cia
+          AND mot.f146_id_concepto = mv.f470_id_concepto
+          AND mot.f146_id = mv.f470_id_motivo
+        WHERE mv.f470_rowid_docto = @0
+      `, [rowid]);
+    } catch {
+      lineas = [];
+    }
+
+    const doc = header[0] || null;
+    const lineasConDoc = lineas.map((l: any) => ({
+      ...l,
+      sucursal: doc?.sucursal ?? null,
+    }));
+
+    return { documento: doc, lineas: lineasConDoc };
+  }
+
+  async getDevolucionDetalle(rowid: number): Promise<any> {
+    const header = await this.dataSource.query(`
+      SELECT
+        r.f460_rowid_docto as rowid,
+        d.f350_id_tipo_docto as tipo_docto,
+        d.f350_consec_docto as consecutivo,
+        r.f460_id_fecha as fecha,
+        d.f350_id_motivo_otros as motivo,
+        mot.f1461_descripcion as motivo_descripcion,
+        t.f200_razon_social as cliente,
+        t.f200_nit as nit,
+        r.f460_id_sucursal_fact as sucursal,
+        r.f460_ind_estado_cm as estado,
+        r.f460_vlr_bruto as valor_bruto,
+        r.f460_vlr_neto as valor_neto,
+        r.f460_notas as notas
+      FROM t460_cm_docto_remision_venta r
+      LEFT JOIN t200_mm_terceros t ON r.f460_rowid_tercero_fact = t.f200_rowid
+      LEFT JOIN t350_co_docto_contable d ON r.f460_rowid_docto = d.f350_rowid
+      LEFT JOIN t1461_mc_motivos_otros mot ON mot.f1461_id = d.f350_id_motivo_otros AND mot.f1461_id_cia = 1
+      WHERE r.f460_rowid_docto = @0 AND r.f460_rowid_docto_fact_base IS NOT NULL
+    `, [rowid]);
+
+    let lineas: any[] = [];
+    try {
+      lineas = await this.dataSource.query(`
+        SELECT
+          mv.f470_rowid as rowid,
+          i.f120_referencia as referencia,
+          i.f120_descripcion as producto,
+          mv.f470_id_unidad_medida as unidad,
+          mv.f470_cant_1 as cantidad,
+          mv.f470_precio_uni as precio,
+          mv.f470_vlr_bruto as valor_bruto,
+          mv.f470_vlr_neto as valor_total,
+          b.f150_descripcion as bodega,
+          mv.f470_id_motivo as motivo,
+          mot.f146_descripcion as motivo_descripcion
+        FROM t470_cm_movto_invent mv
+        LEFT JOIN t121_mc_items_extensiones ext ON mv.f470_rowid_item_ext = ext.f121_rowid
+        LEFT JOIN t120_mc_items i ON ext.f121_rowid_item = i.f120_rowid
+        LEFT JOIN t150_mc_bodegas b ON mv.f470_rowid_bodega = b.f150_rowid
+        LEFT JOIN t146_mc_motivos mot ON mot.f146_id_cia = mv.f470_id_cia
+          AND mot.f146_id_concepto = mv.f470_id_concepto
+          AND mot.f146_id = mv.f470_id_motivo
+        WHERE mv.f470_rowid_docto = @0
+      `, [rowid]);
+    } catch {
+      lineas = [];
+    }
+
+    const doc = header[0] || null;
+    const lineasConDoc = lineas.map((l: any) => ({
+      ...l,
+      sucursal: doc?.sucursal ?? null,
+    }));
+
+    return { documento: doc, lineas: lineasConDoc };
   }
 }

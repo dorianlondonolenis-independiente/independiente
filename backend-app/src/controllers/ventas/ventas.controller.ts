@@ -116,4 +116,26 @@ export class VentasController {
       throw new HttpException({ message: error.message }, error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  @ApiOperation({ summary: 'Detalle de una remisión con líneas' })
+  @ApiParam({ name: 'rowid', type: 'number' })
+  @Get('remisiones/:rowid')
+  async getRemisionDetalle(@Param('rowid') rowid: string) {
+    try {
+      return await this.ventasService.getRemisionDetalle(parseInt(rowid, 10));
+    } catch (error) {
+      throw new HttpException({ message: error.message }, error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @ApiOperation({ summary: 'Detalle de una devolución con líneas' })
+  @ApiParam({ name: 'rowid', type: 'number' })
+  @Get('devoluciones/:rowid')
+  async getDevolucionDetalle(@Param('rowid') rowid: string) {
+    try {
+      return await this.ventasService.getDevolucionDetalle(parseInt(rowid, 10));
+    } catch (error) {
+      throw new HttpException({ message: error.message }, error.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 }

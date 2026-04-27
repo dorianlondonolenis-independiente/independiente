@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -13,7 +14,6 @@ import { HttpClient } from '@angular/common/http';
         <h2><i class="bi bi-cart-check me-2 text-success"></i>Ventas</h2>
         <p class="text-muted mb-0">Pedidos de venta y facturación</p>
       </div>
-
       <!-- Stats -->
       <div class="row g-3 mb-4" *ngIf="stats()">
         <div class="col-6 col-lg-3">
@@ -344,13 +344,6 @@ import { HttpClient } from '@angular/common/http';
                         <i class="bi bi-eye"></i>
                       </button>
                     </td>
-                    irDetalleRemision(rowid: number) {
-                      this.router.navigate(['/ventas/remision', rowid]);
-                    }
-
-                    irDetalleDevolucion(rowid: number) {
-                      this.router.navigate(['/ventas/devolucion', rowid]);
-                    }
                   </tr>
                 </tbody>
               </table>
@@ -484,7 +477,8 @@ import { HttpClient } from '@angular/common/http';
   `]
 })
 export class VentasComponent implements OnInit {
-  private http = inject(HttpClient);
+    private http = inject(HttpClient);
+  private router = inject(Router);
   private api = 'http://localhost:3000/api/ventas';
 
   tab = signal<'pedidos' | 'facturas' | 'remisiones' | 'devoluciones'>('pedidos');
@@ -565,7 +559,7 @@ export class VentasComponent implements OnInit {
     this.router.navigate(['/ventas/pedido', rowid]);
   }
 
-  irDetalleFactura(rowid: number) {
+  irDetalleRemision(rowid: number) { this.router.navigate([`ventas/remision/${rowid}`]); } irDetalleDevolucion(rowid: number) { this.router.navigate([`ventas/devolucion/${rowid}`]); } irDetalleFactura(rowid: number) {
     this.router.navigate(['/ventas/factura', rowid]);
   }
 
@@ -608,3 +602,5 @@ export class VentasComponent implements OnInit {
     this.cargarDevoluciones();
   }
 }
+
+

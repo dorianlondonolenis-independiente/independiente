@@ -30,6 +30,9 @@ import { BulkUploadController } from './controllers/bulk-upload/bulk-upload.cont
 import { BulkUploadService } from './services/bulk-upload/bulk-upload.service';
 import { SiesaXmlController } from './controllers/siesa-xml/siesa-xml.controller';
 import { SiesaXmlService } from './services/siesa-xml/siesa-xml.service';
+import { SiesaComprobantesService } from './services/siesa-xml/siesa-comprobantes.service';
+import { FinancieroController } from './controllers/financiero/financiero.controller';
+import { FinancieroService } from './services/financiero/financiero.service';
 
 @Module({
   imports: [
@@ -69,11 +72,14 @@ import { SiesaXmlService } from './services/siesa-xml/siesa-xml.service';
     AppController, MetadataController, DataController, QueriesController,
     MaestrasController, InventarioController, VentasController, ComprasController,
     CarteraController, KardexController, TercerosController, BulkUploadController, SiesaXmlController,
+    FinancieroController,
   ],
   providers: [
     AppService, MetadataService, DataService, QueriesService,
     MaestrasService, InventarioService, VentasService, ComprasService,
     CarteraService, KardexService, TercerosService, BulkUploadService, SiesaXmlService,
+    SiesaComprobantesService,
+    FinancieroService,
   ],
 })
 export class AppModule {}

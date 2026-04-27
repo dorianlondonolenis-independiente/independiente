@@ -13,6 +13,8 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiConsumes, ApiQuery } from '@nestjs/swagger';
 import { SiesaXmlService } from '../../services/siesa-xml/siesa-xml.service';
+import { SiesaComprobantesService } from '../../services/siesa-xml/siesa-comprobantes.service';
+import type { VersionId } from '../../services/siesa-xml/comprobante-specs';
 import type { Response } from 'express';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -20,7 +22,10 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 @ApiTags('Siesa XML')
 @Controller('siesa-xml')
 export class SiesaXmlController {
-  constructor(private readonly siesaXmlService: SiesaXmlService) {}
+  constructor(
+    private readonly siesaXmlService: SiesaXmlService,
+    private readonly comprobantesService: SiesaComprobantesService,
+  ) {}
 
   /**
    * GET /api/siesa-xml/terceros/plantilla
@@ -229,6 +234,143 @@ export class SiesaXmlController {
       totalLeidos: rows.length,
       enviados: result.enviados,
       errores: [...parseErrors.map(e => ({ nit: 'parse', message: e })), ...result.errores],
+    };
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // COMPROBANTES CONTABLES (registros 350 y 351, todas las versiones)
+  // ─────────────────────────────────────────────────────────────────────────
+  @ApiOperation({ summary: 'Listar versiones disponibles de comprobantes contables' })
+  @Get('comprobantes/versiones')
+  listarVersiones() {
+    return this.comprobantesService.listarVersiones();
+  }
+
+  @ApiOperation({ summary: 'Descargar plantilla Excel para Comprobantes Contables' })
+  @ApiQuery({ name: 'version', required: false, description: 'V1 | V2 (default V2)' })
+  @Get('comprobantes/plantilla')
+  downloadPlantillaComprobantes(
+    @Res() res: Response,
+    @Query('version') version?: string,
+  ) {
+    try {
+      const v = (version || 'V2').toUpperCase() as VersionId;
+      const buffer = this.comprobantesService.generarPlantillaExcel(v);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="Plantilla_Comprobantes_${v}.xlsx"`);
+      res.send(buffer);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @ApiOperation({ summary: 'Previsualizar parseo de Comprobante Contable' })
+  @ApiConsumes('multipart/form-data')
+  @ApiQuery({ name: 'version', required: false, description: 'V1 | V2 (default V2)' })
+  @Post('comprobantes/preview')
+  @UseInterceptors(FileInterceptor('file', {
+    limits: { fileSize: MAX_FILE_SIZE },
+    fileFilter: (_req, file, cb) => {
+      const ext = (file.originalname || '').toLowerCase().split('.').pop() || '';
+      if (['xlsx', 'xls'].includes(ext)) cb(null, true);
+      else cb(new HttpException('Solo se permiten archivos Excel (.xlsx/.xls)', HttpStatus.BAD_REQUEST), false);
+    },
+  }))
+  previewComprobante(
+    @UploadedFile() file: Express.Multer.File,
+    @Query('version') version?: string,
+  ) {
+    if (!file) throw new HttpException('No se recibió ningún archivo', HttpStatus.BAD_REQUEST);
+    const v = (version || 'V2').toUpperCase() as VersionId;
+    const parsed = this.comprobantesService.parsearExcel(file.buffer, v);
+    return {
+      version: v,
+      cabecera: parsed.cabecera,
+      totalMovimientos: parsed.movimientos.length,
+      totalCruces: parsed.cruces.length,
+      movimientos: parsed.movimientos.slice(0, 20),
+      cruces: parsed.cruces.slice(0, 10),
+      errores: parsed.errores,
+    };
+  }
+
+  @ApiOperation({ summary: 'Generar XML SIESA de Comprobante Contable' })
+  @ApiConsumes('multipart/form-data')
+  @ApiQuery({ name: 'version',  required: false, description: 'V1 | V2 (default V2)' })
+  @ApiQuery({ name: 'conexion', required: false })
+  @ApiQuery({ name: 'idCia',    required: false })
+  @ApiQuery({ name: 'usuario',  required: false })
+  @ApiQuery({ name: 'clave',    required: false })
+  @Post('comprobantes/generar')
+  @UseInterceptors(FileInterceptor('file', {
+    limits: { fileSize: MAX_FILE_SIZE },
+    fileFilter: (_req, file, cb) => {
+      const ext = (file.originalname || '').toLowerCase().split('.').pop() || '';
+      if (['xlsx', 'xls'].includes(ext)) cb(null, true);
+      else cb(new HttpException('Solo se permiten archivos Excel (.xlsx/.xls)', HttpStatus.BAD_REQUEST), false);
+    },
+  }))
+  generarComprobanteXml(
+    @UploadedFile() file: Express.Multer.File,
+    @Res() res: Response,
+    @Query('version') version?: string,
+    @Query('conexion') conexion?: string,
+    @Query('idCia') idCia?: string,
+    @Query('usuario') usuario?: string,
+    @Query('clave') clave?: string,
+  ) {
+    if (!file) throw new HttpException('No se recibió ningún archivo', HttpStatus.BAD_REQUEST);
+    const v = (version || 'V2').toUpperCase() as VersionId;
+    const parsed = this.comprobantesService.parsearExcel(file.buffer, v);
+    if (parsed.errores.some((e) => e.toLowerCase().includes('vacía') || e.toLowerCase().includes('no cuadra'))) {
+      throw new HttpException({ message: 'El archivo tiene errores críticos', errores: parsed.errores }, HttpStatus.BAD_REQUEST);
+    }
+    const xml = this.comprobantesService.generarXml(parsed, v, { conexion, idCia, usuario, clave });
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="Importar_Comprobante_${v}.xml"`);
+    res.send(xml);
+  }
+
+  @ApiOperation({ summary: 'Enviar Comprobante Contable al API SIESA UnoEE' })
+  @ApiConsumes('multipart/form-data')
+  @ApiQuery({ name: 'version',  required: false, description: 'V1 | V2 (default V2)' })
+  @ApiQuery({ name: 'url',      required: true,  description: 'URL del API SIESA UnoEE' })
+  @ApiQuery({ name: 'conexion', required: false })
+  @ApiQuery({ name: 'idCia',    required: false })
+  @ApiQuery({ name: 'usuario',  required: false })
+  @ApiQuery({ name: 'clave',    required: false })
+  @Post('comprobantes/enviar-xml')
+  @UseInterceptors(FileInterceptor('file', {
+    limits: { fileSize: MAX_FILE_SIZE },
+    fileFilter: (_req, file, cb) => {
+      const ext = (file.originalname || '').toLowerCase().split('.').pop() || '';
+      if (['xlsx', 'xls'].includes(ext)) cb(null, true);
+      else cb(new HttpException('Solo se permiten archivos Excel (.xlsx/.xls)', HttpStatus.BAD_REQUEST), false);
+    },
+  }))
+  async enviarComprobanteXml(
+    @UploadedFile() file: Express.Multer.File,
+    @Query('version') version?: string,
+    @Query('url') url?: string,
+    @Query('conexion') conexion?: string,
+    @Query('idCia') idCia?: string,
+    @Query('usuario') usuario?: string,
+    @Query('clave') clave?: string,
+  ) {
+    if (!file) throw new HttpException('No se recibió ningún archivo', HttpStatus.BAD_REQUEST);
+    if (!url) throw new HttpException('URL del API SIESA es obligatoria', HttpStatus.BAD_REQUEST);
+    const v = (version || 'V2').toUpperCase() as VersionId;
+    const parsed = this.comprobantesService.parsearExcel(file.buffer, v);
+    if (parsed.errores.some((e) => e.toLowerCase().includes('vacía') || e.toLowerCase().includes('no cuadra'))) {
+      throw new HttpException({ message: 'El archivo tiene errores críticos', errores: parsed.errores }, HttpStatus.BAD_REQUEST);
+    }
+    const result = await this.comprobantesService.enviarAlApiSiesa(parsed, v, { url, conexion, idCia, usuario, clave });
+    return {
+      version: v,
+      ok: result.ok,
+      status: result.status,
+      respuesta: result.respuesta,
+      errores: parsed.errores,
     };
   }
 }

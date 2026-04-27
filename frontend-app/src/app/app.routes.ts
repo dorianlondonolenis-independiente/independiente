@@ -19,6 +19,8 @@ import { DetalleFacturaComponent } from './features/ventas/detalle-factura.compo
 import { DetallePedidoComponent } from './features/ventas/detalle-pedido.component';
 import { DetalleRemisionComponent } from './features/ventas/detalle-remision.component';
 import { DetalleDevolucionComponent } from './features/ventas/detalle-devolucion.component';
+import { ConciliacionVentasComponent } from './features/financiero/conciliacion-ventas.component';
+import { ComprobantesXmlComponent } from './features/siesa-xml/comprobantes-xml.component';
 
 export const routes: Routes = [
   {
@@ -40,6 +42,10 @@ export const routes: Routes = [
   {
     path: 'ventas/devolucion/:rowid',
     component: DetalleDevolucionComponent
+  },
+  {
+    path: 'financiero/conciliacion',
+    component: ConciliacionVentasComponent
   },
   {
     path: 'tables',
@@ -88,6 +94,10 @@ export const routes: Routes = [
   {
     path: 'siesa-xml',
     component: SiesaXmlComponent
+  },
+  {
+    path: 'siesa-xml/comprobantes',
+    component: ComprobantesXmlComponent
   },
   {
     path: 'test',
