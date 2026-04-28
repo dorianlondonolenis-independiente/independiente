@@ -36,7 +36,9 @@ import { FinancieroService } from './services/financiero/financiero.service';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', '..', 'dist', 'frontend-app'),
+      rootPath: join(process.cwd(), 'public', 'browser'),
+      exclude: ['/api/(.*)'],
+      serveStaticOptions: { index: false },
     }),
     ConfigModule.forRoot({
       isGlobal: true,
