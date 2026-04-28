@@ -1,4 +1,5 @@
-<div class="app-layout" [class.sidebar-collapsed]="sidebarCollapsed()">
+<!-- Layout solo visible cuando hay sesión activa -->
+<div *ngIf="isAuthLayout(); else loginLayout" class="app-layout" [class.sidebar-collapsed]="sidebarCollapsed()">
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-header">
@@ -12,68 +13,77 @@
 
     <nav class="sidebar-nav">
       <div class="nav-section-label">PRINCIPAL</div>
-      <a class="nav-item" routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+      <a *ngIf="auth.hasModule('dashboard')" class="nav-item" routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
         <i class="bi bi-speedometer2"></i>
         <span class="nav-label">Dashboard</span>
       </a>
-      <a class="nav-item" routerLink="/maestras" routerLinkActive="active">
+      <a *ngIf="auth.hasModule('maestras')" class="nav-item" routerLink="/maestras" routerLinkActive="active">
         <i class="bi bi-grid-3x3-gap-fill"></i>
         <span class="nav-label">Maestras</span>
       </a>
 
       <div class="nav-section-label">OPERACIONES</div>
-      <a class="nav-item" routerLink="/inventario" routerLinkActive="active">
+      <a *ngIf="auth.hasModule('inventario')" class="nav-item" routerLink="/inventario" routerLinkActive="active">
         <i class="bi bi-box-seam"></i>
         <span class="nav-label">Inventario</span>
       </a>
-      <a class="nav-item" routerLink="/ventas" routerLinkActive="active">
+      <a *ngIf="auth.hasModule('ventas')" class="nav-item" routerLink="/ventas" routerLinkActive="active">
         <i class="bi bi-cart-check"></i>
         <span class="nav-label">Ventas</span>
       </a>
-      <a class="nav-item" routerLink="/compras" routerLinkActive="active">
+      <a *ngIf="auth.hasModule('compras')" class="nav-item" routerLink="/compras" routerLinkActive="active">
         <i class="bi bi-truck"></i>
         <span class="nav-label">Compras</span>
       </a>
-      <a class="nav-item" routerLink="/cartera" routerLinkActive="active">
+      <a *ngIf="auth.hasModule('cartera')" class="nav-item" routerLink="/cartera" routerLinkActive="active">
         <i class="bi bi-wallet2"></i>
         <span class="nav-label">Cartera</span>
       </a>
-      <a class="nav-item" routerLink="/kardex" routerLinkActive="active">
-        <i class="bi bi-arrow-left-right"></i>
-        <span class="nav-label">Kardex</span>
-      </a>
-      <a class="nav-item" routerLink="/terceros" routerLinkActive="active">
+      <a *ngIf="auth.hasModule('terceros')" class="nav-item" routerLink="/terceros" routerLinkActive="active">
         <i class="bi bi-people-fill"></i>
         <span class="nav-label">Terceros</span>
       </a>
 
       <div class="nav-section-label">DATOS</div>
-      <a class="nav-item" routerLink="/tables" routerLinkActive="active">
+      <a *ngIf="auth.hasModule('tables')" class="nav-item" routerLink="/tables" routerLinkActive="active">
         <i class="bi bi-table"></i>
         <span class="nav-label">Explorar Tablas</span>
       </a>
-      <a class="nav-item" routerLink="/queries" routerLinkActive="active">
+      <a *ngIf="auth.hasModule('queries')" class="nav-item" routerLink="/queries" routerLinkActive="active">
         <i class="bi bi-code-square"></i>
         <span class="nav-label">Consultas SQL</span>
       </a>
 
       <div class="nav-section-label">ACCIONES</div>
-      <a class="nav-item" routerLink="/maestras/producto/nuevo" routerLinkActive="active">
+      <a *ngIf="auth.hasModule('maestras')" class="nav-item" routerLink="/maestras/producto/nuevo" routerLinkActive="active">
         <i class="bi bi-plus-circle-fill"></i>
         <span class="nav-label">Crear Producto</span>
       </a>
-      <a class="nav-item" routerLink="/bulk-upload" routerLinkActive="active">
+      <a *ngIf="auth.hasModule('bulk-upload')" class="nav-item" routerLink="/bulk-upload" routerLinkActive="active">
         <i class="bi bi-cloud-arrow-up"></i>
         <span class="nav-label">Carga Masiva</span>
       </a>
-      <a class="nav-item" routerLink="/siesa-xml" routerLinkActive="active">
+      <a *ngIf="auth.hasModule('siesa-xml')" class="nav-item" routerLink="/siesa-xml" routerLinkActive="active">
         <i class="bi bi-filetype-xml"></i>
         <span class="nav-label">XML Siesa</span>
       </a>
-      <a class="nav-item" routerLink="/financiero/conciliacion" routerLinkActive="active">
+      <a *ngIf="auth.hasModule('financiero/conciliacion')" class="nav-item" routerLink="/financiero/conciliacion" routerLinkActive="active">
         <i class="bi bi-file-earmark-check"></i>
         <span class="nav-label">Conciliación</span>
       </a>
+
+      <!-- Sección admin: solo visible para usuarios con rol 'admin' -->
+      <ng-container *ngIf="auth.isAdmin()">
+        <div class="nav-section-label">ADMINISTRACIÓN</div>
+        <a class="nav-item" routerLink="/admin/usuarios" routerLinkActive="active">
+          <i class="bi bi-people-fill"></i>
+          <span class="nav-label">Usuarios</span>
+        </a>
+        <a class="nav-item" routerLink="/admin/licencia" routerLinkActive="active">
+          <i class="bi bi-key-fill"></i>
+          <span class="nav-label">Licencia</span>
+        </a>
+      </ng-container>
 
       <!-- Favorites -->
       <div *ngIf="favorites().length > 0">
@@ -171,6 +181,40 @@
         <span class="topbar-badge">
           <i class="bi bi-database-fill me-1"></i>UnoEE
         </span>
+        <!-- User dropdown -->
+        <div class="user-menu-wrapper" *ngIf="auth.user() as u" style="position: relative;">
+          <button class="btn btn-sm btn-light d-flex align-items-center" type="button"
+                  (click)="userMenuOpen.set(!userMenuOpen())"
+                  style="border-radius: 999px; padding: 4px 12px;">
+            <span class="d-inline-flex align-items-center justify-content-center me-2"
+                  style="width: 26px; height: 26px; background: linear-gradient(135deg,#3b82f6,#1e3a8a); color: white; border-radius: 50%; font-weight: 600; font-size: 0.7rem;">
+              {{ (u.nombre || u.username).charAt(0).toUpperCase() }}
+            </span>
+            <span class="d-none d-md-inline small me-1">{{ u.username }}</span>
+            <i class="bi bi-chevron-down small"></i>
+          </button>
+          <div *ngIf="userMenuOpen()" class="shadow bg-white"
+               style="position: absolute; right: 0; top: calc(100% + 6px); min-width: 240px; border: 1px solid #dee2e6; border-radius: 8px; z-index: 2100;">
+            <div class="px-3 py-2 border-bottom">
+              <div class="fw-semibold small">{{ u.nombre || u.username }}</div>
+              <div class="text-muted" style="font-size: 0.7rem;">{{ u.email || u.username }}</div>
+              <span class="badge mt-1" [class.bg-danger]="u.rol === 'admin'" [class.bg-secondary]="u.rol !== 'admin'">
+                {{ u.rol }}
+              </span>
+              <span *ngIf="u.esSuscripcion" class="badge bg-info ms-1">SaaS</span>
+            </div>
+            <div *ngIf="u.fechaExpiracion" class="px-3 py-2 small text-muted border-bottom">
+              <i class="bi bi-calendar-event me-1"></i>
+              Expira: {{ u.fechaExpiracion | date: 'yyyy-MM-dd' }}
+            </div>
+            <button class="btn btn-sm w-100 text-start text-danger px-3 py-2" (click)="logout()">
+              <i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión
+            </button>
+          </div>
+        </div>
+        <!-- Click overlay para cerrar el dropdown -->
+        <div *ngIf="userMenuOpen()" (click)="userMenuOpen.set(false)"
+             style="position: fixed; inset: 0; z-index: 2050;"></div>
       </div>
     </header>
 
@@ -193,3 +237,8 @@
     </main>
   </div>
 </div>
+
+<!-- Layout sin chrome (login) -->
+<ng-template #loginLayout>
+  <router-outlet></router-outlet>
+</ng-template>

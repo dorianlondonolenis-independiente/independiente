@@ -34,7 +34,7 @@ export class FinancieroService {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
   async conciliarVentas(buffer: Buffer): Promise<ResultadoConciliacion> {
-    const filas = this.parsearArchivo(buffer);
+    const filas = this.parsearArchivo(buffer, 'ventas');
     if (!filas.length) {
       throw new BadRequestException('El archivo no contiene filas de datos.');
     }
@@ -140,7 +140,7 @@ export class FinancieroService {
    * `documento` en el archivo se compara con `f451_num_docto_referencia` (n° fact. del proveedor).
    */
   async conciliarCompras(buffer: Buffer): Promise<ResultadoConciliacion> {
-    const filas = this.parsearArchivo(buffer);
+    const filas = this.parsearArchivo(buffer, 'compras');
     if (!filas.length) {
       throw new BadRequestException('El archivo no contiene filas de datos.');
     }
@@ -219,35 +219,81 @@ export class FinancieroService {
     };
   }
 
-  private parsearArchivo(buffer: Buffer): FilaArchivo[] {
+  /**
+   * Parsea el archivo Excel/CSV detectando columnas por NOMBRE (no por posición).
+   * Acepta tanto el archivo descargado del portal DIAN como la plantilla del sistema.
+   *
+   * Aliases reconocidos:
+   *  - NIT (ventas)   -> 'NIT Receptor', 'NitReceptor', 'nit'
+   *  - NIT (compras)  -> 'NIT Emisor', 'NitEmisor', 'nit'
+   *  - Documento      -> 'Folio' (+ 'Prefijo' si existe), 'documento', 'consec'
+   *  - Fecha          -> 'Fecha Emisión', 'Fecha Recepcion', 'fecha'
+   *  - Valor          -> 'Total', 'valor_neto', 'valor', 'neto'
+   *  - Tipo doc.      -> 'Tipo de documento', 'tipo_docto', 'tipo'
+   */
+  private parsearArchivo(buffer: Buffer, modo: 'ventas' | 'compras' = 'ventas'): FilaArchivo[] {
     let workbook: XLSX.WorkBook;
     try {
       workbook = XLSX.read(buffer, { type: 'buffer', cellDates: true });
     } catch {
       throw new BadRequestException('No se pudo leer el archivo. Use .xlsx, .xls o .csv');
     }
-    const sheetName = workbook.SheetNames[0];
+
+    // Buscar la primera hoja que contenga datos válidos (ignora "Columnas clave" / "Instrucciones")
+    const hojasIgnorar = ['columnasclave', 'instrucciones', 'instructions', 'leeme', 'readme'];
+    const norm = (s: string) => String(s ?? '').toLowerCase().trim().replace(/[\s_.\-/()]+/g, '');
+    let sheetName = workbook.SheetNames.find((n) => !hojasIgnorar.includes(norm(n)));
+    if (!sheetName) sheetName = workbook.SheetNames[0];
     if (!sheetName) throw new BadRequestException('El archivo no tiene hojas.');
 
     const sheet = workbook.Sheets[sheetName];
     const rows: any[] = XLSX.utils.sheet_to_json(sheet, { defval: null, raw: false });
+    if (!rows.length) return [];
 
-    const norm = (s: string) => s.toLowerCase().trim().replace(/[\s_.-]+/g, '');
+    // Mapeo de columnas reales -> claves internas
+    const headers = Object.keys(rows[0]);
     const colMap: Record<string, string> = {};
-    if (rows.length) {
-      for (const k of Object.keys(rows[0])) {
-        const n = norm(k);
-        if (n.includes('nit')) colMap['nit'] = k;
-        else if (n.includes('tipodocto') || n === 'tipo' || n.includes('tipodocumento')) colMap['tipo_docto'] = k;
-        else if (n.includes('documento') || n.includes('consec') || n === 'doc') colMap['documento'] = k;
-        else if (n.includes('fecha')) colMap['fecha'] = k;
-        else if (n.includes('valor') || n.includes('neto') || n.includes('total')) colMap['valor_neto'] = k;
+
+    for (const h of headers) {
+      const n = norm(h);
+      // NIT del cliente (ventas) o proveedor (compras)
+      if (modo === 'ventas') {
+        if (n === 'nitreceptor' || n.includes('nitreceptor')) colMap['nit'] = h;
+        else if (!colMap['nit'] && (n === 'nit' || n.includes('niteccliente') || n.includes('nitcliente'))) colMap['nit'] = h;
+      } else {
+        if (n === 'nitemisor' || n.includes('nitemisor')) colMap['nit'] = h;
+        else if (!colMap['nit'] && (n === 'nit' || n.includes('nitproveedor'))) colMap['nit'] = h;
       }
+
+      // Documento / Folio
+      if (n === 'folio') colMap['documento'] = h;
+      else if (!colMap['documento'] && (n === 'documento' || n.includes('numerodocumento') || n.includes('numdocumento') || n.includes('consecdocto') || n === 'consec' || n === 'doc')) colMap['documento'] = h;
+
+      // Prefijo (se concatena al folio si aplica)
+      if (n === 'prefijo') colMap['prefijo'] = h;
+
+      // Fecha
+      if (n === 'fechaemision' || n === 'fechaemisión') colMap['fecha'] = h;
+      else if (!colMap['fecha'] && n.includes('fecha')) colMap['fecha'] = h;
+
+      // Valor / Total
+      if (n === 'total') colMap['valor_neto'] = h;
+      else if (!colMap['valor_neto'] && (n.includes('valorneto') || n === 'valor' || n === 'neto')) colMap['valor_neto'] = h;
+
+      // Tipo de documento
+      if (n === 'tipodedocumento' || n === 'tipodocumento' || n === 'tipodocto') colMap['tipo_docto'] = h;
+      else if (!colMap['tipo_docto'] && n === 'tipo') colMap['tipo_docto'] = h;
     }
 
-    if (!colMap['nit'] || !colMap['documento']) {
+    if (!colMap['nit']) {
+      const esperada = modo === 'ventas' ? '"NIT Receptor"' : '"NIT Emisor"';
       throw new BadRequestException(
-        'El archivo debe tener al menos las columnas "nit" y "documento".',
+        `No se encontró la columna del NIT (${esperada} o "nit"). Hojas: ${workbook.SheetNames.join(', ')}.`,
+      );
+    }
+    if (!colMap['documento']) {
+      throw new BadRequestException(
+        'No se encontró la columna del documento ("Folio" o "documento").',
       );
     }
 
@@ -257,11 +303,21 @@ export class FinancieroService {
       const docRaw = r[colMap['documento']];
       if (nitRaw == null || docRaw == null) return;
       const nit = String(nitRaw).replace(/[^0-9]/g, '');
-      const documento = String(docRaw).trim();
-      if (!nit || !documento) return;
+      const folio = String(docRaw).trim();
+      if (!nit || !folio) return;
+
+      // Documento = Prefijo + Folio cuando prefijo viene aparte y no está ya incluido
+      let documento = folio;
+      if (colMap['prefijo']) {
+        const pref = String(r[colMap['prefijo']] ?? '').trim();
+        if (pref && !folio.toUpperCase().startsWith(pref.toUpperCase())) {
+          documento = pref + folio;
+        }
+      }
+
       const valorRaw = colMap['valor_neto'] ? r[colMap['valor_neto']] : null;
       out.push({
-        fila: idx + 2, // +2 = encabezado en fila 1
+        fila: idx + 2,
         nit,
         documento,
         tipo_docto: colMap['tipo_docto'] ? r[colMap['tipo_docto']] : null,
@@ -269,10 +325,52 @@ export class FinancieroService {
         valor_neto:
           valorRaw == null || valorRaw === ''
             ? null
-            : Number(String(valorRaw).replace(/[^0-9.-]/g, '')),
+            : Number(String(valorRaw).replace(/[^0-9.\-]/g, '')),
       });
     });
     return out;
+  }
+
+  /**
+   * Encabezados oficiales del archivo descargado del portal DIAN.
+   * El orden importa para mantener la equivalencia 1:1 con el archivo del cliente.
+   */
+  private static readonly DIAN_HEADERS = [
+    'Tipo de documento', 'CUFE/CUDE', 'Folio', 'Prefijo', 'Divisa',
+    'Forma de Pago', 'Medio de Pago', 'Fecha Emisión', 'Fecha Recepción',
+    'NIT Emisor', 'Nombre Emisor', 'NIT Receptor', 'Nombre Receptor',
+    'IVA', 'ICA', 'IC', 'INC', 'Timbre', 'INC Bolsas', 'IN Carbono',
+    'IN Combustibles', 'IC Datos', 'ICL', 'INPP', 'IBUA', 'ICUI',
+    'Rete IVA', 'Rete Renta', 'Rete ICA', 'Total', 'Estado', 'Grupo',
+  ];
+
+  /** Construye la hoja "Columnas clave" indicando qué columnas usa el sistema. */
+  private buildHojaColumnasClave(modo: 'ventas' | 'compras'): XLSX.WorkSheet {
+    const nitCol = modo === 'ventas' ? 'NIT Receptor' : 'NIT Emisor';
+    const filas: any[][] = [
+      ['CAMPO INTERNO', 'COLUMNA REQUERIDA EN EL ARCHIVO', 'OBLIGATORIA', 'DESCRIPCIÓN'],
+      ['nit', nitCol, 'SÍ', modo === 'ventas'
+        ? 'NIT del cliente al que se le emitió la factura.'
+        : 'NIT del proveedor que emitió la factura de compra.'],
+      ['documento', 'Folio  (+ Prefijo si existe)', 'SÍ',
+        'Número del documento. Si la columna "Prefijo" tiene valor (ej. "FS") se concatena al inicio del Folio antes de cruzar.'],
+      ['fecha', 'Fecha Emisión', 'NO', 'Fecha en que el documento fue emitido. Solo informativa.'],
+      ['valor_neto', 'Total', 'NO',
+        'Valor total del documento. Se compara contra el valor en BD para detectar discrepancias (>$0.50).'],
+      ['tipo_docto', 'Tipo de documento', 'NO', 'Tipo del documento (Factura, Documento soporte, etc.).'],
+      [],
+      ['NOTAS:'],
+      ['1. El sistema detecta las columnas POR NOMBRE, no por posición. Puede reordenarlas.'],
+      ['2. También se aceptan los nombres alternativos: "nit", "documento", "fecha", "valor_neto", "tipo_docto".'],
+      ['3. Las hojas "Columnas clave" / "Instrucciones" se ignoran al procesar.'],
+      ['4. Cada fila representa un documento. Filas sin NIT o sin Folio se omiten.'],
+      [`5. Modo: ${modo.toUpperCase()} — el cruce se hace contra ${modo === 'ventas'
+        ? 't461_cm_docto_factura_venta + t460_cm_docto_remision_venta'
+        : 't451_cm_docto_compras (campo f451_num_docto_referencia)'}.`],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(filas);
+    ws['!cols'] = [{ wch: 18 }, { wch: 32 }, { wch: 12 }, { wch: 80 }];
+    return ws;
   }
 
   async generarPlantilla(): Promise<Buffer> {
@@ -283,8 +381,8 @@ export class FinancieroService {
       realesFV = await this.dataSource.query(`
         SELECT TOP 3
           REPLACE(REPLACE(t.f200_nit, '-', ''), '.', '') as nit,
+          t.f200_razon_social as nombre,
           CAST(d.f350_consec_docto AS VARCHAR) as documento,
-          'FV' as tipo_docto,
           CONVERT(VARCHAR(10), f.f461_id_fecha, 23) as fecha,
           f.f461_vlr_neto as valor_neto
         FROM t461_cm_docto_factura_venta f
@@ -300,8 +398,8 @@ export class FinancieroService {
       realesRV = await this.dataSource.query(`
         SELECT TOP 2
           REPLACE(REPLACE(t.f200_nit, '-', ''), '.', '') as nit,
+          t.f200_razon_social as nombre,
           CAST(d.f350_consec_docto AS VARCHAR) as documento,
-          'RV' as tipo_docto,
           CONVERT(VARCHAR(10), r.f460_id_fecha, 23) as fecha,
           r.f460_vlr_neto as valor_neto
         FROM t460_cm_docto_remision_venta r
@@ -315,30 +413,41 @@ export class FinancieroService {
       realesRV = [];
     }
 
-    const data: any[] = [
-      ...realesFV.map((r) => ({
-        nit: r.nit,
-        documento: r.documento,
-        tipo_docto: r.tipo_docto,
-        fecha: r.fecha,
-        valor_neto: Number(r.valor_neto) || 0,
-      })),
-      ...realesRV.map((r) => ({
-        nit: r.nit,
-        documento: r.documento,
-        tipo_docto: r.tipo_docto,
-        fecha: r.fecha,
-        valor_neto: Number(r.valor_neto) || 0,
-      })),
-      // Filas "de prueba" que NO coincidirán (para ver la sección de no encontradas)
-      { nit: '900999888', documento: 'NO-EXISTE-1', tipo_docto: 'FV', fecha: '2026-04-22', valor_neto: 100000 },
-      { nit: '800111222', documento: 'NO-EXISTE-2', tipo_docto: 'RV', fecha: '2026-04-23', valor_neto: 250000 },
+    const reales = [...realesFV, ...realesRV];
+    const ejemplos = [
+      { nit: '900999888', nombre: 'EJEMPLO QUE NO COINCIDE 1', documento: 'NO-EXISTE-1', fecha: '2026-04-22', valor_neto: 100000 },
+      { nit: '800111222', nombre: 'EJEMPLO QUE NO COINCIDE 2', documento: 'NO-EXISTE-2', fecha: '2026-04-23', valor_neto: 250000 },
     ];
 
+    // En ventas: NIT Emisor = nuestra empresa, NIT Receptor = cliente
+    const NIT_EMISOR_EMPRESA = '800213511';
+    const NOMBRE_EMISOR_EMPRESA = 'ESPECIALIDADES OFTALMOLOGICAS S.A';
+
+    const aoa: any[][] = [FinancieroService.DIAN_HEADERS];
+    [...reales, ...ejemplos].forEach((r) => {
+      const fila = new Array(FinancieroService.DIAN_HEADERS.length).fill('');
+      fila[0] = 'Factura electrónica de Venta'; // Tipo de documento
+      fila[1] = ''; // CUFE/CUDE
+      fila[2] = r.documento; // Folio
+      fila[3] = ''; // Prefijo (vacío porque el folio ya trae el prefijo concatenado en BD)
+      fila[4] = 'COP'; // Divisa
+      fila[7] = r.fecha; // Fecha Emisión
+      fila[8] = r.fecha; // Fecha Recepción
+      fila[9] = NIT_EMISOR_EMPRESA;
+      fila[10] = NOMBRE_EMISOR_EMPRESA;
+      fila[11] = r.nit; // NIT Receptor (cliente)
+      fila[12] = r.nombre || '';
+      fila[29] = Number(r.valor_neto) || 0; // Total
+      fila[30] = 'Aprobado';
+      fila[31] = 'Emitido';
+      aoa.push(fila);
+    });
+
     const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(data);
-    ws['!cols'] = [{ wch: 16 }, { wch: 16 }, { wch: 12 }, { wch: 14 }, { wch: 16 }];
-    XLSX.utils.book_append_sheet(wb, ws, 'conciliacion');
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = FinancieroService.DIAN_HEADERS.map(() => ({ wch: 18 }));
+    XLSX.utils.book_append_sheet(wb, ws, 'Hoja1');
+    XLSX.utils.book_append_sheet(wb, this.buildHojaColumnasClave('ventas'), 'Columnas clave');
     return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
   }
 
@@ -348,8 +457,8 @@ export class FinancieroService {
       reales = await this.dataSource.query(`
         SELECT TOP 5
           REPLACE(REPLACE(t.f200_nit, '-', ''), '.', '') as nit,
+          t.f200_razon_social as nombre,
           LTRIM(RTRIM(c.f451_num_docto_referencia)) as documento,
-          'FC' as tipo_docto,
           CONVERT(VARCHAR(10), c.f451_id_fecha, 23) as fecha,
           c.f451_vlr_neto as valor_neto
         FROM t451_cm_docto_compras c
@@ -364,22 +473,39 @@ export class FinancieroService {
       reales = [];
     }
 
-    const data: any[] = [
-      ...reales.map((r) => ({
-        nit: r.nit,
-        documento: r.documento,
-        tipo_docto: r.tipo_docto,
-        fecha: r.fecha,
-        valor_neto: Number(r.valor_neto) || 0,
-      })),
-      { nit: '900999888', documento: 'FAC-NO-EXISTE', tipo_docto: 'FC', fecha: '2026-04-22', valor_neto: 100000 },
-      { nit: '800111222', documento: 'INV-2026-X', tipo_docto: 'FC', fecha: '2026-04-23', valor_neto: 250000 },
+    const ejemplos = [
+      { nit: '900999888', nombre: 'PROVEEDOR EJEMPLO 1', documento: 'FAC-NO-EXISTE', fecha: '2026-04-22', valor_neto: 100000 },
+      { nit: '800111222', nombre: 'PROVEEDOR EJEMPLO 2', documento: 'INV-2026-X', fecha: '2026-04-23', valor_neto: 250000 },
     ];
 
+    // En compras: NIT Emisor = proveedor, NIT Receptor = nuestra empresa
+    const NIT_RECEPTOR_EMPRESA = '800213511';
+    const NOMBRE_RECEPTOR_EMPRESA = 'ESPECIALIDADES OFTALMOLOGICAS S.A';
+
+    const aoa: any[][] = [FinancieroService.DIAN_HEADERS];
+    [...reales, ...ejemplos].forEach((r) => {
+      const fila = new Array(FinancieroService.DIAN_HEADERS.length).fill('');
+      fila[0] = 'Factura electrónica de Venta';
+      fila[2] = r.documento; // Folio
+      fila[3] = ''; // Prefijo
+      fila[4] = 'COP';
+      fila[7] = r.fecha;
+      fila[8] = r.fecha;
+      fila[9] = r.nit; // NIT Emisor (proveedor)
+      fila[10] = r.nombre || '';
+      fila[11] = NIT_RECEPTOR_EMPRESA;
+      fila[12] = NOMBRE_RECEPTOR_EMPRESA;
+      fila[29] = Number(r.valor_neto) || 0;
+      fila[30] = 'Aprobado';
+      fila[31] = 'Recibido';
+      aoa.push(fila);
+    });
+
     const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(data);
-    ws['!cols'] = [{ wch: 16 }, { wch: 20 }, { wch: 12 }, { wch: 14 }, { wch: 16 }];
-    XLSX.utils.book_append_sheet(wb, ws, 'conciliacion-compras');
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = FinancieroService.DIAN_HEADERS.map(() => ({ wch: 18 }));
+    XLSX.utils.book_append_sheet(wb, ws, 'Hoja1');
+    XLSX.utils.book_append_sheet(wb, this.buildHojaColumnasClave('compras'), 'Columnas clave');
     return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
   }
 }

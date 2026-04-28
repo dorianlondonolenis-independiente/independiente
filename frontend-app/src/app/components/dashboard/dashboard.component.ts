@@ -239,7 +239,6 @@ export class DashboardComponent implements OnInit {
     { label: 'Ventas', description: 'Pedidos y facturación', icon: 'bi bi-cart-check', gradient: 'linear-gradient(135deg, #198754, #146c43)', route: '/ventas' },
     { label: 'Compras', description: 'Órdenes de compra', icon: 'bi bi-truck', gradient: 'linear-gradient(135deg, #fd7e14, #e06b0a)', route: '/compras' },
     { label: 'Cartera', description: 'CxC y CxP — Saldos abiertos', icon: 'bi bi-wallet2', gradient: 'linear-gradient(135deg, #0dcaf0, #0aa2c0)', route: '/cartera' },
-    { label: 'Kardex', description: 'Movimientos de inventario', icon: 'bi bi-arrow-left-right', gradient: 'linear-gradient(135deg, #0d6efd, #0d57d8)', route: '/kardex' },
     { label: 'Terceros', description: 'Clientes, proveedores, empleados', icon: 'bi bi-people-fill', gradient: 'linear-gradient(135deg, #6f42c1, #5a32a3)', route: '/terceros' },
     { label: 'Maestras', description: 'Gestión de datos maestros', icon: 'bi bi-grid-3x3-gap-fill', gradient: 'linear-gradient(135deg, #20c997, #199d76)', route: '/maestras' },
     { label: 'Nuevo Producto', description: 'Wizard para crear ítem', icon: 'bi bi-plus-lg', gradient: 'linear-gradient(135deg, #6610f2, #520dc2)', route: '/maestras/producto/nuevo' },

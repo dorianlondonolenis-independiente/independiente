@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { filter } from 'rxjs/operators';
 import { ApiViewerService } from './services/api-viewer.service';
 import { PreferencesService } from './services/preferences.service';
+import { AuthService } from './auth/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -18,6 +19,16 @@ export class App implements OnInit {
   private apiService = inject(ApiViewerService);
   private router = inject(Router);
   prefs = inject(PreferencesService);
+  auth = inject(AuthService);
+
+  // Visible solo cuando hay sesión y la ruta NO es /login
+  isAuthLayout = computed(() => {
+    const url = this.router.url;
+    return this.auth.isAuthenticated() && !url.startsWith('/login');
+  });
+
+  // Estado del dropdown de usuario en la topbar
+  userMenuOpen = signal(false);
 
   sidebarCollapsed = this.prefs.sidebarCollapsed;
   darkMode = this.prefs.darkMode;
@@ -47,7 +58,6 @@ export class App implements OnInit {
     ventas: 'Ventas',
     compras: 'Compras',
     cartera: 'Cartera',
-    kardex: 'Kardex',
     terceros: 'Terceros',
     tables: 'Explorar Tablas',
     queries: 'Consultas SQL',
@@ -59,6 +69,16 @@ export class App implements OnInit {
   ngOnInit() {
     // Apply dark mode class on init
     this.applyDarkMode(this.darkMode());
+
+    // Si tenemos un token guardado, validarlo contra el backend al arrancar.
+    // Si el backend responde 401 (token expirado / sesión invalidada), el
+    // interceptor JWT llama forceLogout() y nos manda a /login.
+    if (this.auth.token()) {
+      this.auth.refreshMe().subscribe({
+        next: () => {},
+        error: () => {},
+      });
+    }
 
     // Update breadcrumbs on navigation
     this.router.events.pipe(
@@ -162,5 +182,9 @@ export class App implements OnInit {
 
   closeSearch() {
     this.showSearchResults.set(false);
+  }
+
+  logout() {
+    this.auth.logout();
   }
 }

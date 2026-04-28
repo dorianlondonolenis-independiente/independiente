@@ -1,0 +1,10 @@
+{
+  "name": "licensing-tool",
+  "version": "1.0.0",
+  "description": "Herramienta INTERNA para generar y firmar keys de licencia. NO distribuir al cliente.",
+  "private": true,
+  "scripts": {
+    "init-keys": "node init-keys.js",
+    "generar": "node generar-key.js"
+  }
+}

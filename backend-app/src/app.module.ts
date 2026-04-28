@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { AuthModule } from './auth/auth.module';
 import { MetadataController } from './controllers/metadata/metadata.controller';
 import { MetadataService } from './services/metadata/metadata.service';
 import { DataController } from './controllers/data/data.controller';
@@ -22,8 +23,6 @@ import { ComprasController } from './controllers/compras/compras.controller';
 import { ComprasService } from './services/compras/compras.service';
 import { CarteraController } from './controllers/cartera/cartera.controller';
 import { CarteraService } from './services/cartera/cartera.service';
-import { KardexController } from './controllers/kardex/kardex.controller';
-import { KardexService } from './services/kardex/kardex.service';
 import { TercerosController } from './controllers/terceros/terceros.controller';
 import { TercerosService } from './services/terceros/terceros.service';
 import { BulkUploadController } from './controllers/bulk-upload/bulk-upload.controller';
@@ -42,6 +41,7 @@ import { FinancieroService } from './services/financiero/financiero.service';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    AuthModule,
     TypeOrmModule.forRoot({
       type: 'mssql',
       host: '10.10.1.48',
@@ -49,7 +49,11 @@ import { FinancieroService } from './services/financiero/financiero.service';
       username: 'sa',
       password: 'Sa123456',
       database: 'UnoEE',
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      entities: [
+        join(__dirname, 'controllers/**/*.entity{.ts,.js}'),
+        join(__dirname, 'services/**/*.entity{.ts,.js}'),
+        join(__dirname, 'entities/**/*.entity{.ts,.js}'),
+      ],
       synchronize: false,
       retryAttempts: 0,
       retryDelay: 500,
@@ -64,20 +68,20 @@ import { FinancieroService } from './services/financiero/financiero.service';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         secret: config.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: '7d' },
+        signOptions: { expiresIn: '12h' },
       }),
     }),
   ],
   controllers: [
     AppController, MetadataController, DataController, QueriesController,
     MaestrasController, InventarioController, VentasController, ComprasController,
-    CarteraController, KardexController, TercerosController, BulkUploadController, SiesaXmlController,
+    CarteraController, TercerosController, BulkUploadController, SiesaXmlController,
     FinancieroController,
   ],
   providers: [
     AppService, MetadataService, DataService, QueriesService,
     MaestrasService, InventarioService, VentasService, ComprasService,
-    CarteraService, KardexService, TercerosService, BulkUploadService, SiesaXmlService,
+    CarteraService, TercerosService, BulkUploadService, SiesaXmlService,
     SiesaComprobantesService,
     FinancieroService,
   ],

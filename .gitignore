@@ -14,6 +14,16 @@
 
 # Environment files
 /.env
+**/.env
+!**/.env.example
+
+# Auth DB local (SQLite)
+**/data/auth.db
+**/data/auth.db-*
+
+# Llave privada del firmador de licencias (NUNCA commitear)
+licensing-tool/private-key.pem
+licensing-tool/keys/
 
 # Angular CLI and build artefacts
 /.angular-cli.json

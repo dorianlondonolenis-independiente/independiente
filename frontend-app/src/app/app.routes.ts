@@ -9,7 +9,6 @@ import { InventarioComponent } from './components/inventario/inventario.componen
 import { VentasComponent } from './components/ventas/ventas.component';
 import { ComprasComponent } from './components/compras/compras.component';
 import { CarteraComponent } from './components/cartera/cartera.component';
-import { KardexComponent } from './components/kardex/kardex.component';
 import { TercerosComponent } from './components/terceros/terceros.component';
 import { BulkUploadComponent } from './components/bulk-upload/bulk-upload.component';
 import { SiesaXmlComponent } from './components/siesa-xml/siesa-xml.component';
@@ -22,90 +21,144 @@ import { DetalleDevolucionComponent } from './features/ventas/detalle-devolucion
 import { ConciliacionVentasComponent } from './features/financiero/conciliacion-ventas.component';
 import { ComprobantesXmlComponent } from './features/siesa-xml/comprobantes-xml.component';
 
+// Auth
+import { LoginComponent } from './auth/login/login.component';
+import { authGuard, adminGuard, moduleGuard } from './auth/auth.guards';
+import { UsuariosComponent } from './features/admin/usuarios.component';
+import { LicenciaComponent } from './features/admin/licencia.component';
+
 export const routes: Routes = [
   {
+    path: 'login',
+    component: LoginComponent,
+  },
+  {
     path: 'dashboard',
-    component: DashboardComponent
+    component: DashboardComponent,
+    canActivate: [authGuard],
   },
   {
     path: 'ventas/factura/:rowid',
-    component: DetalleFacturaComponent
+    component: DetalleFacturaComponent,
+    canActivate: [authGuard, moduleGuard],
+    data: { module: 'ventas' },
   },
   {
     path: 'ventas/pedido/:rowid',
-    component: DetallePedidoComponent
+    component: DetallePedidoComponent,
+    canActivate: [authGuard, moduleGuard],
+    data: { module: 'ventas' },
   },
   {
     path: 'ventas/remision/:rowid',
-    component: DetalleRemisionComponent
+    component: DetalleRemisionComponent,
+    canActivate: [authGuard, moduleGuard],
+    data: { module: 'ventas' },
   },
   {
     path: 'ventas/devolucion/:rowid',
-    component: DetalleDevolucionComponent
+    component: DetalleDevolucionComponent,
+    canActivate: [authGuard, moduleGuard],
+    data: { module: 'ventas' },
   },
   {
     path: 'financiero/conciliacion',
-    component: ConciliacionVentasComponent
+    component: ConciliacionVentasComponent,
+    canActivate: [authGuard, moduleGuard],
+    data: { module: 'financiero/conciliacion' },
   },
   {
     path: 'tables',
-    component: TablesListComponent
+    component: TablesListComponent,
+    canActivate: [authGuard, moduleGuard],
+    data: { module: 'tables' },
   },
   {
     path: 'queries',
-    component: QueriesListComponent
+    component: QueriesListComponent,
+    canActivate: [authGuard, moduleGuard],
+    data: { module: 'queries' },
   },
   {
     path: 'maestras',
-    component: MaestrasDashboardComponent
+    component: MaestrasDashboardComponent,
+    canActivate: [authGuard, moduleGuard],
+    data: { module: 'maestras' },
   },
   {
     path: 'maestras/producto/nuevo',
-    component: ProductoWizardComponent
+    component: ProductoWizardComponent,
+    canActivate: [authGuard, moduleGuard],
+    data: { module: 'maestras' },
   },
   {
     path: 'inventario',
-    component: InventarioComponent
+    component: InventarioComponent,
+    canActivate: [authGuard, moduleGuard],
+    data: { module: 'inventario' },
   },
   {
     path: 'ventas',
-    component: VentasComponent
+    component: VentasComponent,
+    canActivate: [authGuard, moduleGuard],
+    data: { module: 'ventas' },
   },
   {
     path: 'compras',
-    component: ComprasComponent
+    component: ComprasComponent,
+    canActivate: [authGuard, moduleGuard],
+    data: { module: 'compras' },
   },
   {
     path: 'cartera',
-    component: CarteraComponent
-  },
-  {
-    path: 'kardex',
-    component: KardexComponent
+    component: CarteraComponent,
+    canActivate: [authGuard, moduleGuard],
+    data: { module: 'cartera' },
   },
   {
     path: 'terceros',
-    component: TercerosComponent
+    component: TercerosComponent,
+    canActivate: [authGuard, moduleGuard],
+    data: { module: 'terceros' },
   },
   {
     path: 'bulk-upload',
-    component: BulkUploadComponent
+    component: BulkUploadComponent,
+    canActivate: [authGuard, moduleGuard],
+    data: { module: 'bulk-upload' },
   },
   {
     path: 'siesa-xml',
-    component: SiesaXmlComponent
+    component: SiesaXmlComponent,
+    canActivate: [authGuard, moduleGuard],
+    data: { module: 'siesa-xml' },
   },
   {
     path: 'siesa-xml/comprobantes',
-    component: ComprobantesXmlComponent
+    component: ComprobantesXmlComponent,
+    canActivate: [authGuard, moduleGuard],
+    data: { module: 'siesa-xml/comprobantes' },
+  },
+  {
+    path: 'admin/usuarios',
+    component: UsuariosComponent,
+    canActivate: [authGuard, adminGuard],
+  },
+  {
+    path: 'admin/licencia',
+    component: LicenciaComponent,
+    canActivate: [authGuard, adminGuard],
   },
   {
     path: 'test',
-    component: ListTableDynamicComponent
+    component: ListTableDynamicComponent,
+    canActivate: [authGuard],
   },
   {
     path: 'table/:endpoint',
-    component: ListTableDynamicComponent
+    component: ListTableDynamicComponent,
+    canActivate: [authGuard, moduleGuard],
+    data: { module: 'tables' },
   },
   {
     path: 'table',
