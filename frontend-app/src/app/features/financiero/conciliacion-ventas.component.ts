@@ -34,7 +34,7 @@ interface ResultadoConciliacion {
           <i class="bi bi-arrow-left me-1"></i>Volver
         </a>
         <div>
-          <h2 class="mb-0"><i class="bi bi-file-earmark-check me-2"></i>Conciliación Financiera</h2>
+          <h2 class="mb-0"><i class="bi bi-file-earmark-check me-2"></i>Conciliación Bancaria</h2>
           <small class="text-muted">Validar archivo contra documentos contables (NIT + documento)</small>
         </div>
       </div>

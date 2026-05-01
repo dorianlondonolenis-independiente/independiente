@@ -17,6 +17,10 @@
         <i class="bi bi-speedometer2"></i>
         <span class="nav-label">Dashboard</span>
       </a>
+      <a *ngIf="auth.hasModule('alertas')" class="nav-item" routerLink="/alertas" routerLinkActive="active">
+        <i class="bi bi-bell-fill"></i>
+        <span class="nav-label">Alertas</span>
+      </a>
       <a *ngIf="auth.hasModule('maestras')" class="nav-item" routerLink="/maestras" routerLinkActive="active">
         <i class="bi bi-grid-3x3-gap-fill"></i>
         <span class="nav-label">Maestras</span>
@@ -69,7 +73,7 @@
       </a>
       <a *ngIf="auth.hasModule('financiero/conciliacion')" class="nav-item" routerLink="/financiero/conciliacion" routerLinkActive="active">
         <i class="bi bi-file-earmark-check"></i>
-        <span class="nav-label">Conciliación</span>
+        <span class="nav-label">Conciliación DIAN</span>
       </a>
 
       <!-- Sección admin: solo visible para usuarios con rol 'admin' -->

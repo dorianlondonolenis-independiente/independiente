@@ -12,6 +12,7 @@ import { CarteraComponent } from './components/cartera/cartera.component';
 import { TercerosComponent } from './components/terceros/terceros.component';
 import { BulkUploadComponent } from './components/bulk-upload/bulk-upload.component';
 import { SiesaXmlComponent } from './components/siesa-xml/siesa-xml.component';
+import { AlertasComponent } from './components/alertas/alertas.component';
 
 // Importar componentes de detalle
 import { DetalleFacturaComponent } from './features/ventas/detalle-factura.component';
@@ -90,6 +91,12 @@ export const routes: Routes = [
     component: ProductoWizardComponent,
     canActivate: [authGuard, moduleGuard],
     data: { module: 'maestras' },
+  },
+  {
+    path: 'alertas',
+    component: AlertasComponent,
+    canActivate: [authGuard, moduleGuard],
+    data: { module: 'alertas' },
   },
   {
     path: 'inventario',

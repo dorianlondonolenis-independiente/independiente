@@ -57,11 +57,6 @@ interface EnvioResult {
             <i class="bi bi-people me-1"></i>Terceros
           </button>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/siesa-xml/comprobantes">
-            <i class="bi bi-journal-text me-1"></i>Comprobantes Contables
-          </a>
-        </li>
         <!-- Aqui se agregan futuras entidades -->
       </ul>
 
@@ -81,12 +76,6 @@ interface EnvioResult {
                 [class.btn-outline-primary]="modo() !== 'bd'"
                 (click)="modo.set('bd')">
                 <i class="bi bi-database-fill-up me-1"></i>Insertar en BD
-              </button>
-              <button type="button" class="btn btn-sm"
-                [class.btn-success]="modo() === 'xml-descarga'"
-                [class.btn-outline-success]="modo() !== 'xml-descarga'"
-                (click)="modo.set('xml-descarga')">
-                <i class="bi bi-file-earmark-code me-1"></i>Descargar XML
               </button>
               <button type="button" class="btn btn-sm"
                 [class.btn-warning]="modo() === 'xml-api'"
@@ -109,6 +98,9 @@ interface EnvioResult {
             </div>
             <button class="btn btn-success btn-sm" (click)="descargarPlantilla()">
               <i class="bi bi-file-earmark-excel me-1"></i>Descargar Plantilla
+            </button>
+            <button class="btn btn-outline-warning btn-sm" (click)="descargarEjemplo()">
+              <i class="bi bi-file-earmark-code me-1"></i>XML de ejemplo
             </button>
           </div>
 
@@ -230,44 +222,7 @@ interface EnvioResult {
           </ng-container>
           <!-- /modo bd -->
 
-          <!-- ── MODO: DESCARGAR XML ──────────────────────────────────────── -->
-          <ng-container *ngIf="modo() === 'xml-descarga'">
-            <div class="row g-3 mb-3 p-3 bg-light rounded">
-              <div class="col-12">
-                <h6 class="fw-semibold mb-0"><i class="bi bi-sliders me-1"></i>Parametros del XML</h6>
-                <small class="text-muted">Estos datos van en el encabezado del archivo XML generado.</small>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label small fw-semibold">Nombre Conexion</label>
-                <input type="text" class="form-control form-control-sm" [(ngModel)]="xmlConexion" placeholder="SQL-NEO" />
-              </div>
-              <div class="col-md-2">
-                <label class="form-label small fw-semibold">ID Compania</label>
-                <input type="number" class="form-control form-control-sm" [(ngModel)]="xmlIdCia" min="1" />
-              </div>
-              <div class="col-md-3">
-                <label class="form-label small fw-semibold">Usuario</label>
-                <input type="text" class="form-control form-control-sm" [(ngModel)]="xmlUsuario" placeholder="jairc" />
-              </div>
-              <div class="col-md-3">
-                <label class="form-label small fw-semibold">Clave</label>
-                <input type="password" class="form-control form-control-sm" [(ngModel)]="xmlClave" />
-              </div>
-            </div>
 
-            <div *ngIf="archivo()" class="mb-3">
-              <button class="btn btn-success btn-sm" (click)="descargarXml()" [disabled]="loadingXml()">
-                <span *ngIf="loadingXml()" class="spinner-border spinner-border-sm me-1"></span>
-                <i *ngIf="!loadingXml()" class="bi bi-file-earmark-code me-1"></i>Generar y Descargar XML
-              </button>
-              <small class="text-muted ms-3">Genera el XML listo para importar manualmente en Siesa.</small>
-            </div>
-
-            <div *ngIf="!archivo()" class="text-muted small fst-italic">
-              Sube un Excel en la zona de arriba para generar el XML.
-            </div>
-          </ng-container>
-          <!-- /modo xml-descarga -->
 
           <!-- ── MODO: ENVIO XML AL API SIESA ────────────────────────────── -->
           <ng-container *ngIf="modo() === 'xml-api'">
@@ -277,7 +232,7 @@ interface EnvioResult {
               </div>
               <div class="col-md-6">
                 <label class="form-label small fw-semibold">URL del API <span class="text-danger">*</span></label>
-                <input type="url" class="form-control form-control-sm" [(ngModel)]="envioUrl" placeholder="http://servidor/SiesaImport/..." />
+                <input type="url" class="form-control form-control-sm" [(ngModel)]="envioUrl" placeholder="http://10.10.1.48/WSUNOEE/WFPruebaImportar.aspx" />
               </div>
               <div class="col-md-3">
                 <label class="form-label small fw-semibold">Nombre Conexion <span class="text-danger">*</span></label>
@@ -363,7 +318,7 @@ export class SiesaXmlComponent {
   entidad = signal<'terceros'>('terceros');
 
   // Nivel 2: Modo
-  modo = signal<'bd' | 'xml-descarga' | 'xml-api'>('bd');
+  modo = signal<'bd' | 'xml-api'>('bd');
 
   // Archivo compartido entre modos
   archivo = signal<File | null>(null);
@@ -377,27 +332,43 @@ export class SiesaXmlComponent {
   insertResult = signal<InsertResult | null>(null);
   idCia = 1;
 
-  // Modo Descargar XML
-  loadingXml = signal(false);
-  xmlConexion = 'SQL-NEO';
-  xmlIdCia = 1;
-  xmlUsuario = '';
-  xmlClave = '';
+
 
   // Modo API Siesa
   loadingEnvio = signal(false);
   envioResult = signal<EnvioResult | null>(null);
-  envioUrl = '';
-  envioNombreConexion = 'SQL-NEO';
+  envioUrl = 'http://10.10.1.48/WSUNOEE/WFPruebaImportar.aspx';
+  envioNombreConexion = 'Ecommerce';
   envioIdCia = 1;
-  envioUsuario = '';
+  envioUsuario = 'integracion';
   envioClave = '';
 
   descargarPlantilla() {
-    const a = document.createElement('a');
-    a.href = `${this.api}/terceros/plantilla`;
-    a.download = 'Plantilla_Terceros_Siesa.xlsx';
-    a.click();
+    this.http.get(`${this.api}/terceros/plantilla`, { responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Plantilla_Terceros_Siesa.xlsx';
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      error: () => alert('Error al descargar la plantilla. Verifica que la sesión esté activa.'),
+    });
+  }
+
+  descargarEjemplo() {
+    this.http.get(`${this.api}/terceros/ejemplo`, { responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Importar_Terceros_Ejemplo.xml';
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      error: () => alert('Error al descargar el ejemplo. Verifica que la sesión esté activa.'),
+    });
   }
 
   onFileSelect(event: Event) {
@@ -473,29 +444,7 @@ export class SiesaXmlComponent {
     });
   }
 
-  descargarXml() {
-    if (!this.archivo()) return;
-    this.loadingXml.set(true);
-    const fd = new FormData();
-    fd.append('file', this.archivo()!);
-    const params = `conexion=${encodeURIComponent(this.xmlConexion)}&idCia=${this.xmlIdCia}&usuario=${encodeURIComponent(this.xmlUsuario)}&clave=${encodeURIComponent(this.xmlClave)}`;
 
-    this.http.post(`${this.api}/terceros/generar?${params}`, fd, { responseType: 'blob' }).subscribe({
-      next: (blob) => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'Importar_Terceros.xml';
-        a.click();
-        URL.revokeObjectURL(url);
-        this.loadingXml.set(false);
-      },
-      error: (err) => {
-        alert('Error al generar el XML: ' + (err?.error?.message || 'Error desconocido'));
-        this.loadingXml.set(false);
-      }
-    });
-  }
 
   enviarXmlSiesa() {
     if (!this.archivo()) return;

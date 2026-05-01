@@ -1,7 +1,8 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { AlertasService, ResumenAlertas } from '../../services/alertas.service';
 
 interface MaestraGroup {
   key: string;
@@ -12,7 +13,7 @@ interface MaestraGroup {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   template: `
     <div class="container-fluid py-4 px-4">
       <!-- Welcome header -->
@@ -89,6 +90,45 @@ interface MaestraGroup {
       <div *ngIf="isLoading()" class="text-center py-5">
         <div class="spinner-border text-primary" role="status"></div>
         <p class="text-muted mt-2">Cargando estadísticas...</p>
+      </div>
+
+      <!-- Widget alertas -->
+      <div *ngIf="resumenAlertas()" class="row g-3 mt-1">
+        <div class="col-12">
+          <h5 class="section-title"><i class="bi bi-bell-fill text-warning me-2"></i>Centro de Alertas</h5>
+        </div>
+        <div class="col-6 col-md-3">
+          <a routerLink="/alertas" [queryParams]="{tab:'inventario'}" class="text-decoration-none">
+            <div class="alert-widget" [class.alert-widget-critica]="resumenAlertas()!.sin_stock > 0">
+              <div class="aw-value">{{ resumenAlertas()!.sin_stock }}</div>
+              <div class="aw-label"><i class="bi bi-x-circle-fill me-1"></i>Sin Stock</div>
+            </div>
+          </a>
+        </div>
+        <div class="col-6 col-md-3">
+          <a routerLink="/alertas" class="text-decoration-none">
+            <div class="alert-widget" [class.alert-widget-alta]="resumenAlertas()!.bajo_minimo > 0">
+              <div class="aw-value">{{ resumenAlertas()!.bajo_minimo }}</div>
+              <div class="aw-label"><i class="bi bi-exclamation-triangle-fill me-1"></i>Bajo Mínimo</div>
+            </div>
+          </a>
+        </div>
+        <div class="col-6 col-md-3">
+          <a routerLink="/alertas" [queryParams]="{tab:'ventas'}" class="text-decoration-none">
+            <div class="alert-widget" [class.alert-widget-alta]="resumenAlertas()!.deficit_ventas > 0">
+              <div class="aw-value">{{ resumenAlertas()!.deficit_ventas }}</div>
+              <div class="aw-label"><i class="bi bi-cart-x-fill me-1"></i>Déficit Pedidos</div>
+            </div>
+          </a>
+        </div>
+        <div class="col-6 col-md-3">
+          <a routerLink="/alertas" [queryParams]="{tab:'tendencias'}" class="text-decoration-none">
+            <div class="alert-widget" [class.alert-widget-info]="resumenAlertas()!.productos_cobertura_critica > 0">
+              <div class="aw-value">{{ resumenAlertas()!.productos_cobertura_critica }}</div>
+              <div class="aw-label"><i class="bi bi-clock-history me-1"></i>Cobertura &lt;15d</div>
+            </div>
+          </a>
+        </div>
       </div>
     </div>
   `,
@@ -224,15 +264,37 @@ interface MaestraGroup {
       padding: 2px 10px;
       border-radius: 20px;
     }
+    /* Alert widget */
+    .alert-widget {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px 16px;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      border-left: 4px solid #dee2e6;
+      transition: all .2s;
+    }
+    .alert-widget:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+    .alert-widget-critica { border-left-color: #dc3545; background: #fff5f5; }
+    .alert-widget-alta    { border-left-color: #fd7e14; background: #fff9f5; }
+    .alert-widget-info    { border-left-color: #0d6efd; background: #f0f5ff; }
+    .aw-value { font-size: 2rem; font-weight: 800; color: #212529; line-height: 1; }
+    .alert-widget-critica .aw-value { color: #dc3545; }
+    .alert-widget-alta .aw-value    { color: #fd7e14; }
+    .alert-widget-info .aw-value    { color: #0d6efd; }
+    .aw-label { font-size: 0.78rem; color: #6c757d; margin-top: 6px; font-weight: 500; }
   `]
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private router = inject(Router);
+  private alertasSvc = inject(AlertasService);
+  private alertasTimer: ReturnType<typeof setInterval> | null = null;
 
   isLoading = signal(true);
   maestras = signal<MaestraGroup[]>([]);
   stats = signal<{ label: string; value: number; icon: string; color: string; route: string }[]>([]);
+  resumenAlertas = signal<ResumenAlertas | null>(null);
 
   quickActions = [
     { label: 'Inventario', description: 'Stock por bodega y producto', icon: 'bi bi-box-seam', gradient: 'linear-gradient(135deg, #e94560, #c23152)', route: '/inventario' },
@@ -255,6 +317,18 @@ export class DashboardComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+
+    // Cargar resumen de alertas para el widget y refrescar cada 5 min
+    const cargarAlertas = () => this.alertasSvc.getResumen().subscribe({
+      next: r => this.resumenAlertas.set(r),
+      error: () => {},
+    });
+    cargarAlertas();
+    this.alertasTimer = setInterval(cargarAlertas, 5 * 60 * 1000);
+  }
+
+  ngOnDestroy() {
+    if (this.alertasTimer) clearInterval(this.alertasTimer);
   }
 
   private buildStats(data: MaestraGroup[]) {

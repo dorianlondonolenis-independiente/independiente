@@ -32,7 +32,9 @@ import { SiesaXmlService } from './services/siesa-xml/siesa-xml.service';
 import { SiesaComprobantesService } from './services/siesa-xml/siesa-comprobantes.service';
 import { FinancieroController } from './controllers/financiero/financiero.controller';
 import { FinancieroService } from './services/financiero/financiero.service';
-
+import { ScheduleModule } from '@nestjs/schedule';
+import { AlertasController } from './controllers/alertas/alertas.controller';
+import { AlertasService } from './services/alertas/alertas.service';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
@@ -43,6 +45,7 @@ import { FinancieroService } from './services/financiero/financiero.service';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
     TypeOrmModule.forRoot({
       type: 'mssql',
@@ -78,14 +81,14 @@ import { FinancieroService } from './services/financiero/financiero.service';
     AppController, MetadataController, DataController, QueriesController,
     MaestrasController, InventarioController, VentasController, ComprasController,
     CarteraController, TercerosController, BulkUploadController, SiesaXmlController,
-    FinancieroController,
+    FinancieroController, AlertasController,
   ],
   providers: [
     AppService, MetadataService, DataService, QueriesService,
     MaestrasService, InventarioService, VentasService, ComprasService,
     CarteraService, TercerosService, BulkUploadService, SiesaXmlService,
     SiesaComprobantesService,
-    FinancieroService,
+    FinancieroService, AlertasService,
   ],
 })
 export class AppModule {}

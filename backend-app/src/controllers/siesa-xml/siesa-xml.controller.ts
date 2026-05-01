@@ -28,6 +28,40 @@ export class SiesaXmlController {
   ) {}
 
   /**
+   * GET /api/siesa-xml/terceros/ejemplo
+   * Descarga el XML de ejemplo (CARDENAS MARTINEZ) con credenciales y formato validados
+   */
+  @ApiOperation({ summary: 'Descargar XML de ejemplo Terceros (datos de prueba validados)' })
+  @Get('terceros/ejemplo')
+  downloadEjemplo(@Res() res: Response) {
+    const xml = this.siesaXmlService.generateTercerosXml(
+      [{
+        NIT: '80431764',
+        DV: '1',
+        TIPO_IDENT: 'CC',
+        TIPO_PERSONA: 'N',
+        RAZON_SOCIAL: 'CARDENAS MARTINEZ JAIR GUSTAVO',
+        APELLIDO1: 'CARDENAS',
+        APELLIDO2: 'MARTINEZ',
+        NOMBRES: 'JAIR GUSTAVO',
+        NOMBRE_COMERCIAL: 'CARDENAS MARTINEZ JAIR GUSTAVO',
+        NOMBRE_ESTABLECIMIENTO: 'JAIR GUSTAVO CARDENAS MARTINEZ',
+        DIRECCION: 'AV. 3A NORTE No. 26N-83',
+        COD_CIUDAD: '16976001',
+        TELEFONO: '6534343',
+        EMAIL: 'Jairc@siesa.com',
+        ES_CLIENTE: '1',
+        ES_PROVEEDOR: '1',
+        ES_EMPLEADO: '1',
+      }],
+      { conexion: 'Ecommerce', idCia: '1', usuario: 'integracion', clave: 'Integracion15963*' },
+    );
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="Importar_Terceros_Ejemplo.xml"');
+    res.send(xml);
+  }
+
+  /**
    * GET /api/siesa-xml/terceros/plantilla
    * Descarga la plantilla Excel para carga masiva de terceros
    */

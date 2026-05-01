@@ -63,3 +63,12 @@ src/app/
 - [ ] Paginación en la tabla de datos (actualmente carga 100 registros)
 - [ ] Buscador/filtro en `/tables` y `/queries`
 - [ ] Crear/editar/eliminar consultas desde la UI
+
+
+## generar key 
+#cd C:\Users\doria\OneDrive\Escritorio\INDEPENDIENTE\licensing-tool
+
+node generar-key.js --userId=<UUID-del-usuario> --username=usuario@empresa.com --meses=6
+
+
+node generar-key.js --userId=a1b2c3d4-e5f6-7890-abcd-ef1234567890 --username=cliente@empresa.com --meses=6

@@ -48,7 +48,7 @@ export class SiesaXmlService {
       { col: 'NOMBRE_COMERCIAL',       desc: 'Nombre comercial o de fantasía (máx 50)',             ejemplo: 'MI EMPRESA',      req: false },
       { col: 'NOMBRE_ESTABLECIMIENTO', desc: 'Nombre del establecimiento (máx 50)',                 ejemplo: 'SEDE PRINCIPAL',  req: false },
       { col: 'DIRECCION',              desc: 'Dirección principal (máx 80)',                       ejemplo: 'CRA 15 # 80-20',  req: false },
-      { col: 'COD_CIUDAD',             desc: '11001=Bogotá 76001=Cali 05001=Medellín',             ejemplo: '76001',           req: false },
+      { col: 'COD_CIUDAD',             desc: 'Cód 8 dígitos Siesa: 16911001=Bogotá 16976001=Cali 16905001=Medellín', ejemplo: '16976001', req: false },
       { col: 'TELEFONO',               desc: 'Teléfono fijo o celular',                           ejemplo: '3001234567',      req: false },
       { col: 'EMAIL',                  desc: 'Correo electrónico',                                ejemplo: 'info@empresa.co', req: false },
       { col: 'ES_CLIENTE',             desc: '1=Sí  0=No',                                       ejemplo: '1',               req: false },
@@ -64,40 +64,52 @@ export class SiesaXmlService {
       headers,
       descriptions,
       // 3 filas de ejemplo (una por caso típico)
-      ['900123456', '7',  'NIT', 'J', 'EMPRESA S.A.S',          '',          '',         '',        'MI EMPRESA', 'SEDE PRINCIPAL', 'CRA 15 # 80-20', '76001', '3001234567', 'info@empresa.co', '1', '1', '0'],
-      ['80432100',  '0',  'CC',  'N', 'GARCIA LOPEZ JUAN PABLO', 'GARCIA',    'LOPEZ',    'JUAN PABLO', '',        '',              'CRA 10 #20-30',  '11001', '3109876543', 'juan@mail.com',   '0', '0', '1'],
-      ['919788902', '0',  'CE',  'E', 'EMPRESA EXTRANJERA S.A',  '',          '',         '',        'EXTCORP',    '',              'CLL 5 #10-20',   '76001', '3205556677', 'ext@corp.com',    '1', '0', '0'],
+      ['900123456', '7',  'NIT', 'J', 'EMPRESA S.A.S',          '',          '',         '',        'MI EMPRESA', 'SEDE PRINCIPAL', 'CRA 15 # 80-20', '16976001', '3001234567', 'info@empresa.co', '1', '1', '0'],
+      ['80432100',  '0',  'CC',  'N', 'GARCIA LOPEZ JUAN PABLO', 'GARCIA',    'LOPEZ',    'JUAN PABLO', '',        '',              'CRA 10 #20-30',  '16911001', '3109876543', 'juan@mail.com',   '0', '0', '1'],
+      ['919788902', '0',  'CE',  'E', 'EMPRESA EXTRANJERA S.A',  '',          '',         '',        'EXTCORP',    '',              'CLL 5 #10-20',   '16976001', '3205556677', 'ext@corp.com',    '1', '0', '0'],
     ];
     const ws = XLSX.utils.aoa_to_sheet(wsData);
     ws['!cols'] = fields.map(() => ({ wch: 30 }));
 
     // Instrucciones sheet
     const instrucciones = [
-      ['INSTRUCCIONES DE USO'],
+      ['INSTRUCCIONES DE USO — Importador Terceros Siesa'],
       [''],
-      ['1. Complete la hoja "Terceros" a partir de la fila 4 (filas 1-3 son encabezado, descripción y ejemplo).'],
+      ['1. Complete la hoja "Terceros" a partir de la fila 6 (filas 1-5 son encabezado, descripción y 3 ejemplos).'],
       ['2. Campos marcados con (*) son OBLIGATORIOS.'],
       ['3. TIPO_IDENT: tipo de documento. Valores válidos:'],
-      ['   NIT = Número de Identificación Tributaria'],
-      ['   CC  = Cédula de Ciudadanía'],
-      ['   CE  = Cédula de Extranjería'],
-      ['   TI  = Tarjeta de Identidad'],
-      ['   EXT = Pasaporte/Exterior'],
-      ['   OTRO= Otros'],
-      ['4. TIPO_PERSONA: tipo de persona. J=Jurídico  N=Natural  E=Extranjero'],
-      ['5. COD_CIUDAD: código interno de Siesa (tabla t013_mm_ciudades).'],
-      ['   11001=Bogotá  76001=Cali  05001=Medellín  08001=Barranquilla'],
-      ['6. ES_CLIENTE / ES_PROVEEDOR / ES_EMPLEADO: 1=Sí, 0=No. Por defecto 0.'],
-      ['7. NIT: sin puntos ni guiones.'],
-      ['8. Guarde el archivo como .xlsx antes de subir.'],
+      ['   NIT  = Número de Identificación Tributaria (empresas)'],
+      ['   CC   = Cédula de Ciudadanía'],
+      ['   CE   = Cédula de Extranjería'],
+      ['   TI   = Tarjeta de Identidad'],
+      ['   EXT  = Pasaporte / Exterior'],
+      ['   OTRO = Otros'],
+      ['4. TIPO_PERSONA: J = Jurídico (empresa)   N = Natural (persona)   E = Extranjero'],
+      ['5. COD_CIUDAD: código de 8 dígitos interno de Siesa. Formato: pais(3) + depto(2) + ciudad(3)'],
+      ['   16911001 = Bogotá D.C.'],
+      ['   16976001 = Cali'],
+      ['   16905001 = Medellín'],
+      ['   16908001 = Barranquilla'],
+      ['   16917001 = Manizales'],
+      ['   16954001 = Pereira'],
+      ['   (Consultar tabla t013_mm_ciudades en Siesa para otros municipios)'],
+      ['6. ES_CLIENTE / ES_PROVEEDOR / ES_EMPLEADO: escribir 1 (Sí) o 0 (No). Si se omite, se asume 0.'],
+      ['7. NIT / Número de documento: sin puntos, guiones ni espacios.'],
+      ['8. RAZON_SOCIAL: máximo 50 caracteres. Para personas naturales usar "APELLIDO1 APELLIDO2 NOMBRES".'],
+      ['9. Guarde el archivo como .xlsx antes de subir.'],
       [''],
-      ['MAPEO AL FORMATO XML SIESA (tipo registro 200):'],
-      ['  NIT          → posición 19-33  (15 chars)'],
-      ['  TIPO         → posición 49     (1 char)'],
-      ['  RAZON_SOCIAL → posición 51-100 (50 chars)'],
-      ['  APELLIDO1    → posición 101-115 (15 chars)'],
-      ['  APELLIDO2    → posición 116-130 (15 chars)'],
-      ['  NOMBRES      → posición 131-150 (20 chars)'],
+      ['FLUJO DE USO:'],
+      ['  Modo "Insertar en BD"    → Sube el Excel y los terceros se crean directo en la BD de Siesa.'],
+      ['  Modo "Descargar XML"     → Sube el Excel y descarga el XML listo para importar manualmente.'],
+      ['  Modo "Enviar al API"     → Sube el Excel y se envía automáticamente al API de Siesa (requiere red interna).'],
+      [''],
+      ['MAPEO AL FORMATO XML SIESA (tipo registro 0200, versión 02, 538 chars por línea):'],
+      ['  Prefijo (18): nro_linea + tipo 0200 + versión 0002 + cia'],
+      ['  DV(1) + NIT(15) + NIT_replica(16) + TIPO_IDENT(1) + TIPO_PERSONA(1)'],
+      ['  RAZON_SOCIAL(50) + APELLIDO1(15) + APELLIDO2(15) + NOMBRES(20) + NOM_COMERCIAL(50)'],
+      ['  ES_CLI(1) + ES_PROV(1) + ES_EMP(1) + 000(3) + NOM_ESTABLEC(50)'],
+      ['  DIRECCION(80) + DIR2_relleno(40) + COD_CIUDAD(8) + relleno(40)'],
+      ['  TELEFONO(50) + EMAIL(50) + FECHA(8) + PAD(4)'],
     ];
     const wsInst = XLSX.utils.aoa_to_sheet(instrucciones);
     wsInst['!cols'] = [{ wch: 90 }];
@@ -117,13 +129,13 @@ export class SiesaXmlService {
     const ws = workbook.Sheets[sheetName];
     const all: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' }) as any[][];
 
-    if (all.length < 4) {
-      return { rows: [], errors: ['El archivo no tiene datos (se esperan al menos 4 filas).'] };
+    if (all.length < 6) {
+      return { rows: [], errors: ['El archivo no tiene datos (se esperan al menos 6 filas: encabezado + descripción + 3 ejemplos + 1 dato).'] };
     }
 
-    // Row 0 = headers, row 1 = descriptions, row 2 = example → data starts at row 3 (index 3)
+    // Row 0 = headers, row 1 = descriptions, rows 2-4 = 3 example rows → data starts at row 5 (index 5)
     const headers: string[] = (all[0] as string[]).map(h => String(h).trim().toUpperCase());
-    const dataRows = all.slice(3).filter(r => r.some(c => String(c).trim() !== ''));
+    const dataRows = all.slice(5).filter(r => r.some(c => String(c).trim() !== ''));
 
     const errors: string[] = [];
     const rows: TerceroRow[] = dataRows.map((raw, idx) => {
@@ -169,94 +181,87 @@ export class SiesaXmlService {
 
   // ─────────────────────────────────────────────────────────────────────────────
   // GENERAR XML SIESA TERCEROS
-  // Formato tipo registro 200: ancho fijo según especificación Siesa
+  // Layout verificado por reverse-engineering del archivo Importar Terceros.xml:
+  //   Prefix (18): '000' + nro_linea(4) + '0200' + '0002' + cia(3)
+  //   Header tipo 0000: '000' + '0001' + '0000' + '0001' + cia(3)
+  //   Footer tipo 9999: '000' + total_lineas(4) + '9999' + '0001' + cia(3)
+  //   Data section (520 chars = 538 - 18):
+  //     DV(1) NIT(15) NIT_REPLICA(16) TIPO_IDENT(1) TIPO_PERSONA(1)
+  //     RAZON(50) APE1(15) APE2(15) NOMBRES(20) NOM_COMERCIAL(50)
+  //     ES_CLIENTE(1) ES_PROVEEDOR(1) ES_EMPLEADO(1) FIXED_000(3)
+  //     NOM_ESTABLEC(50) DIRECCION(80) DIR_2(40) COD_CIUDAD(8)
+  //     RELLENO(40) TELEFONO(50) EMAIL(50) FECHA(8) PAD(4)
   // ─────────────────────────────────────────────────────────────────────────────
   generateTercerosXml(
     rows: TerceroRow[],
     options: { conexion?: string; idCia?: string; usuario?: string; clave?: string } = {},
   ): string {
-    const conexion = options.conexion || 'SQL-NEO';
+    const conexion = options.conexion || 'Ecommerce';
     const idCia    = options.idCia    || '1';
-    const usuario  = options.usuario  || '';
+    const usuario  = options.usuario  || 'integracion';
     const clave    = options.clave    || '';
 
     const pad  = (s: string, len: number) => String(s ?? '').substring(0, len).padEnd(len, ' ');
     const padL = (s: string, len: number) => String(s ?? '').substring(0, len).padStart(len, '0');
 
+    const tipoIdentMap:   Record<string, string> = { NIT: 'N', CC: 'C', CE: 'E', TI: 'T', EXT: 'X', OTRO: 'O' };
+    const tipoPersonaMap: Record<string, string> = { J: '0', N: '1', E: '2' };
+
     const lineas: string[] = [];
 
-    // Línea de apertura (tipo 001)
-    lineas.push(`000000100000001${padL(idCia, 3)}`);
+    // Línea header (tipo 0000)
+    lineas.push('000' + '0001' + '0000' + '0001' + padL(idCia, 3));
 
     rows.forEach((r, idx) => {
-      const seq = padL(String((idx + 2) * 10 - 10 + 2), 6); // 000002, 000012, ...
-      // seq line: posición 1-6=secuencia, 7-9=tipo(200), 10-11=subtipo(02), 12-13=campo, 14-16=cia
-      // Formato tipo 200: tercero
-      const seqStr = padL(String(idx + 2), 6);
-      // TIPO_IDENT + TIPO_PERSONA → código Siesa 2 chars para el XML
-      const tipoIdentMapXml: Record<string, string> = { NIT: 'N', CC: 'C', CE: 'E', TI: 'T', EXT: 'X', OTRO: 'O' };
-      const tipoPersonaMapXml: Record<string, string> = { J: '0', N: '1', E: '2' };
-      const tipoSiesa = tipoIdentMapXml[(r.TIPO_IDENT || 'NIT').toUpperCase()] ?? 'N';
-      const indTipoChr = tipoPersonaMapXml[(r.TIPO_PERSONA || 'J').toUpperCase()] ?? '0';
-      const indTipo = tipoSiesa + indTipoChr; // ej. N0, C1, E2
-      const nitPad   = pad(r.NIT || '', 15);
-      const dvPad    = pad(r.DV || '', 1);
-      const razon    = pad(r.RAZON_SOCIAL || '', 50);
-      const ape1     = pad(r.APELLIDO1 || '', 15);
-      const ape2     = pad(r.APELLIDO2 || '', 15);
-      const nombres  = pad(r.NOMBRES || '', 20);
-      const nomComercial = pad(r.NOMBRE_COMERCIAL || (r.RAZON_SOCIAL || ''), 50);
-      const nomEstab = pad(r.NOMBRE_ESTABLECIMIENTO || '', 50);
-      const codCiud  = pad(r.COD_CIUDAD || '', 6);
-      const tel      = pad(r.TELEFONO || '', 20);
-      const email    = pad(r.EMAIL || '', 50);
-      const dir      = pad(r.DIRECCION || '', 80);
+      const nroLinea    = padL(String(idx + 2), 4);
+      const prefix      = '000' + nroLinea + '0200' + '0002' + padL(idCia, 3); // 18 chars
 
-      // Construir línea tipo 200 con posiciones fijas según muestra Siesa
-      // Basado en reverse-engineering del archivo Importar Terceros.xml
-      // Pos 1-6: secuencia | 7-9: "200" | 10-11: "02" | 12-13: "00" | 14-16: cia+rowid | 17-18: tipo+subtipo
-      // 19-33: NIT(15) | 34: DV(1) | 35-48: NIT(14 again, replica) | 49: tipo(1) | 50: ind(1)
-      // 51-100: razon social(50) | 101-115: ape1(15) | 116-130: ape2(15) | 131-150: nombres(20)
-      // 151-200: nom comercial(50) | 201-250: nombre estab(50) | 251-256: cod ciudad(6)
-      // 257-276: telefono(20) | 277-326: email(50)
-      const lineData =
-        seqStr +
-        '200' +
-        '02' +
-        '000' +
-        padL(idCia, 3) +
-        '1' +
-        nitPad +
-        dvPad +
-        nitPad.substring(0, 14) +
-        tipoSiesa +
-        indTipo +
-        razon +
-        ape1 +
-        ape2 +
-        nombres +
-        nomComercial +
-        dir +
-        codCiud +
-        tel +
-        email;
+      const tipoIdent   = tipoIdentMap[(r.TIPO_IDENT   || 'NIT').toUpperCase()] ?? 'N';
+      const tipoPersona = tipoPersonaMap[(r.TIPO_PERSONA || 'J').toUpperCase()] ?? '0';
 
-      lineas.push(lineData);
+      // Data section = 520 chars → total line = 538 chars
+      const dataSection =
+        pad(r.DV || '', 1) +                                               //  1
+        pad(r.NIT || '', 15) +                                             // 15
+        pad(r.NIT || '', 16) +                                             // 16  NIT replica
+        tipoIdent +                                                        //  1
+        tipoPersona +                                                      //  1
+        pad(r.RAZON_SOCIAL || '', 50) +                                    // 50
+        pad(r.APELLIDO1 || '', 15) +                                       // 15
+        pad(r.APELLIDO2 || '', 15) +                                       // 15
+        pad(r.NOMBRES || '', 20) +                                         // 20
+        pad(r.NOMBRE_COMERCIAL || r.RAZON_SOCIAL || '', 50) +              // 50
+        (r.ES_CLIENTE  === '1' ? '1' : '0') +                             //  1
+        (r.ES_PROVEEDOR === '1' ? '1' : '0') +                            //  1
+        (r.ES_EMPLEADO  === '1' ? '1' : '0') +                            //  1
+        '000' +                                                            //  3  fijo
+        pad(r.NOMBRE_ESTABLECIMIENTO || r.RAZON_SOCIAL || '', 50) +        // 50
+        pad(r.DIRECCION || '', 80) +                                       // 80
+        pad('', 40) +                                                      // 40  dirección 2 (relleno)
+        pad(r.COD_CIUDAD || '', 8) +                                       //  8
+        pad('', 40) +                                                      // 40  relleno
+        pad(r.TELEFONO || '', 50) +                                        // 50
+        pad(r.EMAIL || '', 50) +                                           // 50
+        '19000101' +                                                       //  8  fecha nacimiento default
+        '    ';                                                            //  4  padding final
+
+      lineas.push(prefix + dataSection);
     });
 
-    // Línea de cierre (tipo 9999)
-    lineas.push(`${padL(String(rows.length + 2), 6)}99990${padL(idCia, 2)}1${padL(idCia, 3)}`);
+    // Línea footer (tipo 9999) — nro_linea = total de líneas incluyendo header, datos y footer
+    const totalLineas = rows.length + 2;
+    lineas.push('000' + padL(String(totalLineas), 4) + '9999' + '0001' + padL(idCia, 3));
 
     const lineasXml = lineas.map(l => `    <Linea>${l}</Linea>`).join('\n');
 
-    return `<Importar>  \n` +
-      `  <NombreConexion>${conexion}</NombreConexion>  \n` +
-      `  <IdCia>${idCia}</IdCia> \n` +
-      `  <Usuario>${usuario}</Usuario> \n` +
-      `  <Clave>${clave}</Clave> \n` +
+    return `<Importar>\n` +
+      `  <NombreConexion>${conexion}</NombreConexion>\n` +
+      `  <IdCia>${idCia}</IdCia>\n` +
+      `  <Usuario>${usuario}</Usuario>\n` +
+      `  <Clave>${clave}</Clave>\n` +
       `  <Datos>\n` +
       lineasXml + '\n' +
-      `  </Datos> \n` +
+      `  </Datos>\n` +
       `</Importar>`;
   }
 
@@ -288,13 +293,30 @@ export class SiesaXmlService {
           continue;
         }
 
-        // ── Buscar ciudad en BD a partir de '76001' → depto='76' ciudad='001' ──
+        // ── Buscar ciudad en BD a partir del código Siesa (8 chars: pais3+depto2+ciudad3) ──
         const codCiudad = (row.COD_CIUDAD || '').trim();
         let idPais: string | null = null;
         let idDepto: string | null = null;
         let idCiudad: string | null = null;
 
-        if (codCiudad.length >= 5) {
+        if (codCiudad.length === 8) {
+          // Formato nuevo 8-chars: pais(3) + depto(2) + ciudad(3) → ej. '16976001'
+          const pais   = codCiudad.substring(0, 3);
+          const depto  = codCiudad.substring(3, 5);
+          const ciudad = codCiudad.substring(5, 8);
+          const ciudadRow = await this.dataSource.query(
+            `SELECT TOP 1 f013_id_pais, f013_id_depto, f013_id
+             FROM t013_mm_ciudades
+             WHERE f013_id_pais = @0 AND f013_id_depto = @1 AND f013_id = @2`,
+            [pais, depto, ciudad],
+          );
+          if (ciudadRow.length > 0) {
+            idPais   = ciudadRow[0].f013_id_pais;
+            idDepto  = ciudadRow[0].f013_id_depto;
+            idCiudad = ciudadRow[0].f013_id;
+          }
+        } else if (codCiudad.length === 5) {
+          // Formato legado 5-chars: depto(2) + ciudad(3) → ej. '76001'
           const depto  = codCiudad.substring(0, 2);
           const ciudad = codCiudad.substring(2, 5);
           const ciudadRow = await this.dataSource.query(
@@ -425,40 +447,107 @@ export class SiesaXmlService {
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // ENVIAR TERCEROS ROW-BY-ROW VÍA HTTP AL API SIESA
+  // ENVIAR TERCEROS AL API SIESA (WFPruebaImportar.aspx)
+  // El endpoint de SIESA es ASP.NET WebForms → requiere:
+  //   1. GET para obtener tokens __VIEWSTATE / __EVENTVALIDATION
+  //   2. POST con form-urlencoded (txtParametro + tokens + Button1=Ejecutar)
   // ─────────────────────────────────────────────────────────────────────────────
   async enviarXmlToSiesa(
     rows: TerceroRow[],
     options: { conexion: string; idCia: string; usuario: string; clave: string; url: string },
   ): Promise<{ enviados: number; errores: Array<{ nit: string; status?: number; message: string }> }> {
-    let enviados = 0;
     const errores: Array<{ nit: string; status?: number; message: string }> = [];
+    let enviados = 0;
 
-    for (const row of rows) {
-      const nit = row.NIT || 'SIN_NIT';
-      try {
-        const xml = this.generateTercerosXml([row], {
-          conexion: options.conexion,
-          idCia: options.idCia,
-          usuario: options.usuario,
-          clave: options.clave,
-        });
+    // Generar un único XML con todos los registros
+    const xml = this.generateTercerosXml(rows, {
+      conexion: options.conexion,
+      idCia: options.idCia,
+      usuario: options.usuario,
+      clave: options.clave,
+    });
 
-        const res = await fetch(options.url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/xml; charset=utf-8' },
-          body: xml,
-        });
-
-        if (!res.ok) {
-          const body = await res.text().catch(() => '');
-          errores.push({ nit, status: res.status, message: `HTTP ${res.status}: ${body.substring(0, 200)}` });
-        } else {
-          enviados++;
-        }
-      } catch (err: any) {
-        errores.push({ nit, message: err.message || String(err) });
+    try {
+      // Paso 1: GET para obtener tokens VIEWSTATE
+      const getRes = await fetch(options.url);
+      if (!getRes.ok) {
+        throw new Error(`Error al obtener tokens VIEWSTATE: HTTP ${getRes.status}`);
       }
+      const html = await getRes.text();
+
+      const vsMatch  = html.match(/id="__VIEWSTATE"\s+value="([^"]*)"/);
+      const evMatch  = html.match(/id="__EVENTVALIDATION"\s+value="([^"]*)"/);
+      const vgMatch  = html.match(/id="__VIEWSTATEGENERATOR"\s+value="([^"]*)"/);
+
+      if (!vsMatch) throw new Error('No se encontró __VIEWSTATE en la página SIESA');
+
+      // Paso 2: POST con form-urlencoded
+      const params = new URLSearchParams();
+      params.set('__VIEWSTATE',          vsMatch[1]);
+      if (evMatch) params.set('__EVENTVALIDATION',    evMatch[1]);
+      if (vgMatch) params.set('__VIEWSTATEGENERATOR', vgMatch[1]);
+      params.set('txtParametro',         xml);
+      params.set('chkCredenciales',      'on');
+      params.set('Button1',              'Ejecutar');
+
+      const postRes = await fetch(options.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString(),
+      });
+
+      if (!postRes.ok) {
+        throw new Error(`HTTP ${postRes.status} al enviar al API SIESA`);
+      }
+
+      const body = await postRes.text();
+      // lblRetorno puede estar envuelto en tags anidados → capturar con permisividad
+      const retornoMatch = body.match(/lblRetorno[^>]*>(?:<[^>]+>)*([^<]*)/);
+      const retorno = retornoMatch ? retornoMatch[1].trim() : '';
+
+      // Extraer errores del grid (si los hay)
+      const tdValues = [...body.matchAll(/<td>([^<]*)<\/td>/g)].map(m => m[1].trim());
+      const gridErrors: Array<{ nit: string; message: string }> = [];
+      for (let i = 0; i + 6 < tdValues.length; i += 7) {
+        const nroLinea = tdValues[i];
+        const detalle  = tdValues[i + 6];
+        if (detalle) gridErrors.push({ nit: `Línea ${nroLinea}`, message: detalle });
+      }
+
+      // Considerar éxito si retorno empieza con '0' O si retorno está vacío y no hay grilla de errores
+      // (SIESA a veces no pone lblRetorno en el HTML cuando procesa sin errores)
+      const esExito = retorno.startsWith('0') || (retorno === '' && gridErrors.length === 0);
+
+      if (esExito) {
+        enviados = rows.length;
+      } else {
+        errores.push(...gridErrors);
+        if (errores.length === 0) {
+          errores.push({ nit: '-', message: retorno || 'Error desconocido en SIESA' });
+        }
+      }
+
+      // SIESA tipo 0200 solo aplica ES_EMPLEADO — actualizar ind_cliente/proveedor
+      // directamente en BD. Se hace siempre: en éxito confirmado y en éxito implícito.
+      if (esExito) {
+        const idCiaN = parseInt(options.idCia || '1', 10);
+        for (const r of rows) {
+          const nit = (r.NIT || '').trim();
+          if (!nit) continue;
+          const indCliente   = r.ES_CLIENTE   === '1' ? 1 : 0;
+          const indProveedor = r.ES_PROVEEDOR  === '1' ? 1 : 0;
+          if (indCliente || indProveedor) {
+            await this.dataSource.query(
+              `UPDATE t200_mm_terceros
+               SET f200_ind_cliente = @0, f200_ind_proveedor = @1
+               WHERE f200_id_cia = @2 AND LTRIM(RTRIM(f200_nit)) = @3`,
+              [indCliente, indProveedor, idCiaN, nit],
+            );
+          }
+        }
+      }
+    } catch (err: any) {
+      errores.push({ nit: '-', message: err.message || String(err) });
     }
 
     return { enviados, errores };

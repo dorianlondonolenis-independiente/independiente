@@ -1,0 +1,397 @@
+<div class="alertas-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1 class="page-title">
+        <i class="bi bi-bell-fill text-warning me-2"></i>
+        Centro de Alertas
+      </h1>
+      <p class="page-subtitle">Motor de alertas de inventario, cruce con ventas y tendencias</p>
+    </div>
+    <div class="page-header-right d-flex gap-2 align-items-center">
+      <button class="btn btn-sm btn-outline-secondary" (click)="cargarDatos()" [disabled]="cargando()">
+        <i class="bi bi-arrow-clockwise me-1"></i>Actualizar
+      </button>
+      <button class="btn btn-sm btn-warning" (click)="enviarNotificacion()">
+        <i class="bi bi-envelope-fill me-1"></i>Notificar por Email
+      </button>
+    </div>
+  </div>
+
+  <!-- Notificación email feedback -->
+  @if (notifMsg()) {
+    <div class="alert alert-success alert-dismissible py-2 px-3 small mb-3">
+      {{ notifMsg() }}
+      <button type="button" class="btn-close btn-sm" (click)="notifMsg.set(null)"></button>
+    </div>
+  }
+  @if (notifError()) {
+    <div class="alert alert-danger alert-dismissible py-2 px-3 small mb-3">
+      {{ notifError() }}
+      <button type="button" class="btn-close btn-sm" (click)="notifError.set(null)"></button>
+    </div>
+  }
+
+  <!-- Error global -->
+  @if (error()) {
+    <div class="alert alert-danger py-2 px-3 small mb-3">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error() }}
+    </div>
+  }
+
+  <!-- Banner: datos nuevos disponibles (refresh silencioso) -->
+  @if (hayDatosNuevos()) {
+    <div class="alert alert-info py-2 px-3 small mb-3 d-flex align-items-center justify-content-between">
+      <span>
+        <i class="bi bi-arrow-repeat me-2"></i>
+        Hay datos actualizados disponibles en segundo plano.
+      </span>
+      <div class="d-flex gap-2 align-items-center">
+        <button class="btn btn-sm btn-info" (click)="aplicarDatosNuevos()">
+          <i class="bi bi-download me-1"></i>Aplicar ahora
+        </button>
+        <button type="button" class="btn-close btn-sm" (click)="hayDatosNuevos.set(false)"></button>
+      </div>
+    </div>
+  }
+
+  <!-- Resumen KPIs -->
+  @if (alertasInv().length > 0 || ventasVsStock().length > 0) {
+    <div class="kpi-grid mb-4">
+      <div class="kpi-card kpi-critica">
+        <div class="kpi-value">{{ kpiFiltrados().sin_stock }}</div>
+        <div class="kpi-label"><i class="bi bi-x-circle-fill"></i> Sin Stock</div>
+      </div>
+      <div class="kpi-card kpi-alta">
+        <div class="kpi-value">{{ kpiFiltrados().bajo_minimo }}</div>
+        <div class="kpi-label"><i class="bi bi-exclamation-triangle-fill"></i> Bajo Mínimo</div>
+      </div>
+      <div class="kpi-card kpi-info">
+        <div class="kpi-value">{{ kpiFiltrados().sobre_maximo }}</div>
+        <div class="kpi-label"><i class="bi bi-arrow-up-circle-fill"></i> Sobre Máximo</div>
+      </div>
+      <div class="kpi-card kpi-purple">
+        <div class="kpi-value">{{ kpiFiltrados().deficit_ventas }}</div>
+        <div class="kpi-label"><i class="bi bi-cart-x-fill"></i> Déficit vs Pedidos</div>
+      </div>
+      <div class="kpi-card kpi-dark">
+        <div class="kpi-value">{{ kpiFiltrados().productos_cobertura_critica }}</div>
+        <div class="kpi-label"><i class="bi bi-clock-history"></i> Cobertura &lt;15 días</div>
+      </div>
+
+    </div>
+  }
+
+  <!-- Filtro Global de Bodegas (multiselect) -->
+  <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+    <div class="position-relative">
+      <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
+              (click)="mostrarFiltroBodegas.set(!mostrarFiltroBodegas())">
+        <i class="bi bi-building"></i>
+        <span>{{ etiquetaBodegas() }}</span>
+        <i class="bi bi-chevron-down small"></i>
+      </button>
+      @if (mostrarFiltroBodegas()) {
+        <div class="position-absolute bg-white border rounded shadow-sm p-2 mt-1"
+             style="z-index:1050;min-width:280px;max-height:300px;overflow-y:auto;top:100%;left:0">
+          <div class="d-flex gap-2 mb-2 pb-2 border-bottom">
+            <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none small"
+                    (click)="seleccionarTodasBodegas()">Todas</button>
+            <span class="text-muted">|</span>
+            <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none small"
+                    (click)="deseleccionarTodasBodegas()">Ninguna</button>
+            <button type="button" class="btn-close ms-auto" style="font-size:.65rem"
+                    (click)="mostrarFiltroBodegas.set(false)"></button>
+          </div>
+          @for (b of bodegas(); track b.id) {
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" [id]="'bod-' + b.id"
+                     [checked]="filtroBodegas().includes(b.id)"
+                     (change)="toggleBodega(b.id)">
+              <label class="form-check-label small" [for]="'bod-' + b.id">{{ b.label }}</label>
+            </div>
+          }
+        </div>
+      }
+    </div>
+    @if (filtroBodegas().length > 0 && filtroBodegas().length < bodegas().length) {
+      <span class="badge bg-secondary">{{ filtroBodegas().length }} de {{ bodegas().length }} bodegas</span>
+    }
+  </div>
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="tabActiva() === 'inventario'" (click)="cambiarTab('inventario')">
+        <i class="bi bi-boxes me-1"></i>
+        Inventario
+        @if (alertasFiltradas().length > 0) {
+          <span class="badge bg-danger ms-1">{{ alertasFiltradas().length | number }}</span>
+        }
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="tabActiva() === 'ventas'" (click)="cambiarTab('ventas')">
+        <i class="bi bi-cart-x me-1"></i>
+        Ventas vs Stock
+        @if (ventasFiltradas().length > 0) {
+          <span class="badge bg-warning text-dark ms-1">{{ ventasFiltradas().length }}</span>
+        }
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="tabActiva() === 'tendencias'" (click)="cambiarTab('tendencias')">
+        <i class="bi bi-graph-up-arrow me-1"></i>
+        Tendencias
+        @if (tendencias().length > 0) {
+          <span class="badge bg-primary ms-1">{{ tendencias().length }}</span>
+        }
+      </button>
+    </li>
+  </ul>
+
+  <!-- ──────────── TAB INVENTARIO ──────────── -->
+  @if (tabActiva() === 'inventario') {
+    <div class="row g-3">
+
+      <!-- Gráfica donut -->
+      <div class="col-md-4">
+        <div class="card h-100">
+          <div class="card-header py-2 px-3 fw-semibold small">Distribución de Alertas</div>
+          <div class="card-body d-flex align-items-center justify-content-center" style="min-height:220px">
+            @if (alertasInv().length > 0) {
+              <canvas #chartInvCanvas style="max-height:220px"></canvas>
+            } @else {
+              <div class="text-center text-success">
+                <i class="bi bi-check-circle-fill fs-2"></i>
+                <p class="mt-2 small">Sin alertas de inventario</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla con filtros -->
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header py-2 px-3 d-flex gap-2 align-items-center flex-wrap">
+            <span class="fw-semibold small me-auto">
+              {{ alertasFiltradas().length }} alertas
+              @if (totalValorRiesgo() > 0) {
+                &nbsp;· Riesgo: {{ totalValorRiesgo() | currency:'COP':'symbol-narrow':'1.0-0' }}
+              }
+            </span>
+            <select class="form-select form-select-sm" style="width:auto" [ngModel]="filtroTipo()" (ngModelChange)="filtroTipo.set($event)">
+              <option value="">Todos los tipos</option>
+              <option value="sin_stock">Sin Stock</option>
+              <option value="bajo_minimo">Bajo Mínimo</option>
+              <option value="sobre_maximo">Sobre Máximo</option>
+            </select>
+            <select class="form-select form-select-sm" style="width:auto" [ngModel]="filtroSeveridad()" (ngModelChange)="filtroSeveridad.set($event)">
+              <option value="">Toda severidad</option>
+              <option value="critica">Crítica</option>
+              <option value="alta">Alta</option>
+              <option value="media">Media</option>
+            </select>
+          </div>
+          <div class="card-body p-0" style="max-height:360px;overflow-y:auto">
+            @if (cargando()) {
+              <div class="text-center py-4 text-muted small"><i class="bi bi-hourglass-split me-1"></i>Cargando...</div>
+            } @else if (alertasFiltradas().length === 0) {
+              <div class="text-center py-4 text-success small"><i class="bi bi-check-circle me-1"></i>Sin alertas con los filtros seleccionados</div>
+            } @else {
+              <table class="table table-sm table-hover mb-0 small">
+                <thead class="table-light sticky-top">
+                  <tr>
+                    <th class="sort-th" (click)="ordenar('inv','referencia')">Ref. <i class="bi {{ sortIcon(sortInv(), 'referencia') }}"></i></th>
+                    <th class="sort-th" (click)="ordenar('inv','producto')">Producto <i class="bi {{ sortIcon(sortInv(), 'producto') }}"></i></th>
+                    <th class="sort-th" (click)="ordenar('inv','bodega')">Bodega <i class="bi {{ sortIcon(sortInv(), 'bodega') }}"></i></th>
+                    <th class="text-end sort-th" (click)="ordenar('inv','existencia')">Stock <i class="bi {{ sortIcon(sortInv(), 'existencia') }}"></i></th>
+                    <th class="text-end sort-th" (click)="ordenar('inv','nivel_min')">Mín <i class="bi {{ sortIcon(sortInv(), 'nivel_min') }}"></i></th>
+                    <th class="text-end sort-th" (click)="ordenar('inv','disponible')">Disp. <i class="bi {{ sortIcon(sortInv(), 'disponible') }}"></i></th>
+                    <th class="sort-th" (click)="ordenar('inv','tipo')">Tipo <i class="bi {{ sortIcon(sortInv(), 'tipo') }}"></i></th>
+                    <th class="sort-th" (click)="ordenar('inv','severidad')">Sev. <i class="bi {{ sortIcon(sortInv(), 'severidad') }}"></i></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (a of alertasOrdenadas(); track a.item_id + a.bodega_id) {
+                    <tr>
+                      <td class="fw-mono">{{ a.referencia }}</td>
+                      <td>{{ a.producto }}</td>
+                      <td class="text-muted">{{ a.bodega }}</td>
+                      <td class="text-end">{{ a.existencia | number:'1.0-2' }}</td>
+                      <td class="text-end">{{ a.nivel_min | number:'1.0-2' }}</td>
+                      <td class="text-end" [class.text-danger]="a.disponible <= 0">{{ a.disponible | number:'1.0-2' }}</td>
+                      <td><span class="badge bg-{{ badgeTipo(a.tipo) }}">{{ tipoLabel(a.tipo) }}</span></td>
+                      <td><span class="badge bg-{{ badgeClase(a.severidad) }}">{{ a.severidad }}</span></td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ──────────── TAB VENTAS VS STOCK ──────────── -->
+  @if (tabActiva() === 'ventas') {
+    <div class="row g-3">
+      <div class="col-md-5">
+        <div class="card h-100">
+          <div class="card-header py-2 px-3 fw-semibold small">Top 10 — Déficit Stock vs Pedidos</div>
+          <div class="card-body d-flex align-items-center" style="min-height:260px">
+            @if (ventasVsStock().length > 0) {
+              <canvas #chartVentCanvas style="max-height:260px;width:100%"></canvas>
+            } @else {
+              <div class="text-center text-success w-100">
+                <i class="bi bi-check-circle-fill fs-2"></i>
+                <p class="mt-2 small">Sin déficit de stock vs pedidos</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="col-md-7">
+        <div class="card">
+          <div class="card-header py-2 px-3 d-flex align-items-center">
+            <span class="fw-semibold small me-auto">{{ ventasFiltradas().length }} productos con déficit</span>
+            @if (totalValorDeficit() > 0) {
+              <span class="text-danger small fw-bold">
+                Riesgo total: {{ totalValorDeficit() | currency:'COP':'symbol-narrow':'1.0-0' }}
+              </span>
+            }
+          </div>
+          <div class="card-body p-0" style="max-height:360px;overflow-y:auto">
+            @if (cargando()) {
+              <div class="text-center py-4 text-muted small"><i class="bi bi-hourglass-split me-1"></i>Cargando...</div>
+            } @else if (ventasFiltradas().length === 0) {
+              <div class="text-center py-4 text-success small"><i class="bi bi-check-circle me-1"></i>Stock suficiente para todos los pedidos activos</div>
+            } @else {
+              <table class="table table-sm table-hover mb-0 small">
+                <thead class="table-light sticky-top">
+                  <tr>
+                    <th class="sort-th" (click)="ordenar('vent','referencia')">Ref. <i class="bi {{ sortIcon(sortVent(), 'referencia') }}"></i></th>
+                    <th class="sort-th" (click)="ordenar('vent','producto')">Producto <i class="bi {{ sortIcon(sortVent(), 'producto') }}"></i></th>
+                    <th class="sort-th" (click)="ordenar('vent','bodega')">Bodega <i class="bi {{ sortIcon(sortVent(), 'bodega') }}"></i></th>
+                    <th class="text-end sort-th" (click)="ordenar('vent','stock_disponible')">Stock <i class="bi {{ sortIcon(sortVent(), 'stock_disponible') }}"></i></th>
+                    <th class="text-end sort-th" (click)="ordenar('vent','demanda_pedidos')">Demanda <i class="bi {{ sortIcon(sortVent(), 'demanda_pedidos') }}"></i></th>
+                    <th class="text-end text-danger sort-th" (click)="ordenar('vent','deficit')">Déficit <i class="bi {{ sortIcon(sortVent(), 'deficit') }}"></i></th>
+                    <th class="text-end sort-th" (click)="ordenar('vent','pedidos_afectados')">Pedidos <i class="bi {{ sortIcon(sortVent(), 'pedidos_afectados') }}"></i></th>
+                    <th class="text-end sort-th" (click)="ordenar('vent','valor_en_riesgo')">Valor Riesgo <i class="bi {{ sortIcon(sortVent(), 'valor_en_riesgo') }}"></i></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (v of ventasOrdenadas(); track v.item_id) {
+                    <tr>
+                      <td class="fw-mono">{{ v.referencia }}</td>
+                      <td>{{ v.producto }}</td>
+                      <td class="text-muted">{{ v.bodega }}</td>
+                      <td class="text-end text-success">{{ v.stock_disponible | number:'1.0-2' }}</td>
+                      <td class="text-end">{{ v.demanda_pedidos | number:'1.0-2' }}</td>
+                      <td class="text-end text-danger fw-bold">{{ v.deficit | number:'1.0-2' }}</td>
+                      <td class="text-end">{{ v.pedidos_afectados }}</td>
+                      <td class="text-end">{{ v.valor_en_riesgo | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ──────────── TAB TENDENCIAS ──────────── -->
+  @if (tabActiva() === 'tendencias') {
+    <div class="row g-3">
+      <!-- Controles -->
+      <div class="col-12 d-flex align-items-center gap-3">
+        <div class="form-check form-switch mb-0">
+          <input class="form-check-input" type="checkbox" role="switch" id="soloAlertas"
+            [checked]="soloAlertasTendencias()"
+            (change)="soloAlertasTendencias.set(!soloAlertasTendencias()); recargarTendencias()">
+          <label class="form-check-label small" for="soloAlertas">Solo productos en alerta</label>
+        </div>
+        <span class="text-muted small">{{ tendencias().length }} productos</span>
+      </div>
+
+      <!-- Gráfica -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header py-2 px-3 fw-semibold small">Tendencias de Venta vs Stock (top alertas)</div>
+          <div class="card-body" style="min-height:280px">
+            @if (tendencias().length > 0) {
+              <canvas #chartTendCanvas style="max-height:280px;width:100%"></canvas>
+            } @else {
+              <div class="text-center text-success py-4">
+                <i class="bi bi-check-circle-fill fs-2"></i>
+                <p class="mt-2 small">Sin alertas de tendencia</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body p-0" style="max-height:340px;overflow-y:auto">
+            @if (cargando()) {
+              <div class="text-center py-4 text-muted small"><i class="bi bi-hourglass-split me-1"></i>Cargando...</div>
+            } @else if (tendencias().length === 0) {
+              <div class="text-center py-4 text-success small"><i class="bi bi-check-circle me-1"></i>Sin tendencias en alerta</div>
+            } @else {
+              <table class="table table-sm table-hover mb-0 small">
+                <thead class="table-light sticky-top">
+                  <tr>
+                    <th class="sort-th" (click)="ordenar('tend','referencia')">Ref. <i class="bi {{ sortIcon(sortTend(), 'referencia') }}"></i></th>
+                    <th class="sort-th" (click)="ordenar('tend','producto')">Producto <i class="bi {{ sortIcon(sortTend(), 'producto') }}"></i></th>
+                    <th class="text-end sort-th" (click)="ordenar('tend','ventas_mes_actual')">Mes Actual <i class="bi {{ sortIcon(sortTend(), 'ventas_mes_actual') }}"></i></th>
+                    <th class="text-end sort-th" (click)="ordenar('tend','ventas_mes_anterior')">Mes Ant. <i class="bi {{ sortIcon(sortTend(), 'ventas_mes_anterior') }}"></i></th>
+                    <th class="text-end sort-th" (click)="ordenar('tend','ventas_hace_2_meses')">Hace 2M <i class="bi {{ sortIcon(sortTend(), 'ventas_hace_2_meses') }}"></i></th>
+                    <th class="text-end sort-th" (click)="ordenar('tend','promedio_3m')">Prom. 3M <i class="bi {{ sortIcon(sortTend(), 'promedio_3m') }}"></i></th>
+                    <th class="text-end sort-th" (click)="ordenar('tend','stock_actual')">Stock <i class="bi {{ sortIcon(sortTend(), 'stock_actual') }}"></i></th>
+                    <th class="text-end sort-th" (click)="ordenar('tend','cobertura_dias')">Cobertura <i class="bi {{ sortIcon(sortTend(), 'cobertura_dias') }}"></i></th>
+                    <th class="sort-th" (click)="ordenar('tend','tendencia')">Tendencia <i class="bi {{ sortIcon(sortTend(), 'tendencia') }}"></i></th>
+                    <th class="sort-th" (click)="ordenar('tend','alerta')">Alerta <i class="bi {{ sortIcon(sortTend(), 'alerta') }}"></i></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (t of tendenciasOrdenadas(); track t.item_id) {
+                    <tr [class.table-warning]="t.alerta">
+                      <td class="fw-mono">{{ t.referencia }}</td>
+                      <td>{{ t.producto }}</td>
+                      <td class="text-end">{{ t.ventas_mes_actual | number:'1.0-1' }}</td>
+                      <td class="text-end">{{ t.ventas_mes_anterior | number:'1.0-1' }}</td>
+                      <td class="text-end">{{ t.ventas_hace_2_meses | number:'1.0-1' }}</td>
+                      <td class="text-end fw-semibold">{{ t.promedio_3m | number:'1.0-1' }}</td>
+                      <td class="text-end">{{ t.stock_actual | number:'1.0-1' }}</td>
+                      <td class="text-end">
+                        <span class="badge bg-{{ coberturaClase(t.cobertura_dias) }}">
+                          {{ t.cobertura_dias === 999 ? '∞' : (t.cobertura_dias + ' días') }}
+                        </span>
+                      </td>
+                      <td>{{ tendenciaIcono(t.tendencia) }} {{ t.tendencia }}</td>
+                      <td>
+                        @if (t.alerta) {
+                          <span class="badge bg-warning text-dark">⚠️ Sí</span>
+                        } @else {
+                          <span class="badge bg-success">OK</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>
