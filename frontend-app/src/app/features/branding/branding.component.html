@@ -1,0 +1,204 @@
+<div class="branding-page">
+  <div class="page-header">
+    <h1 class="page-title">
+      <i class="bi bi-palette-fill me-2"></i>Configuración de Apariencia
+    </h1>
+    <p class="page-subtitle">Personaliza los colores, nombre y datos de la aplicación.</p>
+  </div>
+
+  <!-- Alert de guardado / error -->
+  @if (saved()) {
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <i class="bi bi-check-circle-fill me-2"></i>Configuración guardada correctamente.
+    </div>
+  }
+  @if (error()) {
+    <div class="alert alert-danger" role="alert">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error() }}
+    </div>
+  }
+
+  <div class="branding-layout">
+    <!-- Panel izquierdo: formulario -->
+    <div class="branding-form-panel">
+
+      <!-- Identidad -->
+      <div class="card-section">
+        <h2 class="section-title"><i class="bi bi-tag-fill me-2"></i>Identidad</h2>
+        <div class="form-group">
+          <label>Nombre de la aplicación</label>
+          <input type="text" class="form-control"
+            [value]="form().appName"
+            (input)="update('appName', $any($event.target).value)" />
+        </div>
+        <div class="form-group">
+          <label>Subtítulo</label>
+          <input type="text" class="form-control"
+            [value]="form().appSubtitle"
+            (input)="update('appSubtitle', $any($event.target).value)" />
+        </div>
+        <div class="form-group">
+          <label>URL de logo <span class="hint">(imagen pública o ruta relativa)</span></label>
+          <input type="text" class="form-control"
+            [value]="form().logoUrl"
+            (input)="update('logoUrl', $any($event.target).value)"
+            placeholder="https://... o /assets/logo.png" />
+        </div>
+      </div>
+
+      <!-- Colores principales -->
+      <div class="card-section">
+        <h2 class="section-title"><i class="bi bi-droplet-fill me-2"></i>Colores Principales</h2>
+        <div class="color-grid">
+          <div class="color-field">
+            <label>Color Primario</label>
+            <div class="color-input-wrap">
+              <input type="color" class="color-picker"
+                [value]="form().primaryColor"
+                (input)="update('primaryColor', $any($event.target).value); preview()" />
+              <input type="text" class="form-control color-hex"
+                [value]="form().primaryColor"
+                (input)="update('primaryColor', $any($event.target).value); preview()" />
+            </div>
+          </div>
+          <div class="color-field">
+            <label>Color Secundario</label>
+            <div class="color-input-wrap">
+              <input type="color" class="color-picker"
+                [value]="form().secondaryColor"
+                (input)="update('secondaryColor', $any($event.target).value); preview()" />
+              <input type="text" class="form-control color-hex"
+                [value]="form().secondaryColor"
+                (input)="update('secondaryColor', $any($event.target).value); preview()" />
+            </div>
+          </div>
+          <div class="color-field">
+            <label>Color Acento</label>
+            <div class="color-input-wrap">
+              <input type="color" class="color-picker"
+                [value]="form().accentColor"
+                (input)="update('accentColor', $any($event.target).value); preview()" />
+              <input type="text" class="form-control color-hex"
+                [value]="form().accentColor"
+                (input)="update('accentColor', $any($event.target).value); preview()" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar / Navbar -->
+      <div class="card-section">
+        <h2 class="section-title"><i class="bi bi-layout-sidebar-fill me-2"></i>Barra Lateral</h2>
+        <div class="color-grid">
+          <div class="color-field">
+            <label>Fondo sidebar</label>
+            <div class="color-input-wrap">
+              <input type="color" class="color-picker"
+                [value]="form().sidebarBg"
+                (input)="update('sidebarBg', $any($event.target).value); preview()" />
+              <input type="text" class="form-control color-hex"
+                [value]="form().sidebarBg"
+                (input)="update('sidebarBg', $any($event.target).value); preview()" />
+            </div>
+          </div>
+          <div class="color-field">
+            <label>Texto sidebar</label>
+            <div class="color-input-wrap">
+              <input type="color" class="color-picker"
+                [value]="form().sidebarText"
+                (input)="update('sidebarText', $any($event.target).value); preview()" />
+              <input type="text" class="form-control color-hex"
+                [value]="form().sidebarText"
+                (input)="update('sidebarText', $any($event.target).value); preview()" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="card-section">
+        <h2 class="section-title"><i class="bi bi-envelope-fill me-2"></i>Notificaciones Email</h2>
+        <div class="form-group">
+          <label>Nombre del remitente</label>
+          <input type="text" class="form-control"
+            [value]="form().emailSenderName"
+            (input)="update('emailSenderName', $any($event.target).value)" />
+        </div>
+        <div class="form-group">
+          <label>Texto del pie de email</label>
+          <input type="text" class="form-control"
+            [value]="form().emailFooterText"
+            (input)="update('emailFooterText', $any($event.target).value)" />
+        </div>
+        <div class="color-field">
+          <label>Color cabecera del email</label>
+          <div class="color-input-wrap">
+            <input type="color" class="color-picker"
+              [value]="form().emailHeaderColor"
+              (input)="update('emailHeaderColor', $any($event.target).value)" />
+            <input type="text" class="form-control color-hex"
+              [value]="form().emailHeaderColor"
+              (input)="update('emailHeaderColor', $any($event.target).value)" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <div class="action-bar">
+        <button class="btn btn-outline-secondary" (click)="resetPreview()" [disabled]="saving()">
+          <i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar
+        </button>
+        <button class="btn btn-primary" (click)="save()" [disabled]="saving()">
+          @if (saving()) {
+            <span class="spinner-border spinner-border-sm me-1"></span>Guardando...
+          } @else {
+            <i class="bi bi-save-fill me-1"></i>Guardar cambios
+          }
+        </button>
+      </div>
+    </div>
+
+    <!-- Panel derecho: preview -->
+    <div class="branding-preview-panel">
+      <h2 class="section-title"><i class="bi bi-eye-fill me-2"></i>Vista previa sidebar</h2>
+      <div class="preview-sidebar"
+        [style.background]="form().sidebarBg"
+        [style.color]="form().sidebarText">
+        <div class="preview-brand">
+          @if (form().logoUrl) {
+            <img [src]="form().logoUrl" alt="logo" class="preview-logo" />
+          } @else {
+            <i class="bi bi-database-fill-gear preview-icon"></i>
+          }
+          <span class="preview-app-name">{{ form().appName }}</span>
+        </div>
+        <div class="preview-nav">
+          <div class="preview-nav-section">PRINCIPAL</div>
+          <div class="preview-nav-item"><i class="bi bi-speedometer2 me-2"></i>Dashboard</div>
+          <div class="preview-nav-item active"
+            [style.background]="form().accentColor">
+            <i class="bi bi-bell-fill me-2"></i>Alertas
+          </div>
+          <div class="preview-nav-section">OPERACIONES</div>
+          <div class="preview-nav-item"><i class="bi bi-box-seam me-2"></i>Inventario</div>
+          <div class="preview-nav-item"><i class="bi bi-cart-check me-2"></i>Ventas</div>
+        </div>
+      </div>
+
+      <h2 class="section-title mt-3"><i class="bi bi-envelope-fill me-2"></i>Vista previa email</h2>
+      <div class="preview-email">
+        <div class="preview-email-header"
+          [style.background]="form().emailHeaderColor">
+          <div class="preview-email-title">⚠️ Reporte de Alertas de Inventario</div>
+          <div class="preview-email-sub">{{ form().emailSenderName }}</div>
+        </div>
+        <div class="preview-email-body">
+          <p>Resumen ejecutivo de alertas críticas del inventario...</p>
+        </div>
+        <div class="preview-email-footer">
+          {{ form().emailFooterText }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

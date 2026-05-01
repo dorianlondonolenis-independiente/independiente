@@ -11,8 +11,8 @@
 /* ---------- Sidebar ---------- */
 .sidebar {
   width: 260px;
-  background: linear-gradient(195deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  color: #c8d6e5;
+  background: linear-gradient(195deg, var(--color-sidebar-bg) 0%, var(--color-primary) 50%, var(--color-secondary) 100%);
+  color: var(--color-sidebar-text);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -44,14 +44,14 @@
 .brand-icon {
   min-width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, #e94560, #c23152);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-secondary));
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.2rem;
   color: white;
-  box-shadow: 0 4px 15px rgba(233, 69, 96, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .brand-text {
@@ -117,10 +117,10 @@
 }
 
 .nav-item.active {
-  background: linear-gradient(135deg, rgba(233, 69, 96, 0.2), rgba(233, 69, 96, 0.1));
-  color: #e94560;
+  background: linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0.08));
+  color: #fff;
   font-weight: 600;
-  box-shadow: inset 3px 0 0 #e94560;
+  box-shadow: inset 3px 0 0 rgba(255,255,255,0.7);
 }
 
 .sidebar-collapsed .nav-item {

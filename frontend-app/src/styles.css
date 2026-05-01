@@ -14,6 +14,15 @@
   --light: #f8f9fa;
   --dark: #212529;
 
+  /* Branding dinámico — sobreescritos en runtime por BrandingService */
+  --color-primary: #1a237e;
+  --color-secondary: #0d47a1;
+  --color-accent: #1565c0;
+  --color-navbar-bg: #1a237e;
+  --color-navbar-text: #ffffff;
+  --color-sidebar-bg: #1a237e;
+  --color-sidebar-text: #ffffff;
+
   --gradient-primary: linear-gradient(135deg, #0d6efd 0%, #0d57d8 100%);
   --gradient-success: linear-gradient(135deg, #198754 0%, #146c43 100%);
   --gradient-danger: linear-gradient(135deg, #dc3545 0%, #bd2130 100%);

@@ -157,6 +157,11 @@ export const routes: Routes = [
     canActivate: [authGuard, adminGuard],
   },
   {
+    path: 'admin/branding',
+    loadComponent: () => import('./features/branding/branding.component').then(m => m.BrandingComponent),
+    canActivate: [authGuard, adminGuard],
+  },
+  {
     path: 'test',
     component: ListTableDynamicComponent,
     canActivate: [authGuard],

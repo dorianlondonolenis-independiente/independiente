@@ -5,6 +5,7 @@ import { Cron } from '@nestjs/schedule';
 import * as nodemailer from 'nodemailer';
 import { UsersService } from '../../auth/services/users.service';
 import { ConfigService } from '@nestjs/config';
+import { BrandingService } from '../branding/branding.service';
 
 export interface AlertaInventario {
   item_id: string;
@@ -68,6 +69,7 @@ export class AlertasService implements OnModuleInit {
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly usersService: UsersService,
     private readonly config: ConfigService,
+    private readonly brandingService: BrandingService,
   ) {
     this.initMailer();
   }
@@ -412,6 +414,7 @@ export class AlertasService implements OnModuleInit {
 
     if (destinatarios.length === 0) return;
 
+    const branding = this.brandingService.getBranding();
     const fmt = (n: number) => n?.toLocaleString('es-CO') ?? '0';
     const fmtCOP = (n: number) => `$${fmt(Math.round(n))}`;
     const hora = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
@@ -465,14 +468,14 @@ export class AlertasService implements OnModuleInit {
     </table>
   </div>
   <div style="padding:14px 28px;background:#f8f9fa;border-top:1px solid #eee;font-size:12px;color:#999;text-align:center">
-    Generado automáticamente por Alertas Inventario · Monitoreo cada 10 minutos
+    Generado automáticamente por ${branding.emailFooterText}
   </div>
 </div>
 </body></html>`;
 
     try {
       await this.transporter.sendMail({
-        from: `"Alertas Inventario" <${this.config.get('SMTP_USER')}>`,
+        from: `"${branding.emailSenderName}" <${this.config.get('SMTP_USER')}>`,
         to: destinatarios.join(', '),
         subject: asunto,
         html,
@@ -505,6 +508,7 @@ export class AlertasService implements OnModuleInit {
 
     const smtpUser = this.config.get<string>('SMTP_USER') ?? '';
     const dest = (destinatario && destinatario.includes('@')) ? destinatario : smtpUser;
+    const branding = this.brandingService.getBranding();
 
     if (!dest) {
       return { enviado: false, destinatario: '', mensaje: 'No se especificó destinatario y SMTP_USER no está configurado' };
@@ -591,16 +595,16 @@ export class AlertasService implements OnModuleInit {
 
   <!-- Footer -->
   <div style="padding:14px 28px;background:#f8f9fa;border-top:1px solid #eee;font-size:12px;color:#999;text-align:center">
-    Alertas Inventario · Email de prueba · Monitoreo automático cada 10 minutos
+    Alertas Inventario · Email de prueba · ${branding.emailFooterText}
   </div>
 </div>
 </body></html>`;
 
     try {
       await this.transporter.sendMail({
-        from: `"Alertas Inventario" <${smtpUser}>`,
+        from: `"${branding.emailSenderName}" <${smtpUser}>`,
         to: dest,
-        subject: `⚠️ [PRUEBA] Alertas Inventario — ${resumen.sin_stock} sin stock, ${resumen.bajo_minimo} bajo mínimo`,
+        subject: `⚠️ [PRUEBA] ${branding.emailSenderName} — ${resumen.sin_stock} sin stock, ${resumen.bajo_minimo} bajo mínimo`,
         html,
       });
       this.logger.log(`Email de prueba con datos reales enviado a ${dest}`);
@@ -646,10 +650,11 @@ export class AlertasService implements OnModuleInit {
     }
 
     const html = this.buildEmailHtml(sinStock, bajoMinimo, sobreMaximo, alertasVentas, resumen);
+    const branding = this.brandingService.getBranding();
 
     try {
       await this.transporter.sendMail({
-        from: `"Alertas Inventario" <${this.config.get('SMTP_USER')}>`,
+        from: `"${branding.emailSenderName}" <${this.config.get('SMTP_USER')}>`,
         to: destinatarios.join(', '),
         subject: `⚠️ Alertas de Inventario — ${sinStock.length} sin stock, ${bajoMinimo.length} bajo mínimo`,
         html,
@@ -671,8 +676,9 @@ export class AlertasService implements OnModuleInit {
   ): string {
     const fmt = (n: number) => n?.toLocaleString('es-CO') ?? '0';
     const fmtCOP = (n: number) => `$${fmt(Math.round(n))}`;
+    const branding = this.brandingService.getBranding();
 
-    const filaInv = (a: AlertaInventario) => `
+    const filaInv
       <tr>
         <td style="padding:6px 8px;border-bottom:1px solid #eee"><code>${a.referencia}</code></td>
         <td style="padding:6px 8px;border-bottom:1px solid #eee">${a.producto}</td>
@@ -695,7 +701,7 @@ export class AlertasService implements OnModuleInit {
     return `<!DOCTYPE html>
 <html><body style="font-family:Arial,sans-serif;background:#f5f5f5;margin:0;padding:0">
 <div style="max-width:700px;margin:20px auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1)">
-  <div style="background:linear-gradient(135deg,#1a237e,#0d47a1);padding:24px 28px;color:#fff">
+  <div style="background:linear-gradient(135deg,${branding.emailHeaderColor},${branding.secondaryColor});padding:24px 28px;color:#fff">
     <h1 style="margin:0;font-size:20px">⚠️ Reporte de Alertas de Inventario</h1>
     <p style="margin:4px 0 0;opacity:.8;font-size:13px">${new Date().toLocaleDateString('es-CO', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}</p>
   </div>
@@ -770,7 +776,7 @@ export class AlertasService implements OnModuleInit {
   </div>
 
   <div style="padding:16px 28px;background:#f8f9fa;border-top:1px solid #eee;font-size:12px;color:#999;text-align:center">
-    Generado automáticamente por Alertas Inventario · Accede a la plataforma para ver el detalle completo
+    Generado automáticamente por ${branding.emailFooterText}
   </div>
 </div>
 </body></html>`;

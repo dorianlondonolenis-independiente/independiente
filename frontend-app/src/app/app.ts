@@ -6,6 +6,7 @@ import { filter } from 'rxjs/operators';
 import { ApiViewerService } from './services/api-viewer.service';
 import { PreferencesService } from './services/preferences.service';
 import { AuthService } from './auth/auth.service';
+import { BrandingService } from './services/branding.service';
 
 @Component({
   selector: 'app-root',
@@ -20,6 +21,7 @@ export class App implements OnInit {
   private router = inject(Router);
   prefs = inject(PreferencesService);
   auth = inject(AuthService);
+  branding = inject(BrandingService);
 
   // Visible solo cuando hay sesión y la ruta NO es /login
   isAuthLayout = computed(() => {
@@ -67,6 +69,9 @@ export class App implements OnInit {
   };
 
   ngOnInit() {
+    // Cargar branding desde el backend (sin auth)
+    this.branding.load();
+
     // Apply dark mode class on init
     this.applyDarkMode(this.darkMode());
 

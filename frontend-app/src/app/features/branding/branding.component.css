@@ -1,0 +1,223 @@
+.branding-page {
+  padding: 24px;
+  max-width: 1100px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a237e;
+  margin: 0 0 4px;
+}
+
+.page-subtitle {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Layout de dos columnas */
+.branding-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .branding-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Card sections */
+.card-section {
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #343a40;
+  margin: 0 0 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #495057;
+  margin-bottom: 6px;
+}
+
+.hint {
+  font-weight: 400;
+  color: #adb5bd;
+  font-size: 12px;
+}
+
+/* Color pickers */
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.color-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.color-field label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #495057;
+}
+
+.color-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-picker {
+  width: 40px;
+  height: 38px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  padding: 2px;
+  cursor: pointer;
+  background: none;
+}
+
+.color-hex {
+  flex: 1;
+  font-size: 13px;
+  font-family: monospace;
+}
+
+/* Action bar */
+.action-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 0 0;
+}
+
+/* Preview sidebar */
+.branding-preview-panel {
+  position: sticky;
+  top: 20px;
+}
+
+.preview-sidebar {
+  border-radius: 10px;
+  overflow: hidden;
+  padding: 16px 0;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.preview-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  margin-bottom: 8px;
+}
+
+.preview-logo {
+  height: 28px;
+  object-fit: contain;
+}
+
+.preview-icon {
+  font-size: 20px;
+}
+
+.preview-app-name {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.preview-nav {
+  padding: 0 8px;
+}
+
+.preview-nav-section {
+  font-size: 10px;
+  opacity: 0.55;
+  letter-spacing: 0.08em;
+  padding: 8px 10px 4px;
+  font-weight: 600;
+}
+
+.preview-nav-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 2px;
+  opacity: 0.85;
+}
+
+.preview-nav-item.active {
+  opacity: 1;
+  font-weight: 600;
+}
+
+/* Preview email */
+.preview-email {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.preview-email-header {
+  padding: 14px 16px;
+  color: #fff;
+}
+
+.preview-email-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.preview-email-sub {
+  font-size: 11px;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+.preview-email-body {
+  padding: 14px 16px;
+  background: #fff;
+  color: #333;
+}
+
+.preview-email-footer {
+  padding: 10px 16px;
+  background: #f8f9fa;
+  color: #999;
+  font-size: 11px;
+  text-align: center;
+  border-top: 1px solid #eee;
+}

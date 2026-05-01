@@ -35,6 +35,8 @@ import { FinancieroService } from './services/financiero/financiero.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AlertasController } from './controllers/alertas/alertas.controller';
 import { AlertasService } from './services/alertas/alertas.service';
+import { BrandingController } from './controllers/branding/branding.controller';
+import { BrandingService } from './services/branding/branding.service';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
@@ -81,14 +83,14 @@ import { AlertasService } from './services/alertas/alertas.service';
     AppController, MetadataController, DataController, QueriesController,
     MaestrasController, InventarioController, VentasController, ComprasController,
     CarteraController, TercerosController, BulkUploadController, SiesaXmlController,
-    FinancieroController, AlertasController,
+    FinancieroController, AlertasController, BrandingController,
   ],
   providers: [
     AppService, MetadataService, DataService, QueriesService,
     MaestrasService, InventarioService, VentasService, ComprasService,
     CarteraService, TercerosService, BulkUploadService, SiesaXmlService,
     SiesaComprobantesService,
-    FinancieroService, AlertasService,
+    FinancieroService, AlertasService, BrandingService,
   ],
 })
 export class AppModule {}

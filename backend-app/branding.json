@@ -1,0 +1,16 @@
+{
+  "appName": "Independiente",
+  "appSubtitle": "Sistema de Gestión Empresarial",
+  "logoUrl": "",
+  "faviconUrl": "",
+  "primaryColor": "#1a237e",
+  "secondaryColor": "#0d47a1",
+  "accentColor": "#1565c0",
+  "navbarBg": "#1a237e",
+  "navbarText": "#ffffff",
+  "sidebarBg": "#1a237e",
+  "sidebarText": "#ffffff",
+  "emailSenderName": "Alertas Inventario",
+  "emailHeaderColor": "#1a237e",
+  "emailFooterText": "Alertas Inventario · Monitoreo automático cada 10 minutos"
+}
