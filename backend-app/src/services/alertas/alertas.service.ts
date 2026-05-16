@@ -254,7 +254,15 @@ export class AlertasService implements OnModuleInit {
   // ─────────────────────────────────────────────────────────────────────────
   // 3. TENDENCIAS DE VENTAS + PROYECCIÓN DE COBERTURA
   // ─────────────────────────────────────────────────────────────────────────
-  async getTendenciasVentas(soloAlertas = false): Promise<TendenciaVentas[]> {
+  async getTendenciasVentas(soloAlertas = false, bodegas: string[] = []): Promise<TendenciaVentas[]> {
+    // Construir filtro de bodega seguro (solo alfanuméricos + guiones)
+    const bodegasSanitized = bodegas
+      .map(b => b.replace(/[^A-Z0-9\-_]/gi, ''))
+      .filter(b => b.length > 0);
+    const bodegaJoin = bodegasSanitized.length > 0
+      ? `JOIN t150_mc_bodegas b ON e.f400_rowid_bodega = b.f150_rowid AND b.f150_id IN (${bodegasSanitized.map(b => `'${b}'`).join(',')})`
+      : `LEFT JOIN t150_mc_bodegas b ON e.f400_rowid_bodega = b.f150_rowid`;
+
     const rows = await this.dataSource.query(`
       SELECT
         i.f120_id                              AS item_id,
@@ -272,11 +280,12 @@ export class AlertasService implements OnModuleInit {
           WHEN m.f431_fecha_cumplido >= DATEADD(MONTH, -2, DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1))
            AND m.f431_fecha_cumplido <  DATEADD(MONTH, -1, DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1))
           THEN m.f431_cant1_facturada ELSE 0 END), 0) AS ventas_hace_2_meses,
-        ISNULL(AVG(e.f400_cant_existencia_1), 0) AS stock_actual
+        ISNULL(SUM(e.f400_cant_existencia_1), 0) AS stock_actual
       FROM t431_cm_pv_movto m
       JOIN t121_mc_items_extensiones ext  ON m.f431_rowid_item_ext = ext.f121_rowid
       JOIN t120_mc_items i                ON ext.f121_rowid_item   = i.f120_rowid
       LEFT JOIN t400_cm_existencia e      ON e.f400_rowid_item_ext = ext.f121_rowid
+      ${bodegaJoin}
       WHERE m.f431_cant1_facturada > 0
         AND m.f431_fecha_cumplido >= DATEADD(MONTH, -3, GETDATE())
       GROUP BY i.f120_id, i.f120_referencia, i.f120_descripcion
@@ -288,7 +297,7 @@ export class AlertasService implements OnModuleInit {
           WHEN m.f431_fecha_cumplido >= DATEADD(MONTH, -1, DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1))
            AND m.f431_fecha_cumplido <  DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1)
           THEN m.f431_cant1_facturada ELSE 0 END), 0) > 0
-      ORDER BY ISNULL(AVG(e.f400_cant_existencia_1), 0) ASC
+      ORDER BY ISNULL(SUM(e.f400_cant_existencia_1), 0) ASC
     `);
 
     const result: TendenciaVentas[] = rows.map((r: any): TendenciaVentas => {
@@ -678,7 +687,7 @@ export class AlertasService implements OnModuleInit {
     const fmtCOP = (n: number) => `$${fmt(Math.round(n))}`;
     const branding = this.brandingService.getBranding();
 
-    const filaInv
+    const filaInv = (a: AlertaInventario) => `
       <tr>
         <td style="padding:6px 8px;border-bottom:1px solid #eee"><code>${a.referencia}</code></td>
         <td style="padding:6px 8px;border-bottom:1px solid #eee">${a.producto}</td>

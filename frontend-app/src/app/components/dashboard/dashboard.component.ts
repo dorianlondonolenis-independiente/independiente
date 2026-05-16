@@ -303,7 +303,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     { label: 'Cartera', description: 'CxC y CxP — Saldos abiertos', icon: 'bi bi-wallet2', gradient: 'linear-gradient(135deg, #0dcaf0, #0aa2c0)', route: '/cartera' },
     { label: 'Terceros', description: 'Clientes, proveedores, empleados', icon: 'bi bi-people-fill', gradient: 'linear-gradient(135deg, #6f42c1, #5a32a3)', route: '/terceros' },
     { label: 'Maestras', description: 'Gestión de datos maestros', icon: 'bi bi-grid-3x3-gap-fill', gradient: 'linear-gradient(135deg, #20c997, #199d76)', route: '/maestras' },
-    { label: 'Nuevo Producto', description: 'Wizard para crear ítem', icon: 'bi bi-plus-lg', gradient: 'linear-gradient(135deg, #6610f2, #520dc2)', route: '/maestras/producto/nuevo' },
   ];
 
   ngOnInit() {

@@ -7,7 +7,7 @@
         <div class="brand-icon">
           <i class="bi bi-database-fill-gear"></i>
         </div>
-        <span class="brand-text">Independiente</span>
+        <span class="brand-text">{{ branding.branding().appName }}</span>
       </div>
     </div>
 
@@ -59,10 +59,6 @@
       </a>
 
       <div class="nav-section-label">ACCIONES</div>
-      <a *ngIf="auth.hasModule('maestras')" class="nav-item" routerLink="/maestras/producto/nuevo" routerLinkActive="active">
-        <i class="bi bi-plus-circle-fill"></i>
-        <span class="nav-label">Crear Producto</span>
-      </a>
       <a *ngIf="auth.hasModule('bulk-upload')" class="nav-item" routerLink="/bulk-upload" routerLinkActive="active">
         <i class="bi bi-cloud-arrow-up"></i>
         <span class="nav-label">Carga Masiva</span>
@@ -70,6 +66,10 @@
       <a *ngIf="auth.hasModule('siesa-xml')" class="nav-item" routerLink="/siesa-xml" routerLinkActive="active">
         <i class="bi bi-filetype-xml"></i>
         <span class="nav-label">XML Siesa</span>
+      </a>
+      <a *ngIf="auth.hasModule('siesa-xml/traslados')" class="nav-item ps-4" routerLink="/siesa-xml/traslados" routerLinkActive="active">
+        <i class="bi bi-arrow-left-right"></i>
+        <span class="nav-label">Traslados Ventas</span>
       </a>
       <a *ngIf="auth.hasModule('financiero/conciliacion')" class="nav-item" routerLink="/financiero/conciliacion" routerLinkActive="active">
         <i class="bi bi-file-earmark-check"></i>

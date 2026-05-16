@@ -23,6 +23,7 @@ type TabName = 'inventario' | 'ventas' | 'tendencias';
 })
 export class AlertasComponent implements OnInit, AfterViewInit, OnDestroy {
   private svc = inject(AlertasService);
+  private tendenciasInicializadas = false;
 
   constructor() {
     // Re-renderizar el donut de inventario cada vez que cambie cualquier filtro
@@ -38,6 +39,17 @@ export class AlertasComponent implements OnInit, AfterViewInit, OnDestroy {
       if (this.chartVent) {
         setTimeout(() => this.renderChartVentasVsStock(), 50);
       }
+    });
+    // Recargar tendencias desde BD cuando cambian las bodegas
+    effect(() => {
+      const bodegas = this.filtroBodegas();
+      if (!this.tendenciasInicializadas) return;
+      this.svc.getTendencias(this.soloAlertasTendencias(), bodegas).subscribe({
+        next: data => {
+          this.tendencias.set(data);
+          setTimeout(() => this.renderChartTendencias(), 100);
+        },
+      });
     });
   }
 
@@ -201,9 +213,10 @@ export class AlertasComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // Cargar tendencias
-    this.svc.getTendencias(this.soloAlertasTendencias()).subscribe({
+    this.svc.getTendencias(this.soloAlertasTendencias(), this.filtroBodegas()).subscribe({
       next: data => {
         this.tendencias.set(data);
+        this.tendenciasInicializadas = true;
         setTimeout(() => this.renderChartTendencias(), 100);
         this.cargando.set(false);
       },
@@ -244,7 +257,7 @@ export class AlertasComponent implements OnInit, AfterViewInit, OnDestroy {
       next: d => { newVentas = d; ventDone = true; checkDone(); },
       error: () => { ventDone = true; checkDone(); },
     });
-    this.svc.getTendencias(this.soloAlertasTendencias()).subscribe({
+    this.svc.getTendencias(this.soloAlertasTendencias(), this.filtroBodegas()).subscribe({
       next: d => { newTendencias = d; tendDone = true; checkDone(); },
       error: () => { tendDone = true; checkDone(); },
     });

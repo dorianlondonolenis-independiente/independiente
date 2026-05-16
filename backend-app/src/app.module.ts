@@ -30,6 +30,7 @@ import { BulkUploadService } from './services/bulk-upload/bulk-upload.service';
 import { SiesaXmlController } from './controllers/siesa-xml/siesa-xml.controller';
 import { SiesaXmlService } from './services/siesa-xml/siesa-xml.service';
 import { SiesaComprobantesService } from './services/siesa-xml/siesa-comprobantes.service';
+import { TrasladosVentasService } from './services/siesa-xml/traslados-ventas.service';
 import { FinancieroController } from './controllers/financiero/financiero.controller';
 import { FinancieroService } from './services/financiero/financiero.service';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -90,6 +91,7 @@ import { BrandingService } from './services/branding/branding.service';
     MaestrasService, InventarioService, VentasService, ComprasService,
     CarteraService, TercerosService, BulkUploadService, SiesaXmlService,
     SiesaComprobantesService,
+    TrasladosVentasService,
     FinancieroService, AlertasService, BrandingService,
   ],
 })

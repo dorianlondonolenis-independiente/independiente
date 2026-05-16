@@ -25,5 +25,6 @@ export const APP_MODULES: ModuleDef[] = [
   { id: 'bulk-upload', label: 'Carga Masiva', icon: 'bi-cloud-arrow-up' },
   { id: 'siesa-xml', label: 'XML Siesa', icon: 'bi-filetype-xml' },
   { id: 'siesa-xml/comprobantes', label: 'Comprobantes XML', icon: 'bi-file-earmark-code' },
+  { id: 'siesa-xml/traslados', label: 'Traslados de Ventas', icon: 'bi-arrow-left-right' },
   { id: 'financiero/conciliacion', label: 'Conciliación DIAN', icon: 'bi-file-earmark-check' },
 ];

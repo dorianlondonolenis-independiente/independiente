@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 
+export const SIESA_CONEXION_KEY = 'siesa-conexion-params';
+
 interface PreviewRow {
   NIT: string;
   DV?: string;
@@ -232,23 +234,23 @@ interface EnvioResult {
               </div>
               <div class="col-md-6">
                 <label class="form-label small fw-semibold">URL del API <span class="text-danger">*</span></label>
-                <input type="url" class="form-control form-control-sm" [(ngModel)]="envioUrl" placeholder="http://10.10.1.48/WSUNOEE/WFPruebaImportar.aspx" />
+                <input type="url" class="form-control form-control-sm" [(ngModel)]="envioUrl" (ngModelChange)="guardarConexion()" placeholder="http://10.10.1.48/WSUNOEE/WFPruebaImportar.aspx" />
               </div>
               <div class="col-md-3">
                 <label class="form-label small fw-semibold">Nombre Conexion <span class="text-danger">*</span></label>
-                <input type="text" class="form-control form-control-sm" [(ngModel)]="envioNombreConexion" placeholder="SQL-NEO" />
+                <input type="text" class="form-control form-control-sm" [(ngModel)]="envioNombreConexion" (ngModelChange)="guardarConexion()" placeholder="SQL-NEO" />
               </div>
               <div class="col-md-3">
                 <label class="form-label small fw-semibold">ID Compania</label>
-                <input type="number" class="form-control form-control-sm" [(ngModel)]="envioIdCia" min="1" />
+                <input type="number" class="form-control form-control-sm" [(ngModel)]="envioIdCia" (ngModelChange)="guardarConexion()" min="1" />
               </div>
               <div class="col-md-3">
                 <label class="form-label small fw-semibold">Usuario <span class="text-danger">*</span></label>
-                <input type="text" class="form-control form-control-sm" [(ngModel)]="envioUsuario" placeholder="jairc" />
+                <input type="text" class="form-control form-control-sm" [(ngModel)]="envioUsuario" (ngModelChange)="guardarConexion()" placeholder="jairc" />
               </div>
               <div class="col-md-3">
                 <label class="form-label small fw-semibold">Clave <span class="text-danger">*</span></label>
-                <input type="password" class="form-control form-control-sm" [(ngModel)]="envioClave" />
+                <input type="password" class="form-control form-control-sm" [(ngModel)]="envioClave" (ngModelChange)="guardarConexion()" />
               </div>
             </div>
 
@@ -342,6 +344,34 @@ export class SiesaXmlComponent {
   envioIdCia = 1;
   envioUsuario = 'integracion';
   envioClave = '';
+
+  ngOnInit() {
+    try {
+      const saved = localStorage.getItem(SIESA_CONEXION_KEY);
+      if (saved) {
+        const p = JSON.parse(saved);
+        if (p.url)      this.envioUrl = p.url;
+        if (p.conexion) this.envioNombreConexion = p.conexion;
+        if (p.idCia)    this.envioIdCia = Number(p.idCia);
+        if (p.usuario)  this.envioUsuario = p.usuario;
+        if (p.clave)    this.envioClave = p.clave;
+      }
+    } catch { /* ignore */ }
+    // Siempre persistir los valores actuales (incluye defaults en la primera visita)
+    this.guardarConexion();
+  }
+
+  guardarConexion() {
+    try {
+      localStorage.setItem(SIESA_CONEXION_KEY, JSON.stringify({
+        url:      this.envioUrl,
+        conexion: this.envioNombreConexion,
+        idCia:    this.envioIdCia,
+        usuario:  this.envioUsuario,
+        clave:    this.envioClave,
+      }));
+    } catch { /* ignore */ }
+  }
 
   descargarPlantilla() {
     this.http.get(`${this.api}/terceros/plantilla`, { responseType: 'blob' }).subscribe({

@@ -41,8 +41,12 @@ export class AlertasController {
 
   /** Tendencias de ventas + cobertura de stock */
   @Get('tendencias')
-  getTendencias(@Query('soloAlertas') soloAlertas?: string): Promise<TendenciaVentas[]> {
-    return this.alertasService.getTendenciasVentas(soloAlertas === 'true');
+  getTendencias(
+    @Query('soloAlertas') soloAlertas?: string,
+    @Query('bodegas') bodegas?: string,
+  ): Promise<TendenciaVentas[]> {
+    const bodegasList = bodegas ? bodegas.split(',').map(b => b.trim()).filter(b => b) : [];
+    return this.alertasService.getTendenciasVentas(soloAlertas === 'true', bodegasList);
   }
 
   /**

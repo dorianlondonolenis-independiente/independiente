@@ -21,6 +21,7 @@ import { DetalleRemisionComponent } from './features/ventas/detalle-remision.com
 import { DetalleDevolucionComponent } from './features/ventas/detalle-devolucion.component';
 import { ConciliacionVentasComponent } from './features/financiero/conciliacion-ventas.component';
 import { ComprobantesXmlComponent } from './features/siesa-xml/comprobantes-xml.component';
+import { TrasladosVentasComponent } from './features/siesa-xml/traslados-ventas.component';
 
 // Auth
 import { LoginComponent } from './auth/login/login.component';
@@ -145,6 +146,12 @@ export const routes: Routes = [
     component: ComprobantesXmlComponent,
     canActivate: [authGuard, moduleGuard],
     data: { module: 'siesa-xml/comprobantes' },
+  },
+  {
+    path: 'siesa-xml/traslados',
+    component: TrasladosVentasComponent,
+    canActivate: [authGuard, moduleGuard],
+    data: { module: 'siesa-xml/traslados' },
   },
   {
     path: 'admin/usuarios',

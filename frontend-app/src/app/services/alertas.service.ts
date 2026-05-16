@@ -74,9 +74,10 @@ export class AlertasService {
     return this.http.get<AlertaVentaVsStock[]>(`${this.api}/ventas-vs-stock`);
   }
 
-  getTendencias(soloAlertas = false): Observable<TendenciaVentas[]> {
+  getTendencias(soloAlertas = false, bodegas: string[] = []): Observable<TendenciaVentas[]> {
+    const bodegasParam = bodegas.length > 0 ? `&bodegas=${encodeURIComponent(bodegas.join(','))}` : '';
     return this.http.get<TendenciaVentas[]>(
-      `${this.api}/tendencias?soloAlertas=${soloAlertas}`
+      `${this.api}/tendencias?soloAlertas=${soloAlertas}${bodegasParam}`
     );
   }
 

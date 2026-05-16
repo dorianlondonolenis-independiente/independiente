@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Put, UseGuards } from '@nestjs/common';
-import { BrandingService, Branding } from '../../services/branding/branding.service';
-import { JwtAuthGuard } from '../../auth/jwt-auth/jwt-auth.guard';
+import { BrandingService } from '../../services/branding/branding.service';
+import type { Branding } from '../../services/branding/branding.service';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
 @Controller('config/branding')
 export class BrandingController {
