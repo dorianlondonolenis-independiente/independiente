@@ -1,0 +1,1694 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Adro · Dulcería Premium</title>
+<meta name="description" content="Adro — la dulcería premium con +35 años endulzando Colombia. Chocolates, gomas, caramelos." />
+
+<!-- Bootstrap 5 -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- AOS animations -->
+<link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
+<style>
+:root{
+  --choco:#3b1a0a; --red:#cb0000; --red-deep:#8b0000; --red-soft:#ffe5e5;
+  --gold:#f5a500; --cream:#fffaf5;
+  --pink:#f9c0c0; --purple:#7c3aed; --green:#16a34a;
+  --radius:22px;
+  --shadow-soft: 0 10px 30px rgba(203,0,0,.10);
+  --shadow-pop:  0 18px 50px rgba(203,0,0,.28);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:var(--cream);
+  background-image:
+    radial-gradient(circle at 10% 10%, rgba(203,0,0,.06) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(203,0,0,.08) 0%, transparent 45%);
+  color:var(--choco);
+  overflow-x:hidden;
+  cursor:none;
+}
+h1,h2,h3,h4,.display-1,.display-2,.display-3,.display-4{
+  font-family:'Syne',sans-serif; font-weight:800; letter-spacing:-.02em;
+}
+
+/* ───── CURSOR (lollipop) ───── */
+*{cursor:none !important}
+.cursor-dot{
+  position:fixed; z-index:9999; pointer-events:none;
+  font-size:28px; line-height:1; user-select:none;
+  transform:translate(-50%,-50%) rotate(15deg);
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1);
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.2));
+}
+.cursor-ring{
+  position:fixed; z-index:9998; pointer-events:none;
+  width:44px; height:44px; border:2.5px solid var(--red);
+  border-radius:50%; opacity:.4;
+  transform:translate(-50%,-50%);
+  transition:transform .18s ease, opacity .3s;
+}
+
+/* ───── BACKGROUND BLOBS ───── */
+.blob{position:absolute; border-radius:50%; filter:blur(60px); opacity:.55; z-index:0; pointer-events:none}
+.blob-1{width:520px; height:520px; background:var(--red); opacity:.35; top:-100px; left:-150px; animation:blob 18s infinite}
+.blob-2{width:420px; height:420px; background:var(--gold); top:200px; right:-100px; animation:blob 22s infinite reverse}
+.blob-3{width:380px; height:380px; background:var(--red-deep); opacity:.25; bottom:-100px; left:30%; animation:blob 25s infinite}
+@keyframes blob{
+  0%,100%{transform:translate(0,0) scale(1)}
+  33%{transform:translate(60px,-40px) scale(1.1)}
+  66%{transform:translate(-50px,40px) scale(.95)}
+}
+
+/* ───── NAVBAR ───── */
+.navbar-adro{
+  position:fixed; top:0; left:0; right:0; z-index:1050;
+  padding:.8rem 0; background:rgba(255,250,245,.85);
+  backdrop-filter:blur(14px) saturate(180%);
+  border-bottom:2px solid var(--red);
+  transition:padding .25s ease, box-shadow .25s ease;
+}
+.navbar-adro.scrolled{padding:.5rem 0; box-shadow:0 4px 20px rgba(0,0,0,.06)}
+.navbar-adro .navbar-brand{
+  font-family:'Syne',sans-serif; font-weight:800; font-size:1.8rem;
+  color:var(--choco); letter-spacing:-.04em;
+}
+.navbar-adro .navbar-brand span{color:var(--red)}
+.navbar-adro .nav-link{
+  color:var(--choco); font-weight:500; padding:.5rem 1rem;
+  position:relative; transition:color .2s;
+}
+.navbar-adro .nav-link::after{
+  content:''; position:absolute; left:50%; bottom:.2rem; transform:translateX(-50%);
+  width:0; height:2px; background:var(--red);
+  border-radius:2px; transition:width .25s ease;
+}
+.navbar-adro .nav-link:hover{color:var(--red)}
+.navbar-adro .nav-link:hover::after{width:50%}
+
+/* Lang switcher */
+.lang-switcher{
+  display:flex; gap:.25rem; background:rgba(203,0,0,.08);
+  border-radius:999px; padding:.25rem;
+}
+.lang-btn{
+  border:0; background:transparent; padding:.3rem .7rem;
+  border-radius:999px; font-weight:600; font-size:.78rem;
+  color:var(--choco); transition:.2s;
+}
+.lang-btn.active{background:var(--red); color:#fff; box-shadow:0 4px 12px rgba(200,25,26,.3)}
+
+.cart-toggle{
+  position:relative; background:var(--red); color:#fff;
+  border:0; border-radius:999px; padding:.55rem 1rem;
+  font-weight:600; transition:.2s;
+  box-shadow:0 6px 18px rgba(203,0,0,.35);
+}
+.cart-toggle:hover{background:var(--red-deep); transform:translateY(-2px); box-shadow:0 10px 26px rgba(203,0,0,.45)}
+.cart-toggle .badge-count{
+  position:absolute; top:-6px; right:-6px;
+  background:var(--gold); color:var(--choco);
+  border-radius:50%; min-width:22px; height:22px;
+  font-size:.7rem; font-weight:800;
+  display:flex; align-items:center; justify-content:center;
+  border:2px solid var(--cream);
+}
+.cart-toggle .badge-count.bump{animation:bump .4s}
+@keyframes bump{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
+
+/* ───── HERO ───── */
+.hero{
+  position:relative; min-height:100vh; padding-top:140px; padding-bottom:80px;
+  overflow:hidden; display:flex; align-items:center;
+}
+.hero-eyebrow{
+  display:inline-flex; align-items:center; gap:.5rem;
+  background:#fff; border-radius:999px; padding:.4rem 1rem;
+  box-shadow:var(--shadow-soft); font-weight:600; font-size:.85rem;
+  color:var(--red); margin-bottom:1.2rem;
+}
+.hero-eyebrow .dot{width:8px; height:8px; background:var(--green); border-radius:50%; animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(22,163,74,.5)}50%{box-shadow:0 0 0 8px rgba(22,163,74,0)}}
+
+.hero-title{
+  font-size:clamp(2.8rem,7vw,5.5rem); line-height:.95; margin-bottom:1.5rem;
+}
+.hero-title .word{
+  display:inline-block; opacity:0; transform:translateY(40px);
+  animation:wordIn .8s forwards;
+}
+.hero-title .word:nth-child(1){animation-delay:.1s}
+.hero-title .word:nth-child(2){animation-delay:.25s; color:var(--red)}
+.hero-title .word:nth-child(3){animation-delay:.4s}
+.hero-title .word:nth-child(4){animation-delay:.55s; color:var(--gold); font-style:italic}
+@keyframes wordIn{to{opacity:1; transform:translateY(0)}}
+
+.hero-desc{font-size:1.15rem; color:#6b4a3a; max-width:540px; margin-bottom:2rem}
+
+.btn-adro{
+  background:var(--red); color:#fff; border:0;
+  border-radius:999px; padding:.9rem 1.8rem;
+  font-weight:700; transition:.25s;
+  box-shadow:var(--shadow-pop);
+}
+.btn-adro:hover{background:var(--red-deep); color:#fff; transform:translateY(-3px); box-shadow:0 22px 50px rgba(203,0,0,.5)}
+.btn-outline-adro{
+  background:transparent; color:var(--red); border:2px solid var(--red);
+  border-radius:999px; padding:.8rem 1.7rem; font-weight:700;
+  transition:.25s;
+}
+.btn-outline-adro:hover{background:var(--red); color:#fff}
+
+/* Floating candies */
+.candy{
+  position:absolute; font-size:3rem; opacity:.9;
+  animation:float 6s ease-in-out infinite;
+  filter:drop-shadow(0 10px 20px rgba(0,0,0,.15));
+}
+@keyframes float{
+  0%,100%{transform:translateY(0) rotate(0)}
+  50%{transform:translateY(-25px) rotate(15deg)}
+}
+
+/* Hero showcase (rotating 3D wheel) */
+.hero-wheel{
+  position:relative; width:100%; aspect-ratio:1;
+  max-width:520px; margin:0 auto;
+}
+.wheel-center{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:8rem; filter:drop-shadow(0 20px 40px rgba(200,25,26,.3));
+  animation:spinSlow 18s linear infinite;
+}
+@keyframes spinSlow{to{transform:rotate(360deg)}}
+.wheel-orbit{
+  position:absolute; inset:0;
+  animation:spinOrbit 22s linear infinite;
+}
+@keyframes spinOrbit{to{transform:rotate(-360deg)}}
+.wheel-item{
+  position:absolute; width:90px; height:90px; border-radius:50%;
+  background:#fff; box-shadow:var(--shadow-pop);
+  display:flex; align-items:center; justify-content:center;
+  font-size:2.6rem; left:50%; top:0; transform:translate(-50%,-50%);
+  transition:transform .3s;
+}
+.wheel-item:hover{transform:translate(-50%,-50%) scale(1.25)}
+.wheel-item.p2{top:50%; left:100%; transform:translate(-50%,-50%)}
+.wheel-item.p3{top:100%; left:50%; transform:translate(-50%,-50%)}
+.wheel-item.p4{top:50%; left:0; transform:translate(-50%,-50%)}
+.wheel-item.p5{top:14.6%; left:85.4%; transform:translate(-50%,-50%)}
+.wheel-item.p6{top:85.4%; left:85.4%; transform:translate(-50%,-50%)}
+.wheel-item.p7{top:85.4%; left:14.6%; transform:translate(-50%,-50%)}
+.wheel-item.p8{top:14.6%; left:14.6%; transform:translate(-50%,-50%)}
+
+/* ───── STATS ───── */
+.stat-card{
+  background:#fff; border-radius:var(--radius); padding:1.5rem;
+  text-align:center; box-shadow:var(--shadow-soft);
+  transition:.3s;
+}
+.stat-card:hover{transform:translateY(-6px); box-shadow:var(--shadow-pop)}
+.stat-num{font-family:'Syne',sans-serif; font-size:2.6rem; font-weight:800; color:var(--red); line-height:1}
+.stat-label{color:#6b4a3a; font-size:.85rem; margin-top:.4rem; font-weight:500}
+
+/* ───── MARQUEE ───── */
+.marquee{
+  background:linear-gradient(90deg, var(--red), var(--red-deep), var(--red));
+  color:#fff; padding:1.3rem 0; overflow:hidden; position:relative;
+  border-top:3px solid var(--gold); border-bottom:3px solid var(--gold);
+}
+.marquee-track{display:flex; gap:3rem; white-space:nowrap; animation:marquee 30s linear infinite}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.marquee-item{font-family:'Syne',sans-serif; font-size:1.5rem; font-weight:700; display:flex; align-items:center; gap:1rem}
+.marquee-item .dot{color:var(--gold)}
+
+/* ───── SECTION TITLES ───── */
+.section{padding:6rem 0; position:relative}
+.section-eyebrow{
+  display:inline-block; padding:.4rem 1rem; background:var(--red); 
+  color:#fff; border-radius:999px; font-weight:700;
+  font-size:.8rem; letter-spacing:.1em; text-transform:uppercase; margin-bottom:1rem;
+  box-shadow:0 4px 12px rgba(203,0,0,.3);
+}
+.section-title{font-size:clamp(2rem,4.5vw,3.4rem); margin-bottom:1rem}
+.section-lead{font-size:1.1rem; color:#6b4a3a; max-width:680px}
+
+/* ───── BRANDS ───── */
+.brand-card{
+  position:relative; background:#fff; border-radius:var(--radius);
+  padding:2rem 1.5rem; text-align:center; overflow:hidden;
+  box-shadow:var(--shadow-soft); transition:.35s; cursor:pointer; height:100%;
+}
+.brand-card{border:2px solid transparent}
+.brand-card:hover{border-color:var(--red)}
+.brand-card::before{
+  content:''; position:absolute; inset:0; border-radius:var(--radius);
+  background:linear-gradient(135deg,var(--red),var(--red-deep));
+  opacity:0; transition:.3s; z-index:0;
+}
+.brand-card:hover{transform:translateY(-10px); box-shadow:var(--shadow-pop)}
+.brand-card:hover::before{opacity:1}
+.brand-card:hover .brand-icon,
+.brand-card:hover .brand-name,
+.brand-card:hover .brand-desc{color:#fff; position:relative; z-index:1}
+.brand-card:hover .brand-icon{transform:scale(1.2) rotate(10deg)}
+.brand-icon{font-size:3.5rem; margin-bottom:1rem; display:inline-block; transition:.35s; position:relative; z-index:1}
+.brand-name{font-family:'Syne',sans-serif; font-weight:800; font-size:1.2rem; margin-bottom:.5rem; position:relative; z-index:1; transition:.3s}
+.brand-desc{color:#6b4a3a; font-size:.85rem; position:relative; z-index:1; transition:.3s}
+
+/* ───── PRODUCT 360 SECTION ───── */
+.product-360-section{
+  background:linear-gradient(135deg, var(--red-deep) 0%, #5a0000 50%, var(--choco) 100%);
+  color:var(--cream); padding:6rem 0; position:relative; overflow:hidden;
+}
+.product-360-section::before{
+  content:''; position:absolute; top:-100px; right:-100px;
+  width:400px; height:400px; border-radius:50%;
+  background:radial-gradient(var(--gold), transparent 70%); opacity:.3;
+}
+.product-360-section .section-title{color:var(--cream)}
+.product-360-section .section-lead{color:rgba(255,250,245,.75)}
+
+.viewer-360{
+  position:relative; aspect-ratio:1; max-width:480px; margin:0 auto;
+  background:radial-gradient(circle at center, rgba(245,165,0,.25), transparent 70%);
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  cursor:grab; user-select:none; touch-action:none;
+}
+.viewer-360.dragging{cursor:grabbing}
+.viewer-360 .item-3d{
+  width:80%; height:80%; max-width:420px; max-height:420px;
+  object-fit:contain; user-drag:none; -webkit-user-drag:none;
+  /* Filtro SVG que mapea el blanco del JPG a transparente */
+  filter:url(#whiteToTransparent) drop-shadow(0 30px 60px rgba(0,0,0,.45));
+  will-change:transform; pointer-events:none;
+  transition:none;
+}
+.viewer-360 .ring-deco{
+  position:absolute; inset:5%; border:2px dashed rgba(245,165,0,.4);
+  border-radius:50%; animation:spinSlow 30s linear infinite;
+}
+.viewer-360 .ring-deco-2{
+  position:absolute; inset:15%; border:1px dotted rgba(245,165,0,.3);
+  border-radius:50%; animation:spinSlow 20s linear infinite reverse;
+}
+.viewer-hint{
+  position:absolute; bottom:-50px; left:50%; transform:translateX(-50%);
+  color:var(--gold); font-size:.9rem; font-weight:600;
+  display:flex; align-items:center; gap:.5rem;
+}
+.viewer-hint i{animation:bounce 1.5s infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+.product-360-name{font-family:'Syne',sans-serif; font-size:2.5rem; font-weight:800; color:var(--gold)}
+.feature-pill{
+  display:inline-flex; align-items:center; gap:.5rem;
+  background:rgba(255,250,245,.08); border:1px solid rgba(245,165,0,.3);
+  border-radius:999px; padding:.5rem 1rem; font-size:.85rem;
+  margin:.3rem .3rem 0 0;
+}
+.feature-pill i{color:var(--gold)}
+
+/* ───── PRODUCTS GRID ───── */
+.product-card{
+  background:#fff; border-radius:var(--radius); overflow:hidden;
+  box-shadow:var(--shadow-soft); transition:.35s; height:100%;
+  display:flex; flex-direction:column;
+}
+.product-card:hover{transform:translateY(-8px); box-shadow:var(--shadow-pop)}
+.product-thumb{
+  aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+  font-size:5rem; transition:.4s; position:relative; overflow:hidden;
+}
+.product-card:hover .product-thumb{transform:scale(1.08) rotate(-5deg)}
+.product-thumb .badge-prod{
+  position:absolute; top:1rem; left:1rem;
+  background:var(--red); color:#fff; padding:.2rem .7rem;
+  border-radius:999px; font-size:.7rem; font-weight:700;
+}
+.badge-prod.new{background:var(--green)}
+.badge-prod.season{background:var(--purple)}
+.product-body{padding:1.2rem; flex:1; display:flex; flex-direction:column}
+.product-brand{font-size:.7rem; color:var(--red); font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin-bottom:.3rem}
+.product-name{font-family:'Syne',sans-serif; font-weight:700; font-size:1.05rem; margin-bottom:.4rem; color:var(--choco)}
+.product-desc{font-size:.82rem; color:#6b4a3a; flex:1; margin-bottom:.8rem}
+.product-foot{display:flex; align-items:center; justify-content:space-between; gap:.5rem}
+.product-price{font-family:'Syne',sans-serif; font-weight:800; font-size:1.1rem; color:var(--choco)}
+.btn-add{
+  background:var(--red); color:#fff; border:0;
+  border-radius:999px; padding:.45rem .9rem; font-weight:600; font-size:.82rem;
+  transition:.2s; display:inline-flex; align-items:center; gap:.3rem;
+  box-shadow:0 4px 12px rgba(203,0,0,.3);
+}
+.btn-add:hover{background:var(--red-deep); color:#fff; transform:scale(1.05); box-shadow:0 6px 18px rgba(203,0,0,.5)}
+.btn-add.added{background:var(--green)}
+
+/* Filter pills */
+.filter-pills{display:flex; flex-wrap:wrap; gap:.6rem; justify-content:center; margin-bottom:3rem}
+.filter-pill{
+  background:#fff; border:2px solid transparent; color:var(--choco);
+  border-radius:999px; padding:.55rem 1.3rem; font-weight:600; font-size:.9rem;
+  transition:.2s; cursor:pointer;
+}
+.filter-pill:hover{border-color:var(--red); color:var(--red)}
+.filter-pill.active{background:var(--red); color:#fff; box-shadow:var(--shadow-pop)}
+
+/* ───── STORY / VALUES ───── */
+.value-card{
+  background:#fff; border-radius:var(--radius); padding:2rem;
+  text-align:center; box-shadow:var(--shadow-soft); height:100%;
+  transition:.3s;
+}
+.value-card:hover{transform:translateY(-6px) rotate(-1deg); box-shadow:var(--shadow-pop)}
+.value-icon{
+  width:80px; height:80px; border-radius:50%;
+  background:linear-gradient(135deg,var(--red),var(--red-deep));
+  display:flex; align-items:center; justify-content:center;
+  font-size:2.5rem; margin:0 auto 1.2rem;
+  color:#fff;
+  box-shadow:0 10px 25px rgba(203,0,0,.35);
+}
+
+/* ───── TESTIMONIALS ───── */
+.testimonial{
+  background:#fff; border-radius:var(--radius); padding:2rem;
+  box-shadow:var(--shadow-soft); position:relative; height:100%;
+}
+.testimonial::before{
+  content:'"'; position:absolute; top:-20px; left:20px;
+  font-size:6rem; color:var(--red); font-family:'Syne',serif;
+  line-height:1; opacity:.3;
+}
+.testimonial-text{font-style:italic; color:#6b4a3a; margin-bottom:1rem; position:relative; z-index:1}
+.testimonial-author{display:flex; align-items:center; gap:.8rem}
+.testimonial-avatar{
+  width:48px; height:48px; border-radius:50%;
+  background:linear-gradient(135deg,var(--red),var(--red-deep));
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.5rem; color:#fff; font-weight:700;
+}
+
+/* ───── CTA ───── */
+.cta-section{
+  background:linear-gradient(135deg,var(--red) 0%, var(--red-deep) 100%);
+  color:#fff; padding:5rem 0; border-radius:0; position:relative; overflow:hidden;
+}
+.cta-section::before{
+  content:'🍭🍬🍫🌈🍓🍇'; position:absolute; inset:0;
+  font-size:8rem; letter-spacing:2rem; opacity:.06;
+  display:flex; align-items:center; justify-content:center;
+  animation:marquee 60s linear infinite;
+}
+
+/* ───── FOOTER ───── */
+footer.footer{
+  background:linear-gradient(180deg, var(--red-deep) 0%, var(--choco) 100%);
+  color:rgba(255,250,245,.85); padding:4rem 0 2rem;
+  border-top:4px solid var(--red);
+}
+footer.footer h5{color:var(--cream); margin-bottom:1.2rem; font-family:'Syne',sans-serif}
+footer.footer a{color:rgba(255,250,245,.7); text-decoration:none; transition:.2s; display:block; padding:.3rem 0}
+footer.footer a:hover{color:var(--gold); transform:translateX(4px)}
+.social-link{
+  width:42px; height:42px; border-radius:50%;
+  background:rgba(255,250,245,.08); display:inline-flex !important;
+  align-items:center; justify-content:center; padding:0 !important;
+  margin-right:.5rem; transition:.25s;
+}
+.social-link:hover{background:var(--gold); color:var(--choco) !important; transform:translateY(-3px) !important}
+
+/* ───── CART OFFCANVAS ───── */
+.offcanvas-cart{background:var(--cream); border-left:none}
+.offcanvas-header{background:linear-gradient(135deg,var(--red),var(--red-deep)); color:#fff; padding:1.2rem 1.5rem}
+.offcanvas-title{font-family:'Syne',sans-serif; font-weight:800}
+.btn-close-cart{background:none; border:0; color:var(--cream); font-size:1.5rem; opacity:.8}
+.btn-close-cart:hover{opacity:1; transform:rotate(90deg); transition:.2s}
+
+.cart-item{
+  background:#fff; border-radius:14px; padding:.8rem;
+  display:flex; gap:.8rem; align-items:center; margin-bottom:.8rem;
+  box-shadow:var(--shadow-soft);
+}
+.cart-item-thumb{
+  width:60px; height:60px; border-radius:12px;
+  background:var(--cream); display:flex; align-items:center; justify-content:center;
+  font-size:2rem; flex-shrink:0;
+}
+.cart-item-info{flex:1; min-width:0}
+.cart-item-name{font-weight:700; font-size:.85rem; color:var(--choco); margin-bottom:.2rem}
+.cart-item-price{color:var(--red); font-weight:700; font-size:.85rem}
+.qty-control{display:inline-flex; align-items:center; gap:.4rem; background:var(--cream); border-radius:999px; padding:.2rem}
+.qty-btn{
+  border:0; background:#fff; width:26px; height:26px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:700; color:var(--choco); transition:.15s;
+}
+.qty-btn:hover{background:var(--red); color:#fff}
+.qty-val{font-weight:700; min-width:20px; text-align:center; font-size:.85rem}
+.cart-item-remove{border:0; background:none; color:#999; font-size:1.1rem; transition:.2s}
+.cart-item-remove:hover{color:var(--red); transform:scale(1.2)}
+
+.cart-summary{
+  background:#fff; border-radius:14px; padding:1.2rem; margin-top:1rem;
+}
+.summary-row{display:flex; justify-content:space-between; margin-bottom:.5rem; color:#6b4a3a}
+.summary-row.total{
+  border-top:2px dashed rgba(59,26,10,.15); padding-top:.8rem; margin-top:.8rem;
+  font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800; color:var(--choco);
+}
+.checkout-btn{
+  background:var(--red); color:#fff; border:0;
+  border-radius:999px; padding:.9rem 1.5rem; font-weight:700;
+  width:100%; margin-top:1rem; transition:.2s;
+  display:flex; align-items:center; justify-content:center; gap:.5rem;
+  box-shadow:0 8px 20px rgba(203,0,0,.35);
+}
+.checkout-btn:hover{background:var(--red-deep); color:#fff; transform:translateY(-2px); box-shadow:0 12px 28px rgba(203,0,0,.5)}
+.checkout-btn:disabled{opacity:.5; cursor:not-allowed}
+
+.cart-empty{text-align:center; padding:3rem 1rem; color:#999}
+.cart-empty i{font-size:4rem; color:rgba(59,26,10,.15); margin-bottom:1rem}
+
+/* ───── CHECKOUT MODAL ───── */
+.modal-checkout .modal-content{
+  background:var(--cream); border:0; border-radius:24px; overflow:hidden;
+}
+.modal-checkout .modal-header{
+  background:linear-gradient(135deg,var(--red),var(--red-deep)); color:#fff; border:0; padding:1.2rem 1.5rem;
+}
+.modal-checkout .modal-title{font-family:'Syne',sans-serif; font-weight:800}
+.checkout-stepper{
+  display:flex; gap:.5rem; padding:1.5rem; background:#fff;
+  border-bottom:1px solid rgba(59,26,10,.06);
+}
+.step{
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:.4rem;
+  position:relative;
+}
+.step:not(:last-child)::after{
+  content:''; position:absolute; top:14px; right:-50%; width:100%; height:2px;
+  background:rgba(59,26,10,.1); z-index:0;
+}
+.step.active:not(:last-child)::after,
+.step.done:not(:last-child)::after{background:var(--green)}
+.step-circle{
+  width:30px; height:30px; border-radius:50%; background:#e8dfd5;
+  color:#6b4a3a; display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:.85rem; position:relative; z-index:1;
+  transition:.3s;
+}
+.step.active .step-circle{background:var(--red); color:#fff; box-shadow:0 0 0 4px rgba(200,25,26,.2)}
+.step.done .step-circle{background:var(--green); color:#fff}
+.step-label{font-size:.75rem; font-weight:600; color:var(--choco)}
+
+.form-control-adro,.form-select-adro{
+  border:2px solid rgba(59,26,10,.1); border-radius:12px; padding:.7rem 1rem;
+  background:#fff; transition:.2s;
+}
+.form-control-adro:focus,.form-select-adro:focus{
+  border-color:var(--red); box-shadow:0 0 0 3px rgba(200,25,26,.15); outline:none;
+}
+.form-label-adro{font-weight:600; color:var(--choco); margin-bottom:.4rem; font-size:.85rem}
+
+.payment-option{
+  background:#fff; border:2px solid rgba(59,26,10,.1); border-radius:14px;
+  padding:1rem; cursor:pointer; transition:.2s;
+  display:flex; align-items:center; gap:1rem;
+}
+.payment-option:hover{border-color:var(--red)}
+.payment-option.selected{border-color:var(--red); background:rgba(200,25,26,.04); box-shadow:0 0 0 3px rgba(200,25,26,.1)}
+.payment-icon{font-size:2rem}
+.payment-name{font-weight:700; color:var(--choco)}
+.payment-desc{font-size:.78rem; color:#6b4a3a}
+
+.card-input-wrap{position:relative}
+.card-brand-icon{
+  position:absolute; right:1rem; top:50%; transform:translateY(-50%);
+  font-size:1.5rem; color:#6b4a3a;
+}
+
+.success-anim{
+  width:100px; height:100px; border-radius:50%; background:var(--green);
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto 1.5rem; color:#fff; font-size:3rem;
+  animation:successPop .6s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes successPop{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+
+.processing-spinner{
+  width:60px; height:60px; border:4px solid rgba(200,25,26,.2);
+  border-top-color:var(--red); border-radius:50%; margin:0 auto 1.5rem;
+  animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ───── TOAST ───── */
+.toast-adro{
+  position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(120px);
+  background:linear-gradient(135deg,var(--red),var(--red-deep)); color:#fff; padding:.9rem 1.6rem;
+  border-radius:999px; box-shadow:var(--shadow-pop);
+  font-weight:600; z-index:9999; transition:.35s cubic-bezier(.34,1.56,.64,1);
+}
+.toast-adro.show{transform:translateX(-50%) translateY(0)}
+
+/* ───── REVEAL ANIMATIONS (custom) ───── */
+.reveal-up{opacity:0; transform:translateY(40px); transition:.8s cubic-bezier(.16,1,.3,1)}
+.reveal-up.in{opacity:1; transform:translateY(0)}
+
+/* ───── RESPONSIVE ───── */
+@media (max-width:991px){
+  .hero{padding-top:110px}
+  .hero-title{font-size:2.8rem}
+  .navbar-adro .lang-switcher{margin:1rem 0}
+}
+@media (max-width:767px){
+  .cursor-dot,.cursor-ring{display:none}
+  *{cursor:auto !important}
+  body{cursor:auto}
+  .hero-wheel{max-width:340px; margin-top:3rem}
+  .wheel-item{width:70px; height:70px; font-size:2rem}
+  .wheel-center{font-size:5.5rem}
+  .viewer-360 .item-3d{max-width:280px; max-height:280px}
+}
+
+/* ───── SCROLLBAR ───── */
+::-webkit-scrollbar{width:10px; height:10px}
+::-webkit-scrollbar-track{background:var(--cream)}
+::-webkit-scrollbar-thumb{background:var(--red); border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:var(--choco)}
+</style>
+</head>
+<body>
+
+<!-- SVG filter: mapea el blanco a transparente (para el visor 360) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="whiteToTransparent" color-interpolation-filters="sRGB">
+      <!-- Calcula "luminance"; valores cercanos a 1 (blanco) se transparentan -->
+      <feColorMatrix type="matrix" values="
+        1 0 0 0 0
+        0 1 0 0 0
+        0 0 1 0 0
+        -1 -1 -1 0 3" result="alpha"/>
+      <feComposite in="SourceGraphic" in2="alpha" operator="in"/>
+    </filter>
+  </defs>
+</svg>
+
+<!-- Cursor -->
+<div class="cursor-dot" id="cursorDot">🍭</div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- ───── NAVBAR ───── -->
+<nav class="navbar-adro" id="navbar">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between flex-wrap">
+      <a href="#" class="navbar-brand">Adro<span>.</span></a>
+
+      <ul class="nav d-none d-lg-flex">
+        <li class="nav-item"><a href="#brands" class="nav-link" data-i18n="nav.brands">Marcas</a></li>
+        <li class="nav-item"><a href="#products" class="nav-link" data-i18n="nav.products">Productos</a></li>
+        <li class="nav-item"><a href="#viewer360" class="nav-link" data-i18n="nav.viewer360">Vista 360°</a></li>
+        <li class="nav-item"><a href="#story" class="nav-link" data-i18n="nav.story">Historia</a></li>
+        <li class="nav-item"><a href="#contact" class="nav-link" data-i18n="nav.contact">Contacto</a></li>
+      </ul>
+
+      <div class="d-flex align-items-center gap-3">
+        <div class="lang-switcher">
+          <button class="lang-btn active" data-lang="es">🇪🇸 ES</button>
+          <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+          <button class="lang-btn" data-lang="pt">🇧🇷 PT</button>
+        </div>
+        <button class="cart-toggle" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartCanvas">
+          <i class="bi bi-bag-fill"></i>
+          <span data-i18n="nav.cart" class="d-none d-md-inline ms-1">Carrito</span>
+          <span class="badge-count" id="cartBadge">0</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ───── HERO ───── -->
+<section class="hero">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <span class="candy" style="top:15%; left:5%; animation-delay:0s">🍫</span>
+  <span class="candy" style="top:25%; right:8%; animation-delay:1s">🍬</span>
+  <span class="candy" style="bottom:20%; left:8%; animation-delay:2s">🌈</span>
+  <span class="candy" style="bottom:30%; right:5%; animation-delay:3s">🍭</span>
+
+  <div class="container position-relative" style="z-index:2">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <span class="hero-eyebrow"><span class="dot"></span><span data-i18n="hero.eyebrow">35 años endulzando Colombia</span></span>
+        <h1 class="hero-title">
+          <span class="word" data-i18n="hero.word1">Dulces</span>
+          <span class="word" data-i18n="hero.word2">momentos</span>
+          <span class="word" data-i18n="hero.word3">que se</span>
+          <span class="word" data-i18n="hero.word4">comparten</span>
+        </h1>
+        <p class="hero-desc" data-i18n="hero.desc">Importamos y distribuimos las marcas más queridas de chocolates, gomas y caramelos. Calidad mundial, sabor que conecta generaciones.</p>
+        <div class="d-flex flex-wrap gap-3">
+          <button class="btn btn-adro" onclick="scrollToSection('products')"><i class="bi bi-bag-plus me-2"></i><span data-i18n="hero.cta1">Ver productos</span></button>
+          <button class="btn btn-outline-adro" onclick="scrollToSection('viewer360')"><i class="bi bi-arrow-clockwise me-2"></i><span data-i18n="hero.cta2">Explorar 360°</span></button>
+        </div>
+
+        <div class="row g-3 mt-4">
+          <div class="col-4"><div class="stat-card"><div class="stat-num" data-count="35">0</div><div class="stat-label" data-i18n="stat.years">años de historia</div></div></div>
+          <div class="col-4"><div class="stat-card"><div class="stat-num" data-count="13">0</div><div class="stat-label" data-i18n="stat.brands">marcas premium</div></div></div>
+          <div class="col-4"><div class="stat-card"><div class="stat-num" data-count="50" data-suffix="+">0</div><div class="stat-label" data-i18n="stat.products">productos únicos</div></div></div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="hero-wheel">
+          <div class="wheel-center">🍭</div>
+          <div class="wheel-orbit">
+            <div class="wheel-item p1">🍫</div>
+            <div class="wheel-item p2">🌈</div>
+            <div class="wheel-item p3">🍬</div>
+            <div class="wheel-item p4">🍓</div>
+            <div class="wheel-item p5">🍇</div>
+            <div class="wheel-item p6">🍒</div>
+            <div class="wheel-item p7">🌶️</div>
+            <div class="wheel-item p8">🍊</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───── MARQUEE ───── -->
+<div class="marquee">
+  <div class="marquee-track">
+    <span class="marquee-item">Adro Chocolatier <span class="dot">●</span></span>
+    <span class="marquee-item">JoJo <span class="dot">●</span></span>
+    <span class="marquee-item">Nerds Candy <span class="dot">●</span></span>
+    <span class="marquee-item">GummyZone <span class="dot">●</span></span>
+    <span class="marquee-item">Amos Peelerz <span class="dot">●</span></span>
+    <span class="marquee-item">LoveIs <span class="dot">●</span></span>
+    <span class="marquee-item">Natural Heaven <span class="dot">●</span></span>
+    <span class="marquee-item">4D Gummi <span class="dot">●</span></span>
+    <!-- duplicate for seamless -->
+    <span class="marquee-item">Adro Chocolatier <span class="dot">●</span></span>
+    <span class="marquee-item">JoJo <span class="dot">●</span></span>
+    <span class="marquee-item">Nerds Candy <span class="dot">●</span></span>
+    <span class="marquee-item">GummyZone <span class="dot">●</span></span>
+    <span class="marquee-item">Amos Peelerz <span class="dot">●</span></span>
+    <span class="marquee-item">LoveIs <span class="dot">●</span></span>
+    <span class="marquee-item">Natural Heaven <span class="dot">●</span></span>
+    <span class="marquee-item">4D Gummi <span class="dot">●</span></span>
+  </div>
+</div>
+
+<!-- ───── BRANDS ───── -->
+<section class="section" id="brands">
+  <div class="container">
+    <div class="text-center mb-5" data-aos="fade-up">
+      <span class="section-eyebrow" data-i18n="brands.eyebrow">Nuestras Marcas</span>
+      <h2 class="section-title" data-i18n="brands.title">Un mundo de sabores en tus manos</h2>
+      <p class="section-lead mx-auto" data-i18n="brands.lead">Trabajamos con las casas más reconocidas internacionalmente para traerte lo mejor en confitería.</p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="0">
+        <div class="brand-card">
+          <div class="brand-icon">🍫</div>
+          <div class="brand-name">Adro Chocolatier</div>
+          <div class="brand-desc">Chocolates premium</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="60">
+        <div class="brand-card">
+          <div class="brand-icon">🍬</div>
+          <div class="brand-name">JoJo</div>
+          <div class="brand-desc">Caramelos frutales</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="120">
+        <div class="brand-card">
+          <div class="brand-icon">🌈</div>
+          <div class="brand-name">Nerds Candy</div>
+          <div class="brand-desc">Crunch icónico</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="180">
+        <div class="brand-card">
+          <div class="brand-icon">🐻</div>
+          <div class="brand-name">GummyZone</div>
+          <div class="brand-desc">Gomas de fiesta</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="0">
+        <div class="brand-card">
+          <div class="brand-icon">🥭</div>
+          <div class="brand-name">Amos Peelerz</div>
+          <div class="brand-desc">Goma pelable</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="60">
+        <div class="brand-card">
+          <div class="brand-icon">❤️</div>
+          <div class="brand-name">LoveIs</div>
+          <div class="brand-desc">Colección de amor</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="120">
+        <div class="brand-card">
+          <div class="brand-icon">🌿</div>
+          <div class="brand-name">Natural Heaven</div>
+          <div class="brand-desc">Saludable y natural</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="180">
+        <div class="brand-card">
+          <div class="brand-icon">🌀</div>
+          <div class="brand-name">4D Gummi</div>
+          <div class="brand-desc">Espirales rellenas</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───── 360 PRODUCT VIEWER ───── -->
+<section class="product-360-section" id="viewer360">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6 text-center" data-aos="zoom-in">
+        <div class="viewer-360" id="viewer360">
+          <div class="ring-deco"></div>
+          <div class="ring-deco-2"></div>
+          <img class="item-3d" id="item3d" alt="Adro Lollipop 360" draggable="false">
+          <div class="viewer-hint">
+            <i class="bi bi-arrow-left-right"></i>
+            <span data-i18n="viewer.hint">Arrastra para rotar</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6" data-aos="fade-left">
+        <span class="section-eyebrow" data-i18n="viewer.eyebrow">Experiencia 360°</span>
+        <h2 class="section-title"><span class="product-360-name">Adro Lollipop</span><br><span data-i18n="viewer.subtitle">Producto estrella</span></h2>
+        <p class="section-lead text-light opacity-75 mb-4" data-i18n="viewer.desc">Una experiencia interactiva: explora nuestros productos en 360° desde cualquier ángulo. Arrastra, gira, descubre. Perfecto para conocer cada detalle antes de llevarlos a casa.</p>
+
+        <div class="mb-4">
+          <span class="feature-pill"><i class="bi bi-check-circle-fill"></i> <span data-i18n="viewer.f1">Cacao premium</span></span>
+          <span class="feature-pill"><i class="bi bi-check-circle-fill"></i> <span data-i18n="viewer.f2">Sin gluten</span></span>
+          <span class="feature-pill"><i class="bi bi-check-circle-fill"></i> <span data-i18n="viewer.f3">Empaque eco</span></span>
+          <span class="feature-pill"><i class="bi bi-check-circle-fill"></i> <span data-i18n="viewer.f4">Hecho con amor</span></span>
+        </div>
+
+        <div class="d-flex flex-wrap gap-3 align-items-center">
+          <div>
+            <div style="font-size:.8rem; opacity:.7" data-i18n="viewer.priceLabel">Precio</div>
+            <div style="font-family:'Syne'; font-size:2rem; font-weight:800; color:var(--gold)">$<span id="price360">7.900</span> COP</div>
+          </div>
+          <button class="btn btn-adro" onclick="addToCart(99,'Adro Lollipop','🍭',7900)"><i class="bi bi-bag-plus me-2"></i><span data-i18n="viewer.add">Agregar al carrito</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───── PRODUCTS ───── -->
+<section class="section" id="products" style="background:linear-gradient(180deg, transparent, rgba(249,192,192,.1))">
+  <div class="container">
+    <div class="text-center mb-4" data-aos="fade-up">
+      <span class="section-eyebrow" data-i18n="products.eyebrow">Bestsellers</span>
+      <h2 class="section-title" data-i18n="products.title">Los favoritos de todos</h2>
+      <p class="section-lead mx-auto" data-i18n="products.lead">Descubre nuestra selección de productos más amados. Calidad garantizada, sabor inolvidable.</p>
+    </div>
+
+    <div class="filter-pills" data-aos="fade-up">
+      <button class="filter-pill active" data-filter="all" data-i18n="filter.all">Todos</button>
+      <button class="filter-pill" data-filter="chocolate" data-i18n="filter.choco">Chocolates</button>
+      <button class="filter-pill" data-filter="gummy" data-i18n="filter.gummy">Gomas</button>
+      <button class="filter-pill" data-filter="candy" data-i18n="filter.candy">Caramelos</button>
+      <button class="filter-pill" data-filter="spicy" data-i18n="filter.spicy">Picantes</button>
+      <button class="filter-pill" data-filter="natural" data-i18n="filter.natural">Naturales</button>
+    </div>
+
+    <div class="row g-4" id="productGrid">
+      <!-- Productos generados por JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ───── VALUES ───── -->
+<section class="section" id="story">
+  <div class="container">
+    <div class="text-center mb-5" data-aos="fade-up">
+      <span class="section-eyebrow" data-i18n="story.eyebrow">Nuestra Esencia</span>
+      <h2 class="section-title" data-i18n="story.title">Pasión por el dulce desde 1991</h2>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="0">
+        <div class="value-card">
+          <div class="value-icon"><i class="bi bi-stars"></i></div>
+          <h4 data-i18n="story.v1Title">Calidad Premium</h4>
+          <p class="text-muted" data-i18n="story.v1Desc">Solo trabajamos con las mejores marcas internacionales y cumplimos con los más altos estándares.</p>
+        </div>
+      </div>
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="value-card">
+          <div class="value-icon"><i class="bi bi-truck"></i></div>
+          <h4 data-i18n="story.v2Title">Distribución Nacional</h4>
+          <p class="text-muted" data-i18n="story.v2Desc">Llegamos a cada rincón de Colombia. Éxito, Makro, DollarCity, Justo y Bueno y más.</p>
+        </div>
+      </div>
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="value-card">
+          <div class="value-icon"><i class="bi bi-heart-fill"></i></div>
+          <h4 data-i18n="story.v3Title">Hecho con amor</h4>
+          <p class="text-muted" data-i18n="story.v3Desc">Cada producto es seleccionado con cariño para endulzar tus momentos más especiales.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───── TESTIMONIALS ───── -->
+<section class="section" style="background:linear-gradient(180deg, rgba(245,165,0,.05), transparent)">
+  <div class="container">
+    <div class="text-center mb-5" data-aos="fade-up">
+      <span class="section-eyebrow" data-i18n="testimonials.eyebrow">Testimonios</span>
+      <h2 class="section-title" data-i18n="testimonials.title">Lo que dicen nuestros clientes</h2>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4" data-aos="fade-up">
+        <div class="testimonial">
+          <p class="testimonial-text" data-i18n="t1.text">"Adro nunca falla. Mis hijos esperan cada caja de surtidos como si fuera Navidad. Calidad excepcional."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">M</div>
+            <div><strong>María González</strong><br><small class="text-muted">Bogotá</small></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="testimonial">
+          <p class="testimonial-text" data-i18n="t2.text">"Los Peelerz son lo máximo. Mis sobrinos enloquecen cuando los llevo. Excelente variedad de marcas."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">C</div>
+            <div><strong>Carlos Ramírez</strong><br><small class="text-muted">Medellín</small></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="testimonial">
+          <p class="testimonial-text" data-i18n="t3.text">"Como tienda de barrio, Adro es mi proveedor de confianza. Entregas puntuales y producto de calidad."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">L</div>
+            <div><strong>Laura Pérez</strong><br><small class="text-muted">Cali</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───── CTA ───── -->
+<section class="cta-section">
+  <div class="container text-center position-relative" style="z-index:2">
+    <h2 class="display-3 mb-3" data-aos="zoom-in" data-i18n="cta.title">¿Listo para endulzar tu día?</h2>
+    <p class="lead mb-4 opacity-75" data-aos="fade-up" data-i18n="cta.lead">Explora nuestro catálogo y descubre los sabores que te enamorarán.</p>
+    <button class="btn btn-light btn-lg px-4 py-3 rounded-pill fw-bold" onclick="scrollToSection('products')" data-aos="zoom-in" data-aos-delay="200">
+      <i class="bi bi-arrow-right-circle-fill me-2"></i><span data-i18n="cta.btn">Comenzar a comprar</span>
+    </button>
+  </div>
+</section>
+
+<!-- ───── FOOTER ───── -->
+<footer class="footer" id="contact">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <h2 class="navbar-brand text-light" style="font-family:'Syne'; font-weight:800; font-size:2rem">Adro<span style="color:var(--red)">.</span></h2>
+        <p class="opacity-75" data-i18n="footer.desc">Importadores y distribuidores de las mejores marcas de confitería en Colombia desde 1991.</p>
+        <div class="mt-3">
+          <a href="#" class="social-link"><i class="bi bi-instagram"></i></a>
+          <a href="#" class="social-link"><i class="bi bi-facebook"></i></a>
+          <a href="#" class="social-link"><i class="bi bi-tiktok"></i></a>
+          <a href="#" class="social-link"><i class="bi bi-whatsapp"></i></a>
+        </div>
+      </div>
+      <div class="col-6 col-md-3 col-lg-2">
+        <h5 data-i18n="footer.products">Productos</h5>
+        <a href="#brands" data-i18n="footer.brands">Marcas</a>
+        <a href="#products" data-i18n="footer.catalog">Catálogo</a>
+        <a href="#viewer360" data-i18n="footer.viewer">Vista 360°</a>
+      </div>
+      <div class="col-6 col-md-3 col-lg-2">
+        <h5 data-i18n="footer.company">Empresa</h5>
+        <a href="#story" data-i18n="footer.about">Nosotros</a>
+        <a href="#" data-i18n="footer.distributors">Distribuidores</a>
+        <a href="#" data-i18n="footer.work">Trabaja con nosotros</a>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <h5 data-i18n="footer.contact">Contáctanos</h5>
+        <p class="opacity-75"><i class="bi bi-geo-alt-fill me-2"></i>Bogotá, Colombia</p>
+        <p class="opacity-75"><i class="bi bi-telephone-fill me-2"></i>+57 313 759 1814</p>
+        <p class="opacity-75"><i class="bi bi-envelope-fill me-2"></i>contacto@adro.com.co</p>
+      </div>
+    </div>
+    <hr class="my-4 opacity-25">
+    <div class="text-center opacity-50">
+      <small>© 2026 Adro · <span data-i18n="footer.rights">Todos los derechos reservados</span></small>
+    </div>
+  </div>
+</footer>
+
+<!-- ───── CART OFFCANVAS ───── -->
+<div class="offcanvas offcanvas-end offcanvas-cart" tabindex="-1" id="cartCanvas" style="width:420px; max-width:90vw">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title"><i class="bi bi-bag-heart-fill me-2"></i><span data-i18n="cart.title">Mi Carrito</span></h5>
+    <button type="button" class="btn-close-cart" data-bs-dismiss="offcanvas"><i class="bi bi-x-lg"></i></button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column" id="cartBody">
+    <div id="cartItems" class="flex-grow-1"></div>
+    <div id="cartFooter"></div>
+  </div>
+</div>
+
+<!-- ───── CHECKOUT MODAL ───── -->
+<div class="modal fade modal-checkout" id="checkoutModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-credit-card-fill me-2"></i><span data-i18n="checkout.title">Finalizar Compra</span></h5>
+        <button type="button" class="btn-close-cart" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i></button>
+      </div>
+
+      <div class="checkout-stepper" id="checkoutStepper">
+        <div class="step active" data-step="1"><div class="step-circle">1</div><span class="step-label" data-i18n="checkout.step1">Datos</span></div>
+        <div class="step" data-step="2"><div class="step-circle">2</div><span class="step-label" data-i18n="checkout.step2">Envío</span></div>
+        <div class="step" data-step="3"><div class="step-circle">3</div><span class="step-label" data-i18n="checkout.step3">Pago</span></div>
+        <div class="step" data-step="4"><div class="step-circle">4</div><span class="step-label" data-i18n="checkout.step4">Listo</span></div>
+      </div>
+
+      <div class="modal-body p-4">
+        <!-- STEP 1 -->
+        <div class="checkout-pane" data-pane="1">
+          <h6 class="mb-3 fw-bold" data-i18n="checkout.contactTitle">Información de contacto</h6>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label-adro" data-i18n="checkout.name">Nombre completo</label>
+              <input type="text" class="form-control form-control-adro" id="coName" placeholder="Juan Pérez">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-adro" data-i18n="checkout.email">Email</label>
+              <input type="email" class="form-control form-control-adro" id="coEmail" placeholder="juan@email.com">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-adro" data-i18n="checkout.phone">Teléfono</label>
+              <input type="tel" class="form-control form-control-adro" id="coPhone" placeholder="+57 313 000 0000">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-adro" data-i18n="checkout.doc">Documento</label>
+              <input type="text" class="form-control form-control-adro" id="coDoc" placeholder="CC 1234567890">
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="checkout-pane d-none" data-pane="2">
+          <h6 class="mb-3 fw-bold" data-i18n="checkout.shippingTitle">Dirección de envío</h6>
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label-adro" data-i18n="checkout.address">Dirección</label>
+              <input type="text" class="form-control form-control-adro" id="coAddress" placeholder="Calle 123 # 45-67">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-adro" data-i18n="checkout.city">Ciudad</label>
+              <input type="text" class="form-control form-control-adro" id="coCity" placeholder="Bogotá">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-adro" data-i18n="checkout.zip">Código postal</label>
+              <input type="text" class="form-control form-control-adro" id="coZip" placeholder="110111">
+            </div>
+            <div class="col-12">
+              <label class="form-label-adro" data-i18n="checkout.country">País</label>
+              <select class="form-select form-select-adro" id="coCountry">
+                <option value="CO">Colombia</option>
+                <option value="MX">México</option>
+                <option value="US">Estados Unidos</option>
+                <option value="BR">Brasil</option>
+                <option value="ES">España</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="checkout-pane d-none" data-pane="3">
+          <h6 class="mb-3 fw-bold" data-i18n="checkout.payTitle">Método de pago</h6>
+          <div class="row g-2 mb-4">
+            <div class="col-md-6">
+              <div class="payment-option selected" data-pay="card">
+                <div class="payment-icon"><i class="bi bi-credit-card-2-front-fill" style="color:var(--red)"></i></div>
+                <div><div class="payment-name" data-i18n="pay.card">Tarjeta de crédito</div><div class="payment-desc">Visa · Mastercard · Amex</div></div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="payment-option" data-pay="pse">
+                <div class="payment-icon">🏦</div>
+                <div><div class="payment-name" data-i18n="pay.pse">PSE</div><div class="payment-desc" data-i18n="pay.pseDesc">Pago directo de banco</div></div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="payment-option" data-pay="nequi">
+                <div class="payment-icon">📱</div>
+                <div><div class="payment-name">Nequi</div><div class="payment-desc" data-i18n="pay.nequiDesc">Pago móvil</div></div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="payment-option" data-pay="paypal">
+                <div class="payment-icon"><i class="bi bi-paypal" style="color:#003087"></i></div>
+                <div><div class="payment-name">PayPal</div><div class="payment-desc" data-i18n="pay.paypalDesc">Compra protegida</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="cardForm">
+            <h6 class="mb-3 fw-bold" data-i18n="pay.cardData">Datos de la tarjeta</h6>
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label-adro" data-i18n="pay.cardNumber">Número de tarjeta</label>
+                <div class="card-input-wrap">
+                  <input type="text" class="form-control form-control-adro" id="cardNumber" placeholder="4242 4242 4242 4242" maxlength="19">
+                  <i class="bi bi-credit-card card-brand-icon" id="cardBrand"></i>
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label-adro" data-i18n="pay.cardName">Titular</label>
+                <input type="text" class="form-control form-control-adro" id="cardName" placeholder="JUAN PEREZ">
+              </div>
+              <div class="col-6">
+                <label class="form-label-adro" data-i18n="pay.cardExp">Expira (MM/AA)</label>
+                <input type="text" class="form-control form-control-adro" id="cardExp" placeholder="12/28" maxlength="5">
+              </div>
+              <div class="col-6">
+                <label class="form-label-adro">CVV</label>
+                <input type="text" class="form-control form-control-adro" id="cardCvv" placeholder="123" maxlength="4">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4 - SUCCESS / PROCESSING -->
+        <div class="checkout-pane d-none text-center py-4" data-pane="4">
+          <div id="processingView">
+            <div class="processing-spinner"></div>
+            <h4 data-i18n="checkout.processing">Procesando tu pago...</h4>
+            <p class="text-muted" data-i18n="checkout.processingDesc">Conectando con la pasarela segura. No cierres esta ventana.</p>
+          </div>
+          <div id="successView" class="d-none">
+            <div class="success-anim"><i class="bi bi-check-lg"></i></div>
+            <h3 class="mb-2" data-i18n="checkout.success">¡Compra exitosa!</h3>
+            <p class="text-muted mb-3" data-i18n="checkout.successDesc">Tu pedido ha sido confirmado. Recibirás un correo con los detalles.</p>
+            <div class="bg-white p-3 rounded-3 d-inline-block">
+              <small class="text-muted d-block" data-i18n="checkout.orderNumber">Número de orden</small>
+              <strong style="font-family:'Syne'; font-size:1.5rem" id="orderNumber">#ADRO-000000</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer border-0 p-4" id="checkoutFooter">
+        <button class="btn btn-outline-adro" id="btnBack" disabled><i class="bi bi-arrow-left me-1"></i><span data-i18n="checkout.back">Anterior</span></button>
+        <button class="btn btn-adro" id="btnNext"><span data-i18n="checkout.next">Siguiente</span><i class="bi bi-arrow-right ms-1"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-adro" id="toast">🛒 ¡Producto agregado!</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+
+<script>
+// ══════════════════════════════════════════
+// I18N — 3 IDIOMAS
+// ══════════════════════════════════════════
+const I18N = {
+  es: {
+    'nav.brands':'Marcas','nav.products':'Productos','nav.viewer360':'Vista 360°','nav.story':'Historia','nav.contact':'Contacto','nav.cart':'Carrito',
+    'hero.eyebrow':'35 años endulzando Colombia',
+    'hero.word1':'Dulces','hero.word2':'momentos','hero.word3':'que se','hero.word4':'comparten',
+    'hero.desc':'Importamos y distribuimos las marcas más queridas de chocolates, gomas y caramelos. Calidad mundial, sabor que conecta generaciones.',
+    'hero.cta1':'Ver productos','hero.cta2':'Explorar 360°',
+    'stat.years':'años de historia','stat.brands':'marcas premium','stat.products':'productos únicos',
+    'brands.eyebrow':'Nuestras Marcas','brands.title':'Un mundo de sabores en tus manos','brands.lead':'Trabajamos con las casas más reconocidas internacionalmente para traerte lo mejor en confitería.',
+    'viewer.hint':'Arrastra para rotar','viewer.eyebrow':'Experiencia 360°','viewer.subtitle':'Producto estrella',
+    'viewer.desc':'Una experiencia interactiva: explora nuestros productos en 360° desde cualquier ángulo. Arrastra, gira, descubre. Perfecto para conocer cada detalle antes de llevarlos a casa.',
+    'viewer.f1':'Cacao premium','viewer.f2':'Sin gluten','viewer.f3':'Empaque eco','viewer.f4':'Hecho con amor',
+    'viewer.priceLabel':'Precio','viewer.add':'Agregar al carrito',
+    'products.eyebrow':'Bestsellers','products.title':'Los favoritos de todos','products.lead':'Descubre nuestra selección de productos más amados. Calidad garantizada, sabor inolvidable.',
+    'filter.all':'Todos','filter.choco':'Chocolates','filter.gummy':'Gomas','filter.candy':'Caramelos','filter.spicy':'Picantes','filter.natural':'Naturales',
+    'story.eyebrow':'Nuestra Esencia','story.title':'Pasión por el dulce desde 1991',
+    'story.v1Title':'Calidad Premium','story.v1Desc':'Solo trabajamos con las mejores marcas internacionales y cumplimos con los más altos estándares.',
+    'story.v2Title':'Distribución Nacional','story.v2Desc':'Llegamos a cada rincón de Colombia. Éxito, Makro, DollarCity, Justo y Bueno y más.',
+    'story.v3Title':'Hecho con amor','story.v3Desc':'Cada producto es seleccionado con cariño para endulzar tus momentos más especiales.',
+    'testimonials.eyebrow':'Testimonios','testimonials.title':'Lo que dicen nuestros clientes',
+    't1.text':'"Adro nunca falla. Mis hijos esperan cada caja de surtidos como si fuera Navidad. Calidad excepcional."',
+    't2.text':'"Los Peelerz son lo máximo. Mis sobrinos enloquecen cuando los llevo. Excelente variedad de marcas."',
+    't3.text':'"Como tienda de barrio, Adro es mi proveedor de confianza. Entregas puntuales y producto de calidad."',
+    'cta.title':'¿Listo para endulzar tu día?','cta.lead':'Explora nuestro catálogo y descubre los sabores que te enamorarán.','cta.btn':'Comenzar a comprar',
+    'footer.desc':'Importadores y distribuidores de las mejores marcas de confitería en Colombia desde 1991.',
+    'footer.products':'Productos','footer.brands':'Marcas','footer.catalog':'Catálogo','footer.viewer':'Vista 360°',
+    'footer.company':'Empresa','footer.about':'Nosotros','footer.distributors':'Distribuidores','footer.work':'Trabaja con nosotros',
+    'footer.contact':'Contáctanos','footer.rights':'Todos los derechos reservados',
+    'cart.title':'Mi Carrito','cart.empty':'Tu carrito está vacío','cart.emptyDesc':'¡Agrega productos deliciosos!',
+    'cart.subtotal':'Subtotal','cart.shipping':'Envío','cart.shippingFree':'GRATIS','cart.total':'Total','cart.checkout':'Finalizar compra','cart.clear':'Vaciar carrito',
+    'checkout.title':'Finalizar Compra',
+    'checkout.step1':'Datos','checkout.step2':'Envío','checkout.step3':'Pago','checkout.step4':'Listo',
+    'checkout.contactTitle':'Información de contacto','checkout.name':'Nombre completo','checkout.email':'Email','checkout.phone':'Teléfono','checkout.doc':'Documento',
+    'checkout.shippingTitle':'Dirección de envío','checkout.address':'Dirección','checkout.city':'Ciudad','checkout.zip':'Código postal','checkout.country':'País',
+    'checkout.payTitle':'Método de pago',
+    'pay.card':'Tarjeta de crédito','pay.pse':'PSE','pay.pseDesc':'Pago directo de banco','pay.nequiDesc':'Pago móvil','pay.paypalDesc':'Compra protegida',
+    'pay.cardData':'Datos de la tarjeta','pay.cardNumber':'Número de tarjeta','pay.cardName':'Titular','pay.cardExp':'Expira (MM/AA)',
+    'checkout.processing':'Procesando tu pago...','checkout.processingDesc':'Conectando con la pasarela segura. No cierres esta ventana.',
+    'checkout.success':'¡Compra exitosa!','checkout.successDesc':'Tu pedido ha sido confirmado. Recibirás un correo con los detalles.','checkout.orderNumber':'Número de orden',
+    'checkout.back':'Anterior','checkout.next':'Siguiente','checkout.pay':'Pagar ahora','checkout.close':'Cerrar',
+    'toast.added':'🛒 ¡Producto agregado!','toast.removed':'Producto eliminado','toast.cleared':'Carrito vaciado'
+  },
+  en: {
+    'nav.brands':'Brands','nav.products':'Products','nav.viewer360':'360° View','nav.story':'Story','nav.contact':'Contact','nav.cart':'Cart',
+    'hero.eyebrow':'35 years sweetening Colombia',
+    'hero.word1':'Sweet','hero.word2':'moments','hero.word3':'to be','hero.word4':'shared',
+    'hero.desc':'We import and distribute the most loved chocolate, gummy and candy brands. World-class quality, flavor that connects generations.',
+    'hero.cta1':'View products','hero.cta2':'Explore 360°',
+    'stat.years':'years of history','stat.brands':'premium brands','stat.products':'unique products',
+    'brands.eyebrow':'Our Brands','brands.title':'A world of flavors in your hands','brands.lead':'We partner with the most recognized international brands to bring you the best in confectionery.',
+    'viewer.hint':'Drag to rotate','viewer.eyebrow':'360° Experience','viewer.subtitle':'Star product',
+    'viewer.desc':'An interactive experience: explore our products in 360° from any angle. Drag, rotate, discover. Perfect to see every detail before taking them home.',
+    'viewer.f1':'Premium cocoa','viewer.f2':'Gluten free','viewer.f3':'Eco packaging','viewer.f4':'Made with love',
+    'viewer.priceLabel':'Price','viewer.add':'Add to cart',
+    'products.eyebrow':'Bestsellers','products.title':'Everyone\'s favorites','products.lead':'Discover our most loved product selection. Guaranteed quality, unforgettable taste.',
+    'filter.all':'All','filter.choco':'Chocolates','filter.gummy':'Gummies','filter.candy':'Candy','filter.spicy':'Spicy','filter.natural':'Natural',
+    'story.eyebrow':'Our Essence','story.title':'Passion for sweets since 1991',
+    'story.v1Title':'Premium Quality','story.v1Desc':'We only work with the best international brands and meet the highest standards.',
+    'story.v2Title':'National Distribution','story.v2Desc':'We reach every corner of Colombia. Éxito, Makro, DollarCity, Justo y Bueno and more.',
+    'story.v3Title':'Made with love','story.v3Desc':'Every product is hand-picked with care to sweeten your most special moments.',
+    'testimonials.eyebrow':'Testimonials','testimonials.title':'What our customers say',
+    't1.text':'"Adro never fails. My kids wait for every assortment box like it\'s Christmas. Exceptional quality."',
+    't2.text':'"The Peelerz are the best. My nephews go crazy when I bring them. Excellent variety of brands."',
+    't3.text':'"As a neighborhood store, Adro is my trusted supplier. On-time deliveries and quality products."',
+    'cta.title':'Ready to sweeten your day?','cta.lead':'Explore our catalog and discover flavors you\'ll fall in love with.','cta.btn':'Start shopping',
+    'footer.desc':'Importers and distributors of the best confectionery brands in Colombia since 1991.',
+    'footer.products':'Products','footer.brands':'Brands','footer.catalog':'Catalog','footer.viewer':'360° View',
+    'footer.company':'Company','footer.about':'About us','footer.distributors':'Distributors','footer.work':'Work with us',
+    'footer.contact':'Contact us','footer.rights':'All rights reserved',
+    'cart.title':'My Cart','cart.empty':'Your cart is empty','cart.emptyDesc':'Add some delicious products!',
+    'cart.subtotal':'Subtotal','cart.shipping':'Shipping','cart.shippingFree':'FREE','cart.total':'Total','cart.checkout':'Checkout','cart.clear':'Clear cart',
+    'checkout.title':'Checkout',
+    'checkout.step1':'Info','checkout.step2':'Shipping','checkout.step3':'Payment','checkout.step4':'Done',
+    'checkout.contactTitle':'Contact information','checkout.name':'Full name','checkout.email':'Email','checkout.phone':'Phone','checkout.doc':'ID Document',
+    'checkout.shippingTitle':'Shipping address','checkout.address':'Address','checkout.city':'City','checkout.zip':'Postal code','checkout.country':'Country',
+    'checkout.payTitle':'Payment method',
+    'pay.card':'Credit card','pay.pse':'PSE','pay.pseDesc':'Direct bank payment','pay.nequiDesc':'Mobile payment','pay.paypalDesc':'Protected purchase',
+    'pay.cardData':'Card details','pay.cardNumber':'Card number','pay.cardName':'Cardholder','pay.cardExp':'Expires (MM/YY)',
+    'checkout.processing':'Processing your payment...','checkout.processingDesc':'Connecting to secure gateway. Do not close this window.',
+    'checkout.success':'Purchase successful!','checkout.successDesc':'Your order has been confirmed. You\'ll receive an email with details.','checkout.orderNumber':'Order number',
+    'checkout.back':'Back','checkout.next':'Next','checkout.pay':'Pay now','checkout.close':'Close',
+    'toast.added':'🛒 Product added!','toast.removed':'Product removed','toast.cleared':'Cart cleared'
+  },
+  pt: {
+    'nav.brands':'Marcas','nav.products':'Produtos','nav.viewer360':'Visão 360°','nav.story':'História','nav.contact':'Contato','nav.cart':'Carrinho',
+    'hero.eyebrow':'35 anos adoçando a Colômbia',
+    'hero.word1':'Doces','hero.word2':'momentos','hero.word3':'para','hero.word4':'compartilhar',
+    'hero.desc':'Importamos e distribuímos as marcas mais amadas de chocolates, gomas e balas. Qualidade mundial, sabor que conecta gerações.',
+    'hero.cta1':'Ver produtos','hero.cta2':'Explorar 360°',
+    'stat.years':'anos de história','stat.brands':'marcas premium','stat.products':'produtos únicos',
+    'brands.eyebrow':'Nossas Marcas','brands.title':'Um mundo de sabores nas suas mãos','brands.lead':'Trabalhamos com as casas mais reconhecidas internacionalmente para trazer o melhor em confeitaria.',
+    'viewer.hint':'Arraste para girar','viewer.eyebrow':'Experiência 360°','viewer.subtitle':'Produto estrela',
+    'viewer.desc':'Uma experiência interativa: explore nossos produtos em 360° de qualquer ângulo. Arraste, gire, descubra. Perfeito para conhecer cada detalhe antes de levar para casa.',
+    'viewer.f1':'Cacau premium','viewer.f2':'Sem glúten','viewer.f3':'Embalagem eco','viewer.f4':'Feito com amor',
+    'viewer.priceLabel':'Preço','viewer.add':'Adicionar ao carrinho',
+    'products.eyebrow':'Mais vendidos','products.title':'Os favoritos de todos','products.lead':'Descubra nossa seleção dos produtos mais amados. Qualidade garantida, sabor inesquecível.',
+    'filter.all':'Todos','filter.choco':'Chocolates','filter.gummy':'Gomas','filter.candy':'Balas','filter.spicy':'Picantes','filter.natural':'Naturais',
+    'story.eyebrow':'Nossa Essência','story.title':'Paixão pelos doces desde 1991',
+    'story.v1Title':'Qualidade Premium','story.v1Desc':'Só trabalhamos com as melhores marcas internacionais e atendemos aos mais altos padrões.',
+    'story.v2Title':'Distribuição Nacional','story.v2Desc':'Chegamos a cada canto da Colômbia. Éxito, Makro, DollarCity, Justo y Bueno e mais.',
+    'story.v3Title':'Feito com amor','story.v3Desc':'Cada produto é selecionado com carinho para adoçar seus momentos especiais.',
+    'testimonials.eyebrow':'Depoimentos','testimonials.title':'O que dizem nossos clientes',
+    't1.text':'"A Adro nunca falha. Meus filhos esperam cada caixa de sortidos como se fosse Natal. Qualidade excepcional."',
+    't2.text':'"Os Peelerz são o máximo. Meus sobrinhos enlouquecem quando levo. Excelente variedade de marcas."',
+    't3.text':'"Como loja de bairro, a Adro é meu fornecedor de confiança. Entregas pontuais e produto de qualidade."',
+    'cta.title':'Pronto para adoçar seu dia?','cta.lead':'Explore nosso catálogo e descubra sabores que vão te apaixonar.','cta.btn':'Começar a comprar',
+    'footer.desc':'Importadores e distribuidores das melhores marcas de confeitaria na Colômbia desde 1991.',
+    'footer.products':'Produtos','footer.brands':'Marcas','footer.catalog':'Catálogo','footer.viewer':'Visão 360°',
+    'footer.company':'Empresa','footer.about':'Sobre nós','footer.distributors':'Distribuidores','footer.work':'Trabalhe conosco',
+    'footer.contact':'Fale conosco','footer.rights':'Todos os direitos reservados',
+    'cart.title':'Meu Carrinho','cart.empty':'Seu carrinho está vazio','cart.emptyDesc':'Adicione produtos deliciosos!',
+    'cart.subtotal':'Subtotal','cart.shipping':'Frete','cart.shippingFree':'GRÁTIS','cart.total':'Total','cart.checkout':'Finalizar compra','cart.clear':'Esvaziar carrinho',
+    'checkout.title':'Finalizar Compra',
+    'checkout.step1':'Dados','checkout.step2':'Envio','checkout.step3':'Pagamento','checkout.step4':'Pronto',
+    'checkout.contactTitle':'Informações de contato','checkout.name':'Nome completo','checkout.email':'Email','checkout.phone':'Telefone','checkout.doc':'Documento',
+    'checkout.shippingTitle':'Endereço de envio','checkout.address':'Endereço','checkout.city':'Cidade','checkout.zip':'CEP','checkout.country':'País',
+    'checkout.payTitle':'Forma de pagamento',
+    'pay.card':'Cartão de crédito','pay.pse':'PSE','pay.pseDesc':'Pagamento bancário','pay.nequiDesc':'Pagamento móvel','pay.paypalDesc':'Compra protegida',
+    'pay.cardData':'Dados do cartão','pay.cardNumber':'Número do cartão','pay.cardName':'Titular','pay.cardExp':'Expira (MM/AA)',
+    'checkout.processing':'Processando seu pagamento...','checkout.processingDesc':'Conectando ao gateway seguro. Não feche esta janela.',
+    'checkout.success':'Compra realizada!','checkout.successDesc':'Seu pedido foi confirmado. Você receberá um email com os detalhes.','checkout.orderNumber':'Número do pedido',
+    'checkout.back':'Voltar','checkout.next':'Próximo','checkout.pay':'Pagar agora','checkout.close':'Fechar',
+    'toast.added':'🛒 Produto adicionado!','toast.removed':'Produto removido','toast.cleared':'Carrinho esvaziado'
+  }
+};
+
+let currentLang = localStorage.getItem('adro-lang') || 'es';
+function t(key){ return (I18N[currentLang] && I18N[currentLang][key]) || (I18N.es[key]) || key; }
+function setLang(lang){
+  currentLang = lang;
+  localStorage.setItem('adro-lang', lang);
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    const val = t(key);
+    if (val) el.textContent = val;
+  });
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+  renderCart();
+}
+document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+// ══════════════════════════════════════════
+// PRODUCTOS
+// ══════════════════════════════════════════
+const PRODUCTS = [
+  {id:1,cat:'chocolate',name:'Chocolate Premium Leche',brand:'Adro Chocolatier',desc:'Cremoso chocolate de leche.',icon:'🍫',bg:'#fff5e0',price:7900,badge:'hot'},
+  {id:2,cat:'chocolate',name:'Dark Intense 70%',brand:'Adro Chocolatier',desc:'Chocolate oscuro 70%.',icon:'🍫',bg:'#ffe8c0',price:8900,badge:'new'},
+  {id:3,cat:'gummy',name:'Amos Peelerz Banana',brand:'Amos',desc:'¡Se pela como la fruta!',icon:'🍌',bg:'#fff5d6',price:5500,badge:'new'},
+  {id:4,cat:'gummy',name:'GummyZone Bears Mix',brand:'GummyZone',desc:'Ositos de goma surtidos.',icon:'🐻',bg:'#d6e8ff',price:6900,badge:'hot'},
+  {id:5,cat:'candy',name:'JoJo Frutal Mix',brand:'JoJo',desc:'Caramelos tropicales.',icon:'🍬',bg:'#ffe0f0',price:4500,badge:null},
+  {id:6,cat:'candy',name:'Nerds Rainbow',brand:'Nerds',desc:'Los icónicos Nerds.',icon:'🌈',bg:'#fff5e0',price:6500,badge:'hot'},
+  {id:7,cat:'spicy',name:'Azteca Tamarindo',brand:'Azteca',desc:'Tamarindo con chile y sal.',icon:'🌶️',bg:'#ffe0e0',price:5900,badge:null},
+  {id:8,cat:'natural',name:'Natural Heaven Bar',brand:'Natural Heaven',desc:'Sin aditivos artificiales.',icon:'🌿',bg:'#d6f5e8',price:7200,badge:'new'},
+  {id:9,cat:'chocolate',name:'Trufas Surtidas x12',brand:'Adro Chocolatier',desc:'Caja de 12 trufas.',icon:'🎁',bg:'#ffd6d6',price:24900,badge:'season'},
+  {id:10,cat:'gummy',name:'4D Gummi Twist',brand:'4D Gummi',desc:'Espirales rellenas.',icon:'🌀',bg:'#f0d6ff',price:8500,badge:'hot'},
+  {id:11,cat:'candy',name:'LoveIs Original',brand:'LoveIs',desc:'Colaboración con Pelanas.',icon:'❤️',bg:'#ffd6f0',price:9900,badge:'new'},
+  {id:12,cat:'spicy',name:'Azteca Chamoy',brand:'Azteca',desc:'El sabor del chamoy.',icon:'🥭',bg:'#ffd6c0',price:5500,badge:null}
+];
+
+function fmtCOP(n){ return '$' + Number(n).toLocaleString('es-CO'); }
+
+function renderProducts(filter='all'){
+  const grid = document.getElementById('productGrid');
+  const list = filter === 'all' ? PRODUCTS : PRODUCTS.filter(p => p.cat === filter);
+  grid.innerHTML = list.map((p,i) => `
+    <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="${(i%4)*80}">
+      <div class="product-card">
+        <div class="product-thumb" style="background:${p.bg}">
+          ${p.badge ? `<span class="badge-prod ${p.badge}">${p.badge==='hot'?'🔥 Popular':p.badge==='new'?'✨ Nuevo':'🎄 Temporada'}</span>` : ''}
+          ${p.icon}
+        </div>
+        <div class="product-body">
+          <div class="product-brand">${p.brand}</div>
+          <div class="product-name">${p.name}</div>
+          <div class="product-desc">${p.desc}</div>
+          <div class="product-foot">
+            <div class="product-price">${fmtCOP(p.price)}</div>
+            <button class="btn-add" onclick="addToCart(${p.id},'${p.name.replace(/'/g,'')}','${p.icon}',${p.price})">
+              <i class="bi bi-plus-lg"></i> <span>Add</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  if (window.AOS) AOS.refresh();
+}
+
+document.querySelectorAll('.filter-pill').forEach(p => {
+  p.addEventListener('click', () => {
+    document.querySelectorAll('.filter-pill').forEach(x => x.classList.remove('active'));
+    p.classList.add('active');
+    renderProducts(p.dataset.filter);
+  });
+});
+
+// ══════════════════════════════════════════
+// CARRITO
+// ══════════════════════════════════════════
+let cart = JSON.parse(localStorage.getItem('adro-cart-v2') || '[]');
+
+function saveCart(){ localStorage.setItem('adro-cart-v2', JSON.stringify(cart)); }
+
+function addToCart(id, name, icon, price){
+  const found = cart.find(c => c.id === id);
+  if (found) found.qty++;
+  else cart.push({id, name, icon, price, qty:1});
+  saveCart();
+  renderCart();
+  updateBadge(true);
+  showToast(t('toast.added'));
+}
+function removeFromCart(id){
+  cart = cart.filter(c => c.id !== id);
+  saveCart(); renderCart(); updateBadge();
+  showToast(t('toast.removed'));
+}
+function setQty(id, delta){
+  const it = cart.find(c => c.id === id);
+  if (!it) return;
+  it.qty += delta;
+  if (it.qty <= 0) return removeFromCart(id);
+  saveCart(); renderCart(); updateBadge();
+}
+function clearCart(){
+  cart = []; saveCart(); renderCart(); updateBadge();
+  showToast(t('toast.cleared'));
+}
+function updateBadge(bump){
+  const b = document.getElementById('cartBadge');
+  const n = cart.reduce((s,c) => s + c.qty, 0);
+  b.textContent = n;
+  if (bump){ b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump'); }
+}
+function renderCart(){
+  const items = document.getElementById('cartItems');
+  const foot = document.getElementById('cartFooter');
+  if (!cart.length){
+    items.innerHTML = `<div class="cart-empty"><i class="bi bi-bag"></i><h6>${t('cart.empty')}</h6><p>${t('cart.emptyDesc')}</p></div>`;
+    foot.innerHTML = '';
+    return;
+  }
+  items.innerHTML = cart.map(c => `
+    <div class="cart-item">
+      <div class="cart-item-thumb">${c.icon}</div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${c.name}</div>
+        <div class="cart-item-price">${fmtCOP(c.price)} <span class="text-muted small">× ${c.qty}</span></div>
+        <div class="qty-control mt-1">
+          <button class="qty-btn" onclick="setQty(${c.id},-1)">−</button>
+          <span class="qty-val">${c.qty}</span>
+          <button class="qty-btn" onclick="setQty(${c.id},1)">+</button>
+        </div>
+      </div>
+      <button class="cart-item-remove" onclick="removeFromCart(${c.id})"><i class="bi bi-trash"></i></button>
+    </div>
+  `).join('');
+  const subtotal = cart.reduce((s,c) => s + c.price * c.qty, 0);
+  const shipping = subtotal >= 100000 ? 0 : 12000;
+  const total = subtotal + shipping;
+  foot.innerHTML = `
+    <div class="cart-summary">
+      <div class="summary-row"><span>${t('cart.subtotal')}</span><span>${fmtCOP(subtotal)}</span></div>
+      <div class="summary-row"><span>${t('cart.shipping')}</span><span>${shipping===0 ? t('cart.shippingFree') : fmtCOP(shipping)}</span></div>
+      <div class="summary-row total"><span>${t('cart.total')}</span><span>${fmtCOP(total)}</span></div>
+      <button class="checkout-btn" onclick="openCheckout()"><i class="bi bi-shield-check"></i> ${t('cart.checkout')}</button>
+      <button class="btn btn-link text-muted w-100 mt-2" onclick="clearCart()" style="text-decoration:none; font-size:.8rem">${t('cart.clear')}</button>
+    </div>
+  `;
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTm);
+  window._toastTm = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ══════════════════════════════════════════
+// CHECKOUT
+// ══════════════════════════════════════════
+let coStep = 1;
+const coModal = () => bootstrap.Modal.getOrCreateInstance(document.getElementById('checkoutModal'));
+
+function openCheckout(){
+  if (!cart.length) return;
+  bootstrap.Offcanvas.getInstance(document.getElementById('cartCanvas'))?.hide();
+  coStep = 1; renderStep();
+  coModal().show();
+}
+function renderStep(){
+  document.querySelectorAll('.step').forEach(s => {
+    const n = +s.dataset.step;
+    s.classList.toggle('active', n === coStep);
+    s.classList.toggle('done', n < coStep);
+  });
+  document.querySelectorAll('.checkout-pane').forEach(p => {
+    p.classList.toggle('d-none', +p.dataset.pane !== coStep);
+  });
+  document.getElementById('btnBack').disabled = coStep === 1 || coStep === 4;
+  const btnN = document.getElementById('btnNext');
+  if (coStep === 3) btnN.innerHTML = `<i class="bi bi-shield-lock-fill me-1"></i>${t('checkout.pay')}`;
+  else if (coStep === 4) btnN.innerHTML = `${t('checkout.close')}<i class="bi bi-check-lg ms-1"></i>`;
+  else btnN.innerHTML = `${t('checkout.next')}<i class="bi bi-arrow-right ms-1"></i>`;
+  document.getElementById('checkoutFooter').style.display = (coStep === 4 && document.getElementById('processingView').classList.contains('d-none')===false) ? 'none' : 'flex';
+}
+function validateStep(){
+  if (coStep === 1){
+    const f = ['coName','coEmail','coPhone','coDoc'];
+    for (const id of f){
+      const el = document.getElementById(id);
+      if (!el.value.trim()){ el.focus(); el.classList.add('is-invalid'); return false; }
+      el.classList.remove('is-invalid');
+    }
+  }
+  if (coStep === 2){
+    const f = ['coAddress','coCity','coZip'];
+    for (const id of f){
+      const el = document.getElementById(id);
+      if (!el.value.trim()){ el.focus(); el.classList.add('is-invalid'); return false; }
+      el.classList.remove('is-invalid');
+    }
+  }
+  if (coStep === 3){
+    const selected = document.querySelector('.payment-option.selected')?.dataset.pay;
+    if (selected === 'card'){
+      const f = ['cardNumber','cardName','cardExp','cardCvv'];
+      for (const id of f){
+        const el = document.getElementById(id);
+        if (!el.value.trim()){ el.focus(); el.classList.add('is-invalid'); return false; }
+        el.classList.remove('is-invalid');
+      }
+      const num = document.getElementById('cardNumber').value.replace(/\s/g,'');
+      if (num.length < 13){ document.getElementById('cardNumber').focus(); return false; }
+    }
+  }
+  return true;
+}
+document.getElementById('btnBack').addEventListener('click', () => {
+  if (coStep > 1){ coStep--; renderStep(); }
+});
+document.getElementById('btnNext').addEventListener('click', () => {
+  if (coStep === 4){ coModal().hide(); clearCart(); return; }
+  if (!validateStep()) return;
+  if (coStep === 3){
+    // Simular procesamiento
+    coStep = 4;
+    document.getElementById('processingView').classList.remove('d-none');
+    document.getElementById('successView').classList.add('d-none');
+    renderStep();
+    document.getElementById('checkoutFooter').style.display = 'none';
+    setTimeout(() => {
+      document.getElementById('processingView').classList.add('d-none');
+      document.getElementById('successView').classList.remove('d-none');
+      document.getElementById('orderNumber').textContent = '#ADRO-' + String(Math.floor(Math.random()*900000)+100000);
+      document.getElementById('checkoutFooter').style.display = 'flex';
+    }, 2400);
+    return;
+  }
+  coStep++;
+  renderStep();
+});
+
+// Payment options
+document.querySelectorAll('.payment-option').forEach(o => {
+  o.addEventListener('click', () => {
+    document.querySelectorAll('.payment-option').forEach(x => x.classList.remove('selected'));
+    o.classList.add('selected');
+    document.getElementById('cardForm').style.display = o.dataset.pay === 'card' ? '' : 'none';
+  });
+});
+
+// Card formatting
+document.getElementById('cardNumber').addEventListener('input', e => {
+  let v = e.target.value.replace(/\D/g,'').slice(0,19);
+  e.target.value = v.replace(/(.{4})/g,'$1 ').trim();
+  const brand = document.getElementById('cardBrand');
+  if (v.startsWith('4')) brand.className = 'bi bi-credit-card-fill card-brand-icon';
+  else if (/^5[1-5]/.test(v) || /^2[2-7]/.test(v)) brand.className = 'bi bi-credit-card-2-back-fill card-brand-icon';
+  else brand.className = 'bi bi-credit-card card-brand-icon';
+});
+document.getElementById('cardExp').addEventListener('input', e => {
+  let v = e.target.value.replace(/\D/g,'').slice(0,4);
+  if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2);
+  e.target.value = v;
+});
+document.getElementById('cardCvv').addEventListener('input', e => {
+  e.target.value = e.target.value.replace(/\D/g,'').slice(0,4);
+});
+
+// ══════════════════════════════════════════
+// 360 VIEWER · 36 frames reales
+// ══════════════════════════════════════════
+const viewer = document.getElementById('viewer360');
+const item3d = document.getElementById('item3d');
+const FRAME_COUNT = 36;
+const FRAME_URL = i => `https://cloud.ortery.com/share/v3XC0y//BoltHouse-Spinback-360/BoltHouse-Spinback-360/images/lv2/img${String(i).padStart(2,'0')}.jpg`;
+const FRAMES = [];
+let framesLoaded = 0;
+
+// Pre-carga frames
+for (let i = 1; i <= FRAME_COUNT; i++){
+  const im = new Image();
+  im.src = FRAME_URL(i);
+  im.onload = () => { framesLoaded++; if (framesLoaded === 1) setFrame(0); };
+  FRAMES.push(im);
+}
+
+let isDrag = false, startX = 0, currFrame = 0, startFrame = 0;
+const SENSITIVITY = 4; // px por cambio de frame
+
+function setFrame(idx){
+  idx = ((idx % FRAME_COUNT) + FRAME_COUNT) % FRAME_COUNT;
+  currFrame = idx;
+  if (FRAMES[idx] && FRAMES[idx].complete) item3d.src = FRAMES[idx].src;
+}
+
+viewer.addEventListener('mousedown', e => {
+  isDrag = true; startX = e.clientX; startFrame = currFrame;
+  viewer.classList.add('dragging'); e.preventDefault();
+});
+viewer.addEventListener('touchstart', e => {
+  isDrag = true; startX = e.touches[0].clientX; startFrame = currFrame;
+  viewer.classList.add('dragging');
+}, {passive:true});
+window.addEventListener('mousemove', e => {
+  if (!isDrag) return;
+  const dx = e.clientX - startX;
+  setFrame(startFrame + Math.round(dx / SENSITIVITY));
+});
+window.addEventListener('touchmove', e => {
+  if (!isDrag) return;
+  const dx = e.touches[0].clientX - startX;
+  setFrame(startFrame + Math.round(dx / SENSITIVITY));
+}, {passive:true});
+window.addEventListener('mouseup', () => { isDrag = false; viewer.classList.remove('dragging'); });
+window.addEventListener('touchend', () => { isDrag = false; viewer.classList.remove('dragging'); });
+
+// Autospin suave si no se interactúa
+let autoTimer = 0;
+function autoTick(){
+  if (!isDrag){
+    autoTimer++;
+    if (autoTimer >= 4){ // ~15fps
+      autoTimer = 0;
+      setFrame(currFrame + 1);
+    }
+  } else { autoTimer = 0; }
+  requestAnimationFrame(autoTick);
+}
+autoTick();
+
+// ══════════════════════════════════════════
+// CURSOR
+// ══════════════════════════════════════════
+const cd = document.getElementById('cursorDot');
+const cr = document.getElementById('cursorRing');
+let mx = 0, my = 0, rx = 0, ry = 0;
+window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cd.style.left = mx+'px'; cd.style.top = my+'px'; });
+function tickCursor(){
+  rx += (mx - rx) * 0.15;
+  ry += (my - ry) * 0.15;
+  cr.style.left = rx+'px'; cr.style.top = ry+'px';
+  requestAnimationFrame(tickCursor);
+}
+tickCursor();
+document.addEventListener('mouseenter', () => { cd.style.opacity = '1'; cr.style.opacity = '.4'; });
+document.addEventListener('mouseleave', () => { cd.style.opacity = '0'; cr.style.opacity = '0'; });
+function bindHover(){
+  document.querySelectorAll('a,button,.brand-card,.product-card,.payment-option,.filter-pill,.lang-btn,.viewer-360,.cart-toggle').forEach(el => {
+    if (el.dataset._hb) return;
+    el.dataset._hb = '1';
+    el.addEventListener('mouseenter', () => {
+      cd.style.transform = 'translate(-50%,-50%) rotate(15deg) scale(1.5)';
+      cr.style.transform = 'translate(-50%,-50%) scale(1.4)';
+      cr.style.opacity = '.7';
+    });
+    el.addEventListener('mouseleave', () => {
+      cd.style.transform = 'translate(-50%,-50%) rotate(15deg) scale(1)';
+      cr.style.transform = 'translate(-50%,-50%) scale(1)';
+      cr.style.opacity = '.4';
+    });
+  });
+}
+
+// ══════════════════════════════════════════
+// NAVBAR SCROLL
+// ══════════════════════════════════════════
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// ══════════════════════════════════════════
+// STAT COUNTERS
+// ══════════════════════════════════════════
+function animateCounters(){
+  document.querySelectorAll('[data-count]').forEach(el => {
+    if (el.dataset.done) return;
+    const r = el.getBoundingClientRect();
+    if (r.top > window.innerHeight - 50) return;
+    el.dataset.done = '1';
+    const target = +el.dataset.count;
+    const suf = el.dataset.suffix || '';
+    let v = 0; const step = Math.max(1, target / 40);
+    const tick = () => { v += step; if (v >= target){ el.textContent = target + suf; } else { el.textContent = Math.floor(v); requestAnimationFrame(tick); } };
+    tick();
+  });
+}
+window.addEventListener('scroll', animateCounters);
+
+// Helpers
+function scrollToSection(id){
+  document.getElementById(id)?.scrollIntoView({behavior:'smooth'});
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  AOS.init({duration:800, once:true, offset:60});
+  renderProducts();
+  setLang(currentLang);
+  updateBadge();
+  renderCart();
+  bindHover();
+  animateCounters();
+  // Re-bind hover for nuevos productos
+  setTimeout(bindHover, 500);
+  new MutationObserver(() => bindHover()).observe(document.body, {childList:true, subtree:true});
+});
+
+// Globals para inline handlers
+window.addToCart = addToCart;
+window.removeFromCart = removeFromCart;
+window.setQty = setQty;
+window.clearCart = clearCart;
+window.openCheckout = openCheckout;
+window.scrollToSection = scrollToSection;
+</script>
+</body>
+</html>
