@@ -43,6 +43,115 @@ h1,h2,h3,h4,.display-1,.display-2,.display-3,.display-4{
   font-family:'Syne',sans-serif; font-weight:800; letter-spacing:-.02em;
 }
 
+/* ═══════════════════════════════════
+   LOADING SCREEN
+═══════════════════════════════════ */
+#loading-screen{
+  position:fixed; inset:0; z-index:99999;
+  background:var(--choco);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:1.4rem;
+  transition:opacity .6s ease, visibility .6s ease;
+}
+#loading-screen.hide{opacity:0; visibility:hidden; pointer-events:none}
+
+/* barra de progreso */
+.loading-bar-wrap{
+  width:220px; height:8px;
+  background:rgba(255,255,255,.12); border-radius:8px; overflow:hidden;
+}
+.loading-bar{
+  height:100%; width:0%; background:var(--red);
+  border-radius:8px;
+  transition:width .08s linear;
+  box-shadow:0 0 12px var(--red);
+}
+.loading-label{
+  font-family:'Syne',sans-serif; font-size:.85rem; color:rgba(255,255,255,.5);
+  letter-spacing:.1em; text-transform:uppercase;
+}
+/* chocolate animado */
+.choco-loader{
+  position:relative; width:90px; height:90px;
+}
+.choco-loader svg{ width:90px; height:90px; }
+/* piezas que caen */
+@keyframes chopDrop{
+  0%  {transform:translateY(-18px) rotate(-15deg); opacity:0}
+  30% {opacity:1}
+  70% {transform:translateY(0)    rotate(0deg);   opacity:1}
+  100%{transform:translateY(8px)  rotate(5deg);   opacity:0}
+}
+.choco-piece{
+  animation:chopDrop 1.4s ease-in-out infinite;
+}
+.choco-piece:nth-child(2){animation-delay:.25s}
+.choco-piece:nth-child(3){animation-delay:.5s}
+/* brillo pulsante de la barra */
+@keyframes shimmer{
+  0%{background-position:-200% 0}
+  100%{background-position:200% 0}
+}
+.loading-bar.active{
+  background:linear-gradient(90deg,var(--red) 25%,#ff4444 50%,var(--red) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.2s linear infinite;
+}
+
+/* ═══════════════════════════════════
+   MODAL PRODUCTO 360
+═══════════════════════════════════ */
+.modal-product360 .modal-content{
+  background:linear-gradient(135deg, var(--red-deep) 0%, #5a0000 50%, var(--choco) 100%);
+  border:none; border-radius:24px; overflow:hidden;
+  color:white;
+}
+.modal-product360 .modal-header{
+  border-bottom:1px solid rgba(255,255,255,.1);
+  padding:1.2rem 1.5rem;
+}
+.modal-product360 .modal-title{font-family:'Syne',sans-serif; font-weight:800; font-size:1.4rem}
+.modal-product360 .btn-close-cart{
+  background:rgba(255,255,255,.1); border:none; border-radius:50%;
+  width:36px; height:36px; display:flex; align-items:center; justify-content:center;
+  color:white; font-size:1.1rem; transition:background .2s;
+}
+.modal-product360 .btn-close-cart:hover{background:rgba(255,255,255,.25)}
+/* mini-viewer inside modal */
+.modal-viewer-wrap{
+  width:260px; height:260px; border-radius:50%;
+  background:rgba(255,255,255,.06);
+  border:2px solid rgba(255,255,255,.15);
+  display:flex; align-items:center; justify-content:center;
+  margin:auto; position:relative; overflow:hidden;
+  box-shadow:0 0 60px rgba(203,0,0,.4);
+  cursor:grab;
+}
+.modal-viewer-wrap:active{cursor:grabbing}
+.modal-viewer-wrap img{
+  width:100%; height:100%; object-fit:contain;
+  filter:url(#whiteToTransparent);
+  pointer-events:none; user-select:none; transition:none;
+}
+.modal-prod-name{font-family:'Syne',sans-serif; font-weight:800; font-size:1.8rem}
+.modal-prod-price{font-family:'Syne',sans-serif; font-weight:700; font-size:1.5rem; color:var(--gold)}
+.modal-prod-badge{
+  display:inline-block; font-size:.75rem; font-weight:700;
+  padding:.3rem .9rem; border-radius:20px;
+  background:var(--red); color:white; margin-bottom:.5rem;
+}
+.modal-hint{
+  font-size:.8rem; color:rgba(255,255,255,.45); margin-top:.5rem;
+}
+.btn-add-modal{
+  background:var(--red); color:white; border:none;
+  border-radius:30px; padding:.65rem 2rem;
+  font-family:'Syne',sans-serif; font-weight:700; font-size:1rem;
+  box-shadow:0 6px 20px rgba(203,0,0,.4);
+  transition:transform .15s, box-shadow .15s;
+}
+.btn-add-modal:hover{transform:translateY(-2px); box-shadow:0 10px 28px rgba(203,0,0,.55); color:white}
+
 /* ───── CURSOR (lollipop) ───── */
 *{cursor:none !important}
 .cursor-dot{
@@ -593,6 +702,48 @@ footer.footer a:hover{color:var(--gold); transform:translateX(4px)}
 </head>
 <body>
 
+<!-- ═══ LOADING SCREEN ═══ -->
+<div id="loading-screen">
+  <!-- Chocolate SVG animado -->
+  <div class="choco-loader">
+    <svg viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Tableta de chocolate base -->
+      <rect x="10" y="30" width="70" height="50" rx="8" fill="#5a3010"/>
+      <rect x="10" y="30" width="70" height="50" rx="8" fill="url(#chocoGrad)"/>
+      <!-- cuadrícula de bloques -->
+      <line x1="33" y1="30" x2="33" y2="80" stroke="#3b1a0a" stroke-width="2.5"/>
+      <line x1="57" y1="30" x2="57" y2="80" stroke="#3b1a0a" stroke-width="2.5"/>
+      <line x1="10" y1="51" x2="80" y2="51" stroke="#3b1a0a" stroke-width="2.5"/>
+      <!-- brillo superior -->
+      <rect x="14" y="34" width="20" height="14" rx="4" fill="rgba(255,255,255,.12)"/>
+      <rect x="37" y="34" width="20" height="14" rx="4" fill="rgba(255,255,255,.08)"/>
+      <!-- piezas que caen (3 triángulitos) -->
+      <g class="choco-piece">
+        <rect x="22" y="10" width="14" height="14" rx="3" fill="#cb0000" opacity=".9"/>
+      </g>
+      <g class="choco-piece" style="transform-origin:45px 20px">
+        <rect x="38" y="6" width="14" height="14" rx="3" fill="#f5a500" opacity=".85"/>
+      </g>
+      <g class="choco-piece" style="transform-origin:65px 18px">
+        <rect x="56" y="12" width="11" height="11" rx="3" fill="#ff6eb5" opacity=".8"/>
+      </g>
+      <defs>
+        <linearGradient id="chocoGrad" x1="10" y1="30" x2="80" y2="80" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#8b4513"/>
+          <stop offset="100%" stop-color="#3b1a0a"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+  <div style="font-family:'Syne',sans-serif; font-weight:800; font-size:1.6rem; color:white; letter-spacing:-.02em">
+    Adro<span style="color:#cb0000">.</span>
+  </div>
+  <div class="loading-bar-wrap">
+    <div class="loading-bar active" id="loadingBar"></div>
+  </div>
+  <div class="loading-label" id="loadingLabel">Cargando…</div>
+</div>
+
 <!-- SVG filter: mapea el blanco a transparente (para el visor 360) -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
@@ -974,6 +1125,55 @@ footer.footer a:hover{color:var(--gold); transform:translateX(4px)}
   </div>
 </footer>
 
+<!-- ═══ MODAL PRODUCTO 360° ═══ -->
+<div class="modal fade modal-product360" id="product360Modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-arrow-repeat me-2"></i><span id="mp360Name">Producto</span></h5>
+        <button type="button" class="btn-close-cart" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="row g-4 align-items-center">
+          <!-- Viewer -->
+          <div class="col-md-5 text-center">
+            <div class="modal-viewer-wrap" id="mp360Wrap">
+              <img id="mp360Img" alt="Vista 360°" draggable="false"/>
+            </div>
+            <p class="modal-hint mt-3"><i class="bi bi-arrows-move me-1"></i>Arrastra para rotar · Auto-giro activado</p>
+            <!-- loading mini-bar -->
+            <div id="mp360LoadBar" class="mt-2">
+              <div style="height:4px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden">
+                <div id="mp360Progress" style="height:100%;width:0%;background:var(--red);transition:width .15s"></div>
+              </div>
+              <p style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:.3rem">Cargando frames…</p>
+            </div>
+          </div>
+          <!-- Info -->
+          <div class="col-md-7">
+            <span class="modal-prod-badge" id="mp360Badge">🔥 Popular</span>
+            <h3 class="modal-prod-name" id="mp360Title">Producto</h3>
+            <div class="modal-prod-price" id="mp360Price">$0</div>
+            <p style="color:rgba(255,255,255,.7);margin-top:.8rem;font-size:.95rem" id="mp360Desc">
+              Vista completa en 360° del producto. Arrastra la imagen para explorar cada ángulo.
+            </p>
+            <div class="d-flex flex-wrap gap-2 mt-3" style="color:rgba(255,255,255,.5);font-size:.85rem">
+              <span><i class="bi bi-arrows-move me-1"></i>36 frames HD</span>
+              <span>·</span>
+              <span><i class="bi bi-rotate-right me-1"></i>Giro completo 360°</span>
+            </div>
+            <div class="d-flex gap-3 mt-4" id="mp360Actions">
+              <button class="btn-add-modal" id="mp360CartBtn">
+                <i class="bi bi-bag-plus-fill me-2"></i>Agregar al carrito
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ───── CART OFFCANVAS ───── -->
 <div class="offcanvas offcanvas-end offcanvas-cart" tabindex="-1" id="cartCanvas" style="width:420px; max-width:90vw">
   <div class="offcanvas-header">
@@ -1327,9 +1527,14 @@ function renderProducts(filter='all'){
           <div class="product-desc">${p.desc}</div>
           <div class="product-foot">
             <div class="product-price">${fmtCOP(p.price)}</div>
-            <button class="btn-add" onclick="addToCart(${p.id},'${p.name.replace(/'/g,'')}','${p.icon}',${p.price})">
-              <i class="bi bi-plus-lg"></i> <span>Add</span>
-            </button>
+            <div class="d-flex gap-2">
+              <button class="btn-add" onclick="openProduct360(${p.id})" title="Vista 360°" style="background:var(--choco);border-color:var(--choco)">
+                <i class="bi bi-arrow-repeat"></i>
+              </button>
+              <button class="btn-add" onclick="addToCart(${p.id},'${p.name.replace(/'/g,'')}','${p.icon}',${p.price})">
+                <i class="bi bi-plus-lg"></i> <span>Add</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1689,6 +1894,126 @@ window.setQty = setQty;
 window.clearCart = clearCart;
 window.openCheckout = openCheckout;
 window.scrollToSection = scrollToSection;
+window.openProduct360 = openProduct360;
+
+// ══════════════════════════════════════════
+// LOADING SCREEN
+// ══════════════════════════════════════════
+(function(){
+  const bar = document.getElementById('loadingBar');
+  const label = document.getElementById('loadingLabel');
+  const screen = document.getElementById('loading-screen');
+  let prog = 0;
+  const msgs = ['Cargando…','Preparando dulces…','Un segundo más…','¡Casi listo!'];
+  let mIdx = 0;
+  const step = () => {
+    prog += Math.random()*18 + 6;
+    if(prog > 100) prog = 100;
+    bar.style.width = prog+'%';
+    if(prog < 40 && mIdx === 0){ mIdx=1; label.textContent = msgs[1]; }
+    if(prog < 75 && mIdx === 1){ mIdx=2; label.textContent = msgs[2]; }
+    if(prog >= 90 && mIdx < 3){ mIdx=3; label.textContent = msgs[3]; }
+  };
+  const interval = setInterval(step, 180);
+  window.addEventListener('load', () => {
+    clearInterval(interval);
+    bar.style.width = '100%';
+    setTimeout(() => {
+      screen.classList.add('hide');
+      setTimeout(() => screen.remove(), 700);
+    }, 400);
+  });
+})();
+
+// ══════════════════════════════════════════
+// MODAL PRODUCTO 360°
+// ══════════════════════════════════════════
+// Reutiliza los mismos FRAMES del visor principal
+let mp360Modal;
+let mp360Drag = false, mp360StartX = 0, mp360StartFrame = 0;
+let mp360CurrFrame = 0;
+let mp360AutoSpin;
+const SENSITIVITY_M = 4;
+
+function mp360SetFrame(idx){
+  mp360CurrFrame = ((idx % FRAME_COUNT) + FRAME_COUNT) % FRAME_COUNT;
+  // esperar a que FRAMES esté cargado
+  if(FRAMES[mp360CurrFrame] && FRAMES[mp360CurrFrame].complete){
+    document.getElementById('mp360Img').src = FRAMES[mp360CurrFrame].src;
+  }
+}
+function mp360StartSpin(){
+  clearInterval(mp360AutoSpin);
+  mp360AutoSpin = setInterval(() => { if(!mp360Drag) mp360SetFrame(mp360CurrFrame+1); }, 65);
+}
+function mp360StopSpin(){ clearInterval(mp360AutoSpin); }
+
+const mp360Wrap = document.getElementById('mp360Wrap');
+// drag mouse
+mp360Wrap.addEventListener('mousedown', e => {
+  mp360Drag=true; mp360StartX=e.clientX; mp360StartFrame=mp360CurrFrame;
+  mp360StopSpin(); e.preventDefault();
+});
+window.addEventListener('mousemove', e => {
+  if(!mp360Drag) return;
+  mp360SetFrame(mp360StartFrame + Math.round((e.clientX - mp360StartX)/SENSITIVITY_M));
+});
+window.addEventListener('mouseup', () => { if(mp360Drag){ mp360Drag=false; mp360StartSpin(); } });
+// drag touch
+mp360Wrap.addEventListener('touchstart', e => {
+  mp360Drag=true; mp360StartX=e.touches[0].clientX; mp360StartFrame=mp360CurrFrame;
+  mp360StopSpin();
+}, {passive:true});
+window.addEventListener('touchmove', e => {
+  if(!mp360Drag) return;
+  mp360SetFrame(mp360StartFrame + Math.round((e.touches[0].clientX - mp360StartX)/SENSITIVITY_M));
+},{passive:true});
+window.addEventListener('touchend', () => { if(mp360Drag){ mp360Drag=false; mp360StartSpin(); } });
+
+function openProduct360(productId){
+  const p = PRODUCTS.find(x => x.id === productId);
+  if(!p) return;
+  // Rellenar info del producto
+  document.getElementById('mp360Name').textContent  = p.name;
+  document.getElementById('mp360Title').textContent = p.name;
+  document.getElementById('mp360Price').textContent = fmtCOP(p.price);
+  document.getElementById('mp360Desc').textContent  = p.desc || 'Vista completa en 360° del producto. Arrastra la imagen para explorar cada ángulo.';
+  const badgeEl = document.getElementById('mp360Badge');
+  if(p.badge === 'hot')        { badgeEl.textContent='🔥 Popular'; badgeEl.style.background='var(--red)'; }
+  else if(p.badge === 'new')   { badgeEl.textContent='✨ Nuevo';   badgeEl.style.background='var(--purple)'; }
+  else if(p.badge === 'season'){ badgeEl.textContent='🎄 Temporada'; badgeEl.style.background='var(--green)'; }
+  else                         { badgeEl.textContent='⭐ Premium'; badgeEl.style.background='var(--gold); color:#000'; }
+  // Botón de carrito
+  document.getElementById('mp360CartBtn').onclick = () => {
+    addToCart(p.id, p.name, p.icon, p.price);
+  };
+  // Mostrar o esperar frames
+  const loadBar = document.getElementById('mp360LoadBar');
+  const loadProg = document.getElementById('mp360Progress');
+  if(FRAMES.length === FRAME_COUNT && FRAMES[0].complete){
+    loadBar.style.display='none';
+    mp360CurrFrame = 0;
+    mp360SetFrame(0);
+  } else {
+    loadBar.style.display='';
+    // refleja progreso del preload principal
+    const check = setInterval(() => {
+      const done = FRAMES.filter(f => f.complete).length;
+      loadProg.style.width = (done/FRAME_COUNT*100)+'%';
+      if(done === FRAME_COUNT){
+        clearInterval(check);
+        loadBar.style.display='none';
+        mp360SetFrame(0);
+      }
+    }, 200);
+  }
+  // Abrir modal
+  if(!mp360Modal) mp360Modal = new bootstrap.Modal(document.getElementById('product360Modal'));
+  mp360Modal.show();
+}
+// Iniciar/detener autospin con el modal
+document.getElementById('product360Modal').addEventListener('shown.bs.modal', () => mp360StartSpin());
+document.getElementById('product360Modal').addEventListener('hidden.bs.modal', () => mp360StopSpin());
 </script>
 </body>
 </html>
