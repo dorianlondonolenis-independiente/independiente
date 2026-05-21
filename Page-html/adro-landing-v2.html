@@ -1914,14 +1914,20 @@ window.openProduct360 = openProduct360;
     if(prog < 75 && mIdx === 1){ mIdx=2; label.textContent = msgs[2]; }
     if(prog >= 90 && mIdx < 3){ mIdx=3; label.textContent = msgs[3]; }
   };
-  const interval = setInterval(step, 180);
+  const startTime = Date.now();
+  const MIN_DURATION = 2500; // ms mínimo visible
+  const interval = setInterval(step, 350);
   window.addEventListener('load', () => {
     clearInterval(interval);
-    bar.style.width = '100%';
+    const elapsed = Date.now() - startTime;
+    const remaining = Math.max(0, MIN_DURATION - elapsed);
     setTimeout(() => {
-      screen.classList.add('hide');
-      setTimeout(() => screen.remove(), 700);
-    }, 400);
+      bar.style.width = '100%';
+      setTimeout(() => {
+        screen.classList.add('hide');
+        setTimeout(() => screen.remove(), 700);
+      }, 350);
+    }, remaining);
   });
 })();
 
