@@ -217,8 +217,14 @@ export class AlertasComponent implements OnInit, AfterViewInit, OnDestroy {
       next: data => {
         this.tendencias.set(data);
         this.tendenciasInicializadas = true;
-        setTimeout(() => this.renderChartTendencias(), 100);
-        this.cargando.set(false);
+        // Si filtroBodegas cambió mientras cargábamos (inventario llegó primero),
+        // recargar tendencias con las bodegas correctas
+        if (this.filtroBodegas().length > 0) {
+          this.recargarTendencias();
+        } else {
+          setTimeout(() => this.renderChartTendencias(), 100);
+          this.cargando.set(false);
+        }
       },
       error: () => this.cargando.set(false),
     });
@@ -307,11 +313,13 @@ export class AlertasComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   recargarTendencias() {
-    this.svc.getTendencias(this.soloAlertasTendencias()).subscribe({
+    this.svc.getTendencias(this.soloAlertasTendencias(), this.filtroBodegas()).subscribe({
       next: data => {
         this.tendencias.set(data);
+        this.cargando.set(false);
         setTimeout(() => this.renderChartTendencias(), 100);
       },
+      error: () => this.cargando.set(false),
     });
   }
 

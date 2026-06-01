@@ -259,9 +259,17 @@ export class AlertasService implements OnModuleInit {
     const bodegasSanitized = bodegas
       .map(b => b.replace(/[^A-Z0-9\-_]/gi, ''))
       .filter(b => b.length > 0);
-    const bodegaJoin = bodegasSanitized.length > 0
-      ? `JOIN t150_mc_bodegas b ON e.f400_rowid_bodega = b.f150_rowid AND b.f150_id IN (${bodegasSanitized.map(b => `'${b}'`).join(',')})`
-      : `LEFT JOIN t150_mc_bodegas b ON e.f400_rowid_bodega = b.f150_rowid`;
+    // El filtro de bodega se aplica SOLO al cálculo de stock (subquery),
+    // para no excluir productos que tienen ventas pero no existencia en esa bodega
+    const stockSubquery = bodegasSanitized.length > 0
+      ? `(SELECT ISNULL(SUM(es.f400_cant_existencia_1), 0)
+           FROM t400_cm_existencia es
+           JOIN t150_mc_bodegas bs ON es.f400_rowid_bodega = bs.f150_rowid
+          WHERE es.f400_rowid_item_ext = ext.f121_rowid
+            AND bs.f150_id IN (${bodegasSanitized.map(b => `'${b}'`).join(',')}))`
+      : `(SELECT ISNULL(SUM(es.f400_cant_existencia_1), 0)
+           FROM t400_cm_existencia es
+          WHERE es.f400_rowid_item_ext = ext.f121_rowid)`;
 
     const rows = await this.dataSource.query(`
       SELECT
@@ -280,24 +288,15 @@ export class AlertasService implements OnModuleInit {
           WHEN m.f431_fecha_cumplido >= DATEADD(MONTH, -2, DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1))
            AND m.f431_fecha_cumplido <  DATEADD(MONTH, -1, DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1))
           THEN m.f431_cant1_facturada ELSE 0 END), 0) AS ventas_hace_2_meses,
-        ISNULL(SUM(e.f400_cant_existencia_1), 0) AS stock_actual
+        ${stockSubquery}                       AS stock_actual
       FROM t431_cm_pv_movto m
       JOIN t121_mc_items_extensiones ext  ON m.f431_rowid_item_ext = ext.f121_rowid
       JOIN t120_mc_items i                ON ext.f121_rowid_item   = i.f120_rowid
-      LEFT JOIN t400_cm_existencia e      ON e.f400_rowid_item_ext = ext.f121_rowid
-      ${bodegaJoin}
       WHERE m.f431_cant1_facturada > 0
         AND m.f431_fecha_cumplido >= DATEADD(MONTH, -3, GETDATE())
-      GROUP BY i.f120_id, i.f120_referencia, i.f120_descripcion
-      HAVING ISNULL(SUM(CASE
-          WHEN MONTH(m.f431_fecha_cumplido) = MONTH(GETDATE())
-           AND YEAR(m.f431_fecha_cumplido)  = YEAR(GETDATE())
-          THEN m.f431_cant1_facturada ELSE 0 END), 0) > 0
-          OR ISNULL(SUM(CASE
-          WHEN m.f431_fecha_cumplido >= DATEADD(MONTH, -1, DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1))
-           AND m.f431_fecha_cumplido <  DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1)
-          THEN m.f431_cant1_facturada ELSE 0 END), 0) > 0
-      ORDER BY ISNULL(SUM(e.f400_cant_existencia_1), 0) ASC
+      GROUP BY i.f120_id, i.f120_referencia, i.f120_descripcion, ext.f121_rowid
+      HAVING SUM(m.f431_cant1_facturada) > 0
+      ORDER BY stock_actual ASC
     `);
 
     const result: TendenciaVentas[] = rows.map((r: any): TendenciaVentas => {
