@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:element name="Consulta" type="ConsultaType"/>
+	<xsd:complexType name="ConsultaType">
+		<xsd:sequence>
+			<xsd:element minOccurs="1" maxOccurs="1" name="NombreConexion" type="xsd:string" >
+          <xsd:annotation>
+            <xsd:documentation>Nombre de la conexion a la base de datos</xsd:documentation>
+          </xsd:annotation>
+      </xsd:element>
+			<xsd:element minOccurs="1" maxOccurs="1" name="IdProveedor" type="String50" >
+        <xsd:annotation>
+          <xsd:documentation>Código del proveedor indicado por Siesa</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+			<xsd:element minOccurs="1" maxOccurs="1" name="IdConsulta" type="String50" >
+        <xsd:annotation>
+          <xsd:documentation>Código de la consulta a ejecutar indicado por siesa</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+  <xsd:simpleType name ="String50">
+    <xsd:restriction base="xsd:string">
+      <xsd:minLength value="1"/>
+      <xsd:maxLength value="50"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+</xsd:schema>

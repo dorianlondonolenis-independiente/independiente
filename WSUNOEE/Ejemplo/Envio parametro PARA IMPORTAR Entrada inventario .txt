@@ -1,0 +1,11 @@
+-- LLAMADO NUEVO IMPORTAR
+<Importar>  <NombreConexion>SQL-NEO</NombreConexion>  
+<IdCia>1</IdCia> 
+<Usuario>jairc</Usuario> 
+<Clave>jairc</Clave> 
+<Datos> 
+<Linea>000000100000001001</Linea>
+<Linea>000000204500002001101 INV000255062013011780431764       06100                                                                                                                                                                                                                                                               601                               00000000                                                                                                                                          000000000000000000000000000000.0000000000000000000.0000000000000000000.0000                                                                                                                                                                                                                                                               </Linea>
+<Linea>000000399990001001</Linea>
+</Datos> 
+</Importar>

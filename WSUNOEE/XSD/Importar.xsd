@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
+  <xsd:element name="Importar" type="ImportarType"/>
+  <xsd:complexType name="ImportarType">
+    <xsd:sequence>
+      <xsd:element minOccurs="1" maxOccurs="1" name="NombreConexion" type="xsd:string" />
+      <xsd:element minOccurs="1" maxOccurs="1" name="IdCia" type="xsd:short" />
+      <xsd:element minOccurs="1" maxOccurs="1" name="Usuario" type="xsd:string" />
+      <xsd:element minOccurs="1" maxOccurs="1" name="Clave" type="xsd:string" />
+      <xsd:element name="Datos">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element minOccurs="1" maxOccurs="unbounded" name="Linea" type="xsd:string" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>
+

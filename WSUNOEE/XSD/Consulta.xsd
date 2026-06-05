@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:element name="Consulta" type="ConsultaType"/>
+	<xsd:complexType name="ConsultaType">
+		<xsd:sequence>
+      <xsd:element minOccurs="1" maxOccurs="1" name="NombreConexion" type="xsd:string">
+        <xsd:annotation>
+          <xsd:documentation>Nombre de la conexion a la base de datos</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element minOccurs="1" maxOccurs="1" name="IdCia" type="xsd:int">
+        <xsd:annotation>
+          <xsd:documentation>Id de la Compañia</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+			<xsd:element minOccurs="1" maxOccurs="1" name="IdProveedor" type="String50">
+        <xsd:annotation>
+          <xsd:documentation>Código del proveedor indicado por Siesa</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element minOccurs="1" maxOccurs="1" name="IdConsulta" type="String50" >
+        <xsd:annotation>
+          <xsd:documentation>Código de la consulta indicado por Siesa</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+			<xsd:element minOccurs="1" maxOccurs="1" name="Usuario" type="xsd:string" >
+      <xsd:annotation>
+        <xsd:documentation>Usuario interno para ejecutar a la consulta, debe tener acceso a la consulta</xsd:documentation>
+      </xsd:annotation>
+      </xsd:element>
+      <xsd:element minOccurs="1" maxOccurs="1" name="Clave" type="xsd:string" >
+      <xsd:annotation>
+        <xsd:documentation>Clave del usuario interno para acceder a la consulta.</xsd:documentation>
+      </xsd:annotation>
+      </xsd:element>
+      <xsd:element minOccurs="0" maxOccurs="1" name="Parametros" type="xsd:string" >
+      <xsd:annotation>
+        <xsd:documentation>Parametros de acuerdo al esquema para cada consulta. Si no lleva parametros, dejar en blanco o no enviar el elemento Parametros</xsd:documentation>
+      </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name ="String50">
+    <xsd:restriction base="xsd:string">
+      <xsd:minLength value="1"/>
+      <xsd:maxLength value="50"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+</xsd:schema>

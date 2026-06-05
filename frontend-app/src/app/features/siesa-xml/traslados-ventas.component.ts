@@ -660,9 +660,9 @@ export class TrasladosVentasComponent {
     (this.preview()?.previews ?? []).filter((p) => p.ventasNetas > 0).length,
   );
 
-  paramsValidos = computed(() =>
-    !!(this.params.cuenta && this.params.tipoDocto && this.fechaBackend.length === 8),
-  );
+  paramsValidos() {
+    return !!(this.params.cuenta && this.params.tipoDocto && this.fechaBackend.length === 8);
+  }
 
   // ── Archivo ──────────────────────────────────────────────────────────────
 
@@ -835,12 +835,12 @@ export class TrasladosVentasComponent {
     // Mismos defaults que el componente de Terceros (siesa-xml.component.ts)
     return {
       cuenta: '',
-      tipoDocto: '',
+      tipoDocto: 'FAF',
       idCia: '1',
-      conexion: 'Ecommerce',
-      usuario: 'integracion',
-      clave: '',
-      urlApi: 'http://10.10.1.48/WSUNOEE/WFPruebaImportar.aspx',
+      conexion: 'Pruebas',
+      usuario: 'unoee',
+      clave: 'unoee26',
+      urlApi: 'http://192.168.1.70/WSUNOEE/WFPruebaImportar.aspx',
       consec: 1,
     };
   }

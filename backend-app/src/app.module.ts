@@ -52,11 +52,11 @@ import { BrandingService } from './services/branding/branding.service';
     AuthModule,
     TypeOrmModule.forRoot({
       type: 'mssql',
-      host: '10.10.1.48',
+      host: '192.168.1.70',
       port: 1433,
       username: 'sa',
       password: 'Sa123456',
-      database: 'UnoEE',
+      database: 'unoee_pruebas',
       entities: [
         join(__dirname, 'controllers/**/*.entity{.ts,.js}'),
         join(__dirname, 'services/**/*.entity{.ts,.js}'),
@@ -67,9 +67,9 @@ import { BrandingService } from './services/branding/branding.service';
       retryDelay: 500,
       options: {
         encrypt: false,
-        trustServerCertificate: false,
+        trustServerCertificate: true,
         enableArithAbort: true,
-        connectTimeout: 1000,
+        connectTimeout: 15000,
       },
     }),
     JwtModule.registerAsync({

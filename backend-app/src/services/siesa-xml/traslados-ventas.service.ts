@@ -199,7 +199,10 @@ export class TrasladosVentasService {
       const distribuciones: TbCoRow['distribuciones'] = [];
 
       // %CO1 → refers to the main CO (same as coPrincipal)
-      const pct1 = Number(get(row, '%CO1') ?? 0);
+      // El usuario ingresa el porcentaje como número entero (ej: 20 = 20%)
+      // Se normaliza a fracción decimal (0.20) para los cálculos internos
+      const pct1Raw = Number(get(row, '%CO1') ?? 0);
+      const pct1 = pct1Raw > 1 ? pct1Raw / 100 : pct1Raw;
       if (coPrincipal && pct1 > 0) {
         distribuciones.push({
           co: coPrincipal,
@@ -211,7 +214,8 @@ export class TrasladosVentasService {
       // CO2..CO20
       for (let n = 2; n <= 20; n++) {
         const co = String(get(row, `CO${n}`) ?? '').trim();
-        const pct = Number(get(row, `%CO${n}`) ?? 0);
+        const pctRaw = Number(get(row, `%CO${n}`) ?? 0);
+        const pct = pctRaw > 1 ? pctRaw / 100 : pctRaw;
         if (!co || co === 'CODIGO' || pct === 0) continue;
         distribuciones.push({
           co,
@@ -287,7 +291,7 @@ export class TrasladosVentasService {
         co: d.co,
         nombre: d.nombre,
         porcentaje: d.porcentaje,
-        monto: Math.round(ventasNetas * d.porcentaje * 100) / 100,
+        monto: Math.round(ventasNetas * d.porcentaje * 100) / 100, // d.porcentaje ya es fracción decimal (0.20 = 20%)
       }));
 
       return {
@@ -308,7 +312,7 @@ export class TrasladosVentasService {
     const consecutivoInicial = options.consecutivoInicial ?? 1;
 
     const lineas: string[] = [];
-    let nroReg = 1;
+    let nroReg = 2; // comienza en 2 porque el reg 1 es el header de lote
     let consec = consecutivoInicial;
 
     for (const p of previews) {
@@ -340,9 +344,9 @@ export class TrasladosVentasService {
         F350_ID_TIPO_DOCTO: tipoDocto,
         F350_CONSEC_DOCTO: consec,
         F351_ID_AUXILIAR: cuentaVentas,
-        F351_ID_TERCERO: '',
+        F351_ID_TERCERO: p.nit,
         F351_ID_CO_MOV: p.coOrigen,
-        F351_ID_UN: '',
+        F351_ID_UN: '99',
         F351_ID_CCOSTO: '',
         F351_ID_FE: '',
         F351_VALOR_DB: 0,
@@ -365,9 +369,9 @@ export class TrasladosVentasService {
           F350_ID_TIPO_DOCTO: tipoDocto,
           F350_CONSEC_DOCTO: consec,
           F351_ID_AUXILIAR: cuentaVentas,
-          F351_ID_TERCERO: '',
+          F351_ID_TERCERO: p.nit,
           F351_ID_CO_MOV: d.co,
-          F351_ID_UN: '',
+          F351_ID_UN: '99',
           F351_ID_CCOSTO: '',
           F351_ID_FE: '',
           F351_VALOR_DB: d.monto,
@@ -388,15 +392,23 @@ export class TrasladosVentasService {
       throw new BadRequestException('No hay traslados con ventas para generar XML.');
     }
 
-    const lineasXml = lineas.map((l) => `    <Linea>${this.escapeXml(l)}</Linea>`).join('\n');
+    const ciaStr = String(idCia).padStart(3, '0');
+    // Header de lote: nroReg=1, tipo=0000, subtipo=0001, cia (18 chars)
+    const headerLote = '0000001' + '0000' + '0001' + ciaStr;
+    // Footer de lote: último nroReg+1, tipo=9999, subtipo=0001, cia (18 chars)
+    const footerNro = String(nroReg).padStart(7, '0');
+    const footerLote = footerNro + '9999' + '0001' + ciaStr;
+
+    const todasLineas = [headerLote, ...lineas, footerLote];
+    const lineasXml = todasLineas.map((l) => `    <Linea>${this.escapeXml(l)}</Linea>`).join('\n');
 
     return (
       `<Importar>\n` +
       `  <NombreConexion>${this.escapeXml(conexion)}</NombreConexion>\n` +
-      `  <IdCia>${this.escapeXml(idCia)}</IdCia>\n` +
+      `  <IdCia>${this.escapeXml(String(idCia))}</IdCia>\n` +
       `  <Usuario>${this.escapeXml(usuario)}</Usuario>\n` +
       `  <Clave>${this.escapeXml(clave)}</Clave>\n` +
-      `  <Version>V2</Version>\n` +
+
       `  <Datos>\n` +
       lineasXml + '\n' +
       `  </Datos>\n` +
@@ -411,11 +423,35 @@ export class TrasladosVentasService {
     url: string,
   ): Promise<{ status: number; ok: boolean; respuesta: string }> {
     if (!url) throw new BadRequestException('URL del API SIESA es obligatoria.');
+
+    // Normalizar URL: si apunta a WFPruebaImportar.aspx derivar el ASMX real
+    const asmxUrl = url.replace(/WFPruebaImportar\.aspx/i, 'WSUNOEE.asmx');
+
+    // Escapar el XML para embebido dentro de SOAP
+    const xmlEscaped = xml
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    const soapBody =
+      `<?xml version='1.0' encoding='utf-8'?>` +
+      `<soap:Envelope xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'>` +
+        `<soap:Body>` +
+          `<ImportarXML xmlns='http://tempuri.org/'>` +
+            `<pvstrDatos>${xmlEscaped}</pvstrDatos>` +
+            `<printTipoError>0</printTipoError>` +
+          `</ImportarXML>` +
+        `</soap:Body>` +
+      `</soap:Envelope>`;
+
     try {
-      const res = await fetch(url, {
+      const res = await fetch(asmxUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/xml; charset=utf-8' },
-        body: xml,
+        headers: {
+          'Content-Type': 'text/xml; charset=utf-8',
+          SOAPAction: '"http://tempuri.org/ImportarXML"',
+        },
+        body: soapBody,
       });
       const respuesta = await res.text().catch(() => '');
       return { status: res.status, ok: res.ok, respuesta };

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:element name="Conexion" type="ConexionType"/>
+  <xsd:complexType name="ConexionType">
+		<xsd:sequence>
+			<xsd:element minOccurs="1" maxOccurs="1" name="NombreConexion" type="xsd:string" >
+      <xsd:annotation>
+        <xsd:documentation>Nombre de la conexion a crear</xsd:documentation>
+      </xsd:annotation>
+      </xsd:element>
+			<xsd:element minOccurs="1" maxOccurs="1" name="TipoBD" type="TypeTipoBD">
+        <xsd:annotation>
+          <xsd:documentation>Tipo base de datos. SQL Server=SQL,Oracle=ORA</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element minOccurs="1" maxOccurs="1" name="NombreBD" type="xsd:string" >
+      <xsd:annotation>
+        <xsd:documentation>Nombre de la base de datos para sql server.Para oracle dejar en blanco</xsd:documentation>
+      </xsd:annotation>
+      </xsd:element>
+      <xsd:element minOccurs="1" maxOccurs="1" name="NombreServidorBD" type="xsd:string" >
+      <xsd:annotation>
+        <xsd:documentation>Nombre de la servidor de la base de datos para sql server o nombre del servicio para oracle</xsd:documentation>
+      </xsd:annotation>
+      </xsd:element>
+      <xsd:element minOccurs="1" maxOccurs="1" name="UsuarioBD" type="xsd:string" >
+      <xsd:annotation>
+        <xsd:documentation>Usuario de conexión a la base de datos</xsd:documentation>
+      </xsd:annotation>
+      </xsd:element>
+      <xsd:element minOccurs="1" maxOccurs="1" name="ClaveBD" type="xsd:string">
+        <xsd:annotation>
+          <xsd:documentation>Clave del usuario de conexión a la base de datos</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element minOccurs="1" maxOccurs="1" name="NumConexionImpo" type="xsd:int">
+        <xsd:annotation>
+          <xsd:documentation>Numero de conexion para hacer la importacion cuando se utiliza el metodo ImportarXML</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+
+    </xsd:sequence>
+	</xsd:complexType>
+  <xsd:simpleType name="TypeTipoBD">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="SQL"/>
+      <xsd:enumeration value="ORA"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+</xsd:schema>
+

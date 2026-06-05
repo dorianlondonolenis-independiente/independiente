@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
+  <xsd:element name="Importar" type="ImportarType"/>
+  <xsd:complexType name="ImportarType">
+    <xsd:sequence>
+      <xsd:element minOccurs="1" maxOccurs="1" name="p_cia" type="xsd:short">
+        <xsd:annotation>
+          <xsd:documentation>Código de la compañia</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element minOccurs="1" maxOccurs="1" name="p_nro_conexion" type="xsd:short" >
+      <xsd:annotation>
+        <xsd:documentation>Número de conexión configurada en UNOEE</xsd:documentation>
+      </xsd:annotation>
+      </xsd:element>
+      <xsd:element minOccurs="1" maxOccurs="1" name="p_usuario" type="String30" >
+      <xsd:annotation>
+        <xsd:documentation>Usuario interno de UNOEE</xsd:documentation>
+      </xsd:annotation>
+      </xsd:element>
+      <xsd:element minOccurs="1" maxOccurs="1" name="p_clave" type="String255" >
+      <xsd:annotation>
+        <xsd:documentation>Clave usuario de UNOEE</xsd:documentation>
+      </xsd:annotation>
+      </xsd:element>
+      <xsd:element minOccurs="1" maxOccurs="1" name="p_nro_proceso" type="String255" >
+      <xsd:annotation>
+        <xsd:documentation>Número de proceso</xsd:documentation>
+      </xsd:annotation>
+      </xsd:element>
+      <xsd:element minOccurs="1" maxOccurs="1" name="p_operacion" type="xsd:short" >
+        <xsd:annotation>
+          <xsd:documentation>Operacion a realizar (0=aprobacion,1=anular, 2=eliminacion)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name ="String30">
+    <xsd:restriction base="xsd:string">
+      <xsd:minLength value="1"/>
+      <xsd:maxLength value="30"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name ="String255">
+    <xsd:restriction base="xsd:string">
+      <xsd:minLength value="1"/>
+      <xsd:maxLength value="255"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+</xsd:schema>
