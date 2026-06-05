@@ -460,6 +460,67 @@ export class TrasladosVentasService {
     }
   }
 
+  /* ── Aprobación de documentos importados via sp_docto_actualizar_estado ── */
+
+  async aprobarDocumentos(
+    rowids: number[],
+    usuario: string,
+  ): Promise<Array<{ rowid: number; error: number; descripcion: string; consec?: number }>> {
+    const resultados: Array<{ rowid: number; error: number; descripcion: string; consec?: number }> = [];
+    const sql = require('mssql');
+
+    // Obtener configuración de la conexión desde DataSource
+    const opts = (this.dataSource.options as any);
+    const cfg = {
+      server: opts.host,
+      port: opts.port || 1433,
+      database: opts.database,
+      user: opts.username,
+      password: opts.password,
+      options: { encrypt: false, trustServerCertificate: true },
+    };
+
+    let pool: any;
+    try {
+      pool = await sql.connect(cfg);
+    } catch (err: any) {
+      return rowids.map((rowid) => ({ rowid, error: -1, descripcion: `No se pudo conectar: ${err.message}` }));
+    }
+
+    for (const rowid of rowids) {
+      const transaction = new sql.Transaction(pool);
+      try {
+        await transaction.begin();
+        const req = new sql.Request(transaction);
+        req.input('p_rowid_docto', sql.Int, rowid);
+        req.input('p_estado', sql.SmallInt, 1);
+        req.input('p_usuario', sql.VarChar(30), usuario);
+        req.input('p_id_motivo_otros', sql.VarChar(10), '');
+        req.output('p_error', sql.Int);
+        req.output('p_des_error', sql.VarChar(255));
+        req.output('p_id_cia', sql.SmallInt);
+        req.output('p_id_co', sql.Char(3));
+        req.output('p_id_tipo_docto', sql.Char(10));
+        req.output('p_numero_docto', sql.Int);
+        req.output('p_ind_cfdi', sql.SmallInt);
+        const r = await req.execute('sp_docto_actualizar_estado');
+        await transaction.commit();
+        resultados.push({
+          rowid,
+          error: r.output.p_error ?? 0,
+          descripcion: r.output.p_des_error || 'Aprobado',
+          consec: r.output.p_numero_docto,
+        });
+      } catch (err: any) {
+        try { await transaction.rollback(); } catch (_) {}
+        resultados.push({ rowid, error: -1, descripcion: err.message || String(err) });
+      }
+    }
+
+    try { await pool.close(); } catch (_) {}
+    return resultados;
+  }
+
   /* ── Helpers de formato (espejo de los privados en comprobantes service) */
 
   private buildLinea(fields: FieldSpec[], row: Record<string, any>): string {

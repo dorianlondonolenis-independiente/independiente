@@ -576,12 +576,39 @@ export class SiesaXmlController {
         consecutivoInicial: consec ? parseInt(consec, 10) : 1,
       });
 
+      const importTs = new Date();
       const result = await this.trasladosService.enviarAlApi(xml, url);
+
+      // Si import exitoso (printTipoError=0), aprobar automáticamente los documentos creados
+      let aprobaciones: any[] = [];
+      const importOk = result.respuesta.includes('printTipoError>0<') ||
+        (() => { const m = result.respuesta.match(/printTipoError>(\d+)</); return m?.[1] === '0'; })();
+
+      if (importOk) {
+        // Buscar rowids de los documentos recién importados (últimos 30 seg, mismo tipo/periodo)
+        const periodoNum = parseInt(periodo, 10);
+        const tipoDoctoSafe = tipoDocto.replace(/[^A-Za-z0-9]/g, '');
+        const doctos: Array<{ rowid: number }> = await this.trasladosService['dataSource'].query(
+          `SELECT f350_rowid AS rowid FROM t350_co_docto_contable
+           WHERE f350_id_tipo_docto = '${tipoDoctoSafe}' AND f350_id_periodo = ${periodoNum}
+             AND f350_ind_estado = 0
+             AND f350_fecha_ts_creacion >= DATEADD(SECOND, -60, GETDATE())
+           ORDER BY f350_rowid`,
+        );
+        if (doctos.length > 0) {
+          aprobaciones = await this.trasladosService.aprobarDocumentos(
+            doctos.map((d) => d.rowid),
+            usuario || 'unoee',
+          );
+        }
+      }
+
       return {
         ok: result.ok,
         status: result.status,
         respuesta: result.respuesta,
         totalTraslados: previews.filter((p) => p.ventasNetas > 0).length,
+        aprobaciones,
         xmlEnviado: xml,
       };
     } catch (error) {
