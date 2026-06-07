@@ -38,6 +38,8 @@ import { AlertasController } from './controllers/alertas/alertas.controller';
 import { AlertasService } from './services/alertas/alertas.service';
 import { BrandingController } from './controllers/branding/branding.controller';
 import { BrandingService } from './services/branding/branding.service';
+import { ChatController } from './controllers/chat/chat.controller';
+import { ChatService } from './services/chat/chat.service';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
@@ -84,7 +86,7 @@ import { BrandingService } from './services/branding/branding.service';
     AppController, MetadataController, DataController, QueriesController,
     MaestrasController, InventarioController, VentasController, ComprasController,
     CarteraController, TercerosController, BulkUploadController, SiesaXmlController,
-    FinancieroController, AlertasController, BrandingController,
+    FinancieroController, AlertasController, BrandingController, ChatController,
   ],
   providers: [
     AppService, MetadataService, DataService, QueriesService,
@@ -92,7 +94,7 @@ import { BrandingService } from './services/branding/branding.service';
     CarteraService, TercerosService, BulkUploadService, SiesaXmlService,
     SiesaComprobantesService,
     TrasladosVentasService,
-    FinancieroService, AlertasService, BrandingService,
+    FinancieroService, AlertasService, BrandingService, ChatService,
   ],
 })
 export class AppModule {}

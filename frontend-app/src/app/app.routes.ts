@@ -169,6 +169,11 @@ export const routes: Routes = [
     canActivate: [authGuard, adminGuard],
   },
   {
+    path: 'chat',
+    loadComponent: () => import('./features/chat/chat.component').then(m => m.ChatComponent),
+    canActivate: [authGuard],
+  },
+  {
     path: 'test',
     component: ListTableDynamicComponent,
     canActivate: [authGuard],

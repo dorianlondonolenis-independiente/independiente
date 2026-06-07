@@ -75,6 +75,10 @@
         <i class="bi bi-file-earmark-check"></i>
         <span class="nav-label">Conciliación DIAN</span>
       </a>
+      <a class="nav-item" routerLink="/chat" routerLinkActive="active">
+        <i class="bi bi-robot"></i>
+        <span class="nav-label">Chat IA</span>
+      </a>
 
       <!-- Sección admin: solo visible para usuarios con rol 'admin' -->
       <ng-container *ngIf="auth.isAdmin()">
