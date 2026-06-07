@@ -1,291 +1,181 @@
-# API REST - Documentación de Endpoints
+﻿# API REST — Referencia de Endpoints
 
-## Base URL
+**Base URL:** `http://localhost:3000/api`  
+**Autenticación:** `Authorization: Bearer <token>` (todos excepto `/auth/login`)  
+**Swagger interactivo:** `http://localhost:3000/swagger`
+
+---
+
+## Autenticación
+
+### Login
+```http
+POST /api/auth/login
+{ "username": "admin@local", "password": "tu_password" }
 ```
-http://localhost:3000/api
+**Respuesta:** `{ "token": "eyJ...", "user": { "id": "...", "username": "...", "rol": "admin" } }`
+
+### Logout
+```http
+POST /api/auth/logout
+```
+
+### Perfil actual
+```http
+POST /api/auth/me
 ```
 
 ---
 
-## 📊 Metadata Endpoints
+## Usuarios *(solo rol admin)*
 
-### 1. Obtener estructura completa de la base de datos
 ```http
+GET    /api/users               # Listar todos
+POST   /api/users               # Crear: { username, email, nombre, password, rol }
+PUT    /api/users/:id           # Actualizar: { nombre, password }
+DELETE /api/users/:id           # Eliminar
+```
+- `rol`: `"admin"` | `"user"`
+
+---
+
+## Licencias *(solo rol admin)*
+
+```http
+POST /api/license/apply           # { userId, key }
+GET  /api/license/history/:userId # Historial de keys aplicadas
+```
+> Para **generar** una key ver `licensing-tool/` → `docs/MANUAL.md` sección Licencias.
+
+---
+
+## Metadata
+
+```http
+GET /api/metadata/tables
+GET /api/metadata/tables/:tableName/columns
+GET /api/metadata/tables/:tableName/row-count
 GET /api/metadata/database
 ```
 
-**Descripción:** Retorna la estructura completa de la base de datos incluyendo todas las tablas, columnas y cantidad de registros.
-
-**Respuesta:**
-```json
-{
-  "database": "UnoEE",
-  "tables": [
-    {
-      "name": "t145_mc_conceptos",
-      "schema": "dbo",
-      "rowCount": 150,
-      "columns": [
-        {
-          "name": "id",
-          "type": "int",
-          "nullable": false,
-          "isPrimaryKey": true,
-          "maxLength": null
-        },
-        {
-          "name": "nombre",
-          "type": "varchar",
-          "nullable": true,
-          "isPrimaryKey": false,
-          "maxLength": 255
-        }
-      ]
-    }
-  ],
-  "totalTables": 5
-}
-```
-
 ---
 
-### 2. Listar todas las tablas
+## Datos
+
 ```http
-GET /api/metadata/tables
-```
-
-**Descripción:** Obtiene la lista de todas las tablas de la base de datos con información básica.
-
-**Respuesta:**
-```json
-[
-  {
-    "name": "t145_mc_conceptos",
-    "schema": "dbo",
-    "rowCount": 150,
-    "columns": [...]
-  },
-  {
-    "name": "Usuarios",
-    "schema": "dbo",
-    "rowCount": 42,
-    "columns": [...]
-  }
-]
+GET    /api/data/:tableName                        # Listar paginado (?page=1&limit=50&search=)
+GET    /api/data/:tableName/export-csv             # Exportar CSV
+GET    /api/data/:tableName/:idField/:idValue      # Fila por PK
+POST   /api/data/:tableName                        # Insertar
+PUT    /api/data/:tableName/:idField/:idValue      # Actualizar
+DELETE /api/data/:tableName/:idField/:idValue      # Eliminar
 ```
 
 ---
 
-### 3. Obtener columnas de una tabla
+## Queries Guardadas
+
 ```http
-GET /api/metadata/tables/:tableName/columns
-```
-
-**Parámetros:**
-- `:tableName` (string) - Nombre de la tabla
-
-**Ejemplo:**
-```
-GET /api/metadata/tables/t145_mc_conceptos/columns
-```
-
-**Respuesta:**
-```json
-{
-  "table": "t145_mc_conceptos",
-  "columns": [
-    {
-      "name": "id",
-      "type": "int",
-      "nullable": false,
-      "isPrimaryKey": true,
-      "maxLength": null
-    },
-    {
-      "name": "codigo",
-      "type": "varchar",
-      "nullable": false,
-      "isPrimaryKey": false,
-      "maxLength": 50
-    },
-    {
-      "name": "descripcion",
-      "type": "varchar",
-      "nullable": true,
-      "isPrimaryKey": false,
-      "maxLength": 500
-    }
-  ],
-  "totalColumns": 3
-}
+POST   /api/queries                  # Guardar: { nombre, tableName, columnNames[], description }
+GET    /api/queries                  # Listar
+GET    /api/queries/:id              # Obtener
+GET    /api/queries/:id/execute      # Ejecutar y devolver datos
+PUT    /api/queries/:id              # Actualizar
+DELETE /api/queries/:id              # Eliminar
 ```
 
 ---
 
-### 4. Obtener cantidad de registros de una tabla
+## SIESA XML — Traslados de Ventas
+
+Todos reciben `multipart/form-data` con campo `file` (Excel `.xlsx`).
+
+**Query params comunes:**
+| Param | Ejemplo | Descripción |
+|---|---|---|
+| `periodo` | `202605` | YYYYMM |
+| `cuenta` | `41204510` | Código PUC de ventas |
+| `tipoDocto` | `FAF` | Tipo comprobante SIESA |
+| `fecha` | `20260531` | Fecha contable YYYYMMDD |
+| `idCia` | `1` | ID compañía SIESA |
+| `conexion` | `Pruebas` | Nombre conexión SIESA |
+| `usuario` | `unoee` | Usuario SIESA |
+| `clave` | `unoee26` | Clave SIESA |
+| `url` | `http://192.168.1.70/WSUNOEE/WFPruebaImportar.aspx` | Solo para /enviar |
+
 ```http
-GET /api/metadata/tables/:tableName/row-count
+POST /api/siesa-xml/traslados/preview   # Previsualizar distribución (sin crear docs)
+POST /api/siesa-xml/traslados/generar   # Descargar XML
+POST /api/siesa-xml/traslados/enviar    # Importar a SIESA + aprobar automáticamente
+GET  /api/siesa-xml/cuentas/buscar?q=  # Buscar cuenta contable
+GET  /api/siesa-xml/cuentas/ventas-periodo?co=&periodo=  # Detectar cuenta desde movimientos
+GET  /api/siesa-xml/cuentas/validar?co=&periodo=&cuenta= # Validar cuenta vs BD
 ```
 
-**Parámetros:**
-- `:tableName` (string) - Nombre de la tabla
-
-**Ejemplo:**
-```
-GET /api/metadata/tables/t145_mc_conceptos/row-count
-```
-
-**Respuesta:**
+**Respuesta de `/enviar`:**
 ```json
 {
-  "table": "t145_mc_conceptos",
-  "rowCount": 150
+  "ok": true, "status": 200, "printTipoError": 0, "totalTraslados": 3,
+  "aprobaciones": [{ "rowid": 18161, "consec": 168, "error": 0, "descripcion": "Aprobado" }],
+  "respuesta": "<...SOAP completo...>",
+  "xmlEnviado": "<Importar>...</Importar>"
 }
 ```
 
+**Códigos printTipoError:**
+| Código | Significado |
+|---|---|
+| 0 | Éxito |
+| 1 | Error en datos (cuenta inválida, tercero no existe) |
+| 2 | Credenciales incorrectas |
+| 3 | XML inválido o fecha no corresponde al periodo |
+
 ---
 
-## 📋 Data Endpoints
+## Chat IA *(en desarrollo)*
 
-### 5. Obtener todos los registros de una tabla (con paginación)
 ```http
-GET /api/data/:tableName?limit=100&offset=0
+POST /api/chat/query
+{ "pregunta": "cuáles fueron las ventas del mes pasado por vendedor?" }
 ```
-
-**Parámetros:**
-- `:tableName` (string) - Nombre de la tabla
-- `limit` (number, optional) - Cantidad de registros a retornar (default: 100, máximo: 10000)
-- `offset` (number, optional) - Desplazamiento para paginación (default: 0)
-
-**Ejemplos:**
-```bash
-# Obtener los primeros 100 registros
-GET /api/data/t145_mc_conceptos
-
-# Obtener 50 registros con offset de 100
-GET /api/data/t145_mc_conceptos?limit=50&offset=100
-
-# Obtener 200 registros
-GET /api/data/Usuarios?limit=200
-```
-
-**Respuesta:**
-```json
-{
-  "table": "t145_mc_conceptos",
-  "total": 150,
-  "limit": 100,
-  "offset": 0,
-  "data": [
-    {
-      "id": 1,
-      "codigo": "CONC001",
-      "descripcion": "Concepto de prueba",
-      "estado": "A"
-    },
-    {
-      "id": 2,
-      "codigo": "CONC002",
-      "descripcion": "Otro concepto",
-      "estado": "A"
-    }
-  ]
-}
-```
+**Respuesta:** `{ "sql": "SELECT TOP 10 ...", "resultado": [...], "tokens": 142 }`
+> Solo `SELECT`, `TOP 10` automático, sin DML/DDL.
 
 ---
 
-### 6. Obtener un registro específico por ID
+## Ventas / Inventario / Compras / Cartera / Terceros
+
 ```http
-GET /api/data/:tableName/:idField/:idValue
-```
+GET /api/ventas/stats
+GET /api/ventas/pedidos          GET /api/ventas/pedidos/:rowid
+GET /api/ventas/facturas         GET /api/ventas/facturas/:rowid
+GET /api/ventas/remisiones       GET /api/ventas/remisiones/:rowid
+GET /api/ventas/devoluciones     GET /api/ventas/devoluciones/:rowid
 
-**Parámetros:**
-- `:tableName` (string) - Nombre de la tabla
-- `:idField` (string) - Campo que actúa como identificador
-- `:idValue` (string/number) - Valor del identificador
+GET /api/inventario/stock        GET /api/inventario/stats
+GET /api/inventario/bodegas      GET /api/inventario/stock-por-bodega
 
-**Ejemplos:**
-```bash
-# Obtener registro con id=123
-GET /api/data/t145_mc_conceptos/id/123
+GET /api/compras/stats           GET /api/compras/ordenes
+GET /api/compras/ordenes/:rowid
 
-# Obtener registro con codigo=CONC001
-GET /api/data/t145_mc_conceptos/codigo/CONC001
+GET /api/cartera/stats           GET /api/cartera/saldos
+GET /api/cartera/aging
 
-# Obtener usuario con email
-GET /api/data/Usuarios/email/usuario@example.com
-```
-
-**Respuesta:**
-```json
-{
-  "table": "t145_mc_conceptos",
-  "record": {
-    "id": 123,
-    "codigo": "CONC001",
-    "descripcion": "Concepto de prueba",
-    "estado": "A",
-    "fecha_creacion": "2026-01-15T10:30:00Z"
-  },
-  "found": true
-}
-```
-
-**Respuesta (no encontrado):**
-```json
-{
-  "table": "t145_mc_conceptos",
-  "record": null,
-  "found": false
-}
+GET /api/terceros/stats          GET /api/terceros/lista
+GET /api/terceros/:rowid
 ```
 
 ---
 
-## 🔧 Ejemplos con cURL
+## Financiero
 
-### Obtener todas las tablas
-```bash
-curl http://localhost:3000/api/metadata/tables
-```
-
-### Obtener columnas de una tabla
-```bash
-curl http://localhost:3000/api/metadata/tables/t145_mc_conceptos/columns
-```
-
-### Obtener registro por ID (con formato JSON)
-```bash
-curl -H "Content-Type: application/json" \
-  http://localhost:3000/api/data/t145_mc_conceptos/id/1
-```
-
-### Obtener datos con paginación
-```bash
-curl "http://localhost:3000/api/data/Usuarios?limit=30&offset=0"
+```http
+POST /api/financiero/conciliacion-ventas
+GET  /api/financiero/conciliacion-ventas/plantilla
+POST /api/financiero/conciliacion-compras
+GET  /api/financiero/conciliacion-compras/plantilla
 ```
 
 ---
 
-## 📝 Notas Importantes
-
-- **Sanitización**: Los nombres de tablas y campos se validan automáticamente para evitar SQL injection
-- **Límites de paginación**: El máximo de registros por consulta es 10,000
-- **Offset**: Útil para implementar paginación en el frontend
-- **Case sensitivity**: Los nombres de tablas no son sensibles a mayúsculas/minúsculas en SQL Server
-- **Todos los endpoints son GET**: Sin autenticación por el momento
-
----
-
-## 🚀 Próximos endpoints (planificados)
-
-- `POST /api/data/:tableName` - Crear nuevo registro
-- `PUT /api/data/:tableName/:idField/:idValue` - Actualizar registro
-- `DELETE /api/data/:tableName/:idField/:idValue` - Eliminar registro
-- `POST /api/auth/login` - Autenticación JWT
-- `GET /api/protected-route` - Rutas protegidas con JWT
-
----
-
-**Última actualización:** 03/04/2026
+*Última actualización: Junio 2026 — Ver Swagger en `/swagger` para detalles interactivos*

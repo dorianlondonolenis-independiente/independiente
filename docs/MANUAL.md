@@ -438,4 +438,94 @@ ollama list
 
 ---
 
+## Gestión de Usuarios
+
+Solo usuarios con rol `admin` pueden gestionar usuarios. Todos los endpoints requieren `Authorization: Bearer <token>`.
+
+### Crear usuario
+```http
+POST /api/users
+{ "username": "juan", "email": "juan@empresa.com", "nombre": "Juan", "password": "pass1234", "rol": "user" }
+```
+- `rol`: `"admin"` o `"user"` (default: `"user"`)
+
+### Listar usuarios
+```http
+GET /api/users
+```
+
+### Actualizar usuario
+```http
+PUT /api/users/:id
+{ "nombre": "Juan Nuevo", "password": "nuevaPass" }
+```
+
+### Eliminar usuario
+```http
+DELETE /api/users/:id
+```
+
+---
+
+## Sistema de Licencias
+
+El sistema usa firma digital **Ed25519** para controlar el acceso. Las licencias son keys firmadas con llave privada que solo tú tienes.
+
+### Flujo completo
+
+```
+1. Cliente instala la app → accede con usuario trial/admin local
+2. Admin va a módulo Licencia → copia su userId (UUID)
+3. Tú generas una key con la herramienta interna:
+   cd licensing-tool
+   node generar-key.js --userId=<uuid> --meses=6
+4. Le envías la key al cliente (email/WhatsApp)
+5. Cliente la pega en módulo Licencia → Aplicar
+6. Sistema verifica firma → activa por el periodo indicado
+```
+
+### Generar una key (herramienta interna)
+```bash
+cd licensing-tool
+
+# Por meses:
+node generar-key.js --userId=<uuid> --username=cliente@empresa.com --meses=6
+
+# Por días:
+node generar-key.js --userId=<uuid> --dias=30
+
+# Hasta fecha fija:
+node generar-key.js --userId=<uuid> --hasta=2027-04-30
+```
+Se imprime la key. Cópiala completa y envíala al cliente.
+
+### Aplicar una key (endpoint)
+```http
+POST /api/license/apply
+{ "userId": "<uuid>", "key": "<key-generada>" }
+```
+
+### Ver historial de licencias
+```http
+GET /api/license/history/:userId
+```
+
+### Seguridad del sistema de licencias
+- Keys firmadas con Ed25519 — no falsificables sin la llave privada
+- Cada key incluye `keyId` único — no reutilizable
+- El `userId` está dentro del payload firmado — una key de Cliente A no funciona en Cliente B
+- El sistema detecta manipulación del reloj del servidor
+- **NUNCA distribuir** la carpeta `licensing-tool/` ni `private-key.pem` al cliente
+
+### Setup inicial (una sola vez por instalación)
+```bash
+cd licensing-tool
+npm install
+node init-keys.js
+# Copia el contenido de public-key.pem a backend-app/src/auth/license-public-key.ts
+```
+> Si regeneras las llaves, invalidas TODAS las keys ya emitidas.
+
+---
+
 *Última actualización: Junio 2026*
