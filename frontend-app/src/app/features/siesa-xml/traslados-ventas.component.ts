@@ -396,6 +396,58 @@ const LS_KEY = 'traslados-ventas-params';
             <div class="step-badge">5</div>
             <div class="flex-grow-1">
               <h6 class="fw-semibold mb-2">Generar y enviar</h6>
+
+              <!-- Resumen de parámetros que se enviarán -->
+              <div class="border rounded p-2 mb-3 bg-light small">
+                <div class="fw-semibold mb-1 text-muted">Parámetros a enviar:</div>
+                <div class="row g-1">
+                  <div class="col-auto">
+                    <span class="text-muted">Cuenta:</span>
+                    <span class="ms-1 fw-semibold font-monospace"
+                      [class.text-danger]="!params.cuenta"
+                      [class.text-success]="!!params.cuenta">
+                      {{ params.cuenta || '⚠ VACÍA' }}
+                    </span>
+                  </div>
+                  <div class="col-auto">
+                    <span class="text-muted ms-2">Tipo:</span>
+                    <span class="ms-1 fw-semibold font-monospace"
+                      [class.text-danger]="!params.tipoDocto"
+                      [class.text-success]="!!params.tipoDocto">
+                      {{ params.tipoDocto || '⚠ VACÍO' }}
+                    </span>
+                  </div>
+                  <div class="col-auto">
+                    <span class="text-muted ms-2">Periodo:</span>
+                    <span class="ms-1 fw-semibold font-monospace">{{ periodo }}</span>
+                  </div>
+                  <div class="col-auto">
+                    <span class="text-muted ms-2">Fecha:</span>
+                    <span class="ms-1 fw-semibold font-monospace"
+                      [class.text-danger]="fechaBackend.length !== 8"
+                      [class.text-success]="fechaBackend.length === 8">
+                      {{ fechaBackend || '⚠ VACÍA' }}
+                    </span>
+                  </div>
+                  <div class="col-auto">
+                    <span class="text-muted ms-2">Conexión:</span>
+                    <span class="ms-1 fw-semibold">{{ params.conexion }}</span>
+                  </div>
+                  <div class="col-auto">
+                    <span class="text-muted ms-2">Usuario:</span>
+                    <span class="ms-1 fw-semibold">{{ params.usuario }}</span>
+                  </div>
+                  <div class="col-12 mt-1">
+                    <span class="text-muted">URL:</span>
+                    <span class="ms-1 font-monospace" style="word-break:break-all;"
+                      [class.text-danger]="!params.urlApi"
+                      [class.text-success]="!!params.urlApi">
+                      {{ params.urlApi || '⚠ VACÍA' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               <div class="d-flex gap-2 flex-wrap">
                 <button class="btn btn-primary btn-sm"
                   (click)="descargarXml()"
@@ -431,15 +483,58 @@ const LS_KEY = 'traslados-ventas-params';
           </div>
 
           <!-- Resultado API -->
-          <div *ngIf="resApi() as r"
-            class="alert mt-3"
-            [class.alert-success]="r.ok"
-            [class.alert-danger]="!r.ok">
-            <strong>
-              <i class="bi me-1" [class.bi-check-circle]="r.ok" [class.bi-x-circle]="!r.ok"></i>
-              API SIESA — HTTP {{ r.status }}
-            </strong>
-            <pre class="mb-0 mt-2 small" style="white-space: pre-wrap; max-height: 300px; overflow: auto;">{{ r.respuesta }}</pre>
+          <div *ngIf="resApi() as r" class="mt-3">
+
+            <!-- Estado principal -->
+            <div class="alert mb-2"
+              [class.alert-success]="r.printTipoError === 0"
+              [class.alert-danger]="r.printTipoError !== 0">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi fs-5" [class.bi-check-circle-fill]="r.printTipoError === 0" [class.bi-x-circle-fill]="r.printTipoError !== 0"></i>
+                <div>
+                  <strong>{{ r.printTipoError === 0 ? 'Importación exitosa' : 'Error en la importación' }}</strong>
+                  <span class="ms-2 badge" [class.bg-success]="r.printTipoError === 0" [class.bg-danger]="r.printTipoError !== 0">printTipoError={{ r.printTipoError }}</span>
+                  <span class="ms-2 text-muted small">HTTP {{ r.status }} · {{ r.totalTraslados }} traslado(s)</span>
+                </div>
+              </div>
+              <div *ngIf="r.printTipoError !== 0" class="mt-2 small">
+                <strong>Causa probable según código:</strong>
+                <span *ngIf="r.printTipoError === 1"> Error de validación en datos (ver detalle XML).</span>
+                <span *ngIf="r.printTipoError === 2"> Error de autenticación (usuario/clave/conexión incorrectos).</span>
+                <span *ngIf="r.printTipoError === 3"> Error de estructura del XML o cuenta/periodo inválido.</span>
+                <span *ngIf="r.printTipoError > 3"> Error interno SIESA.</span>
+              </div>
+            </div>
+
+            <!-- Aprobaciones -->
+            <div *ngIf="r.aprobaciones.length > 0" class="alert alert-info py-2 mb-2">
+              <strong><i class="bi bi-check2-all me-1"></i>Documentos aprobados automáticamente:</strong>
+              <ul class="mb-0 mt-1 small">
+                <li *ngFor="let a of r.aprobaciones"
+                  [class.text-success]="a.error === 0"
+                  [class.text-danger]="a.error !== 0">
+                  FAF-{{ a.consec }} (rowid={{ a.rowid }}) — {{ a.descripcion }}
+                  <span *ngIf="a.error !== 0" class="text-danger"> ✗ error={{ a.error }}</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- XML enviado (expandible) -->
+            <div *ngIf="r.xmlEnviado" class="mb-2">
+              <button class="btn btn-outline-secondary btn-sm" (click)="showXmlEnviado.set(!showXmlEnviado())">
+                <i class="bi bi-code-slash me-1"></i>{{ showXmlEnviado() ? 'Ocultar' : 'Ver' }} XML enviado a SIESA
+              </button>
+              <pre *ngIf="showXmlEnviado()" class="mt-2 small border rounded p-2 bg-light" style="max-height:250px;overflow:auto;white-space:pre-wrap;">{{ r.xmlEnviado }}</pre>
+            </div>
+
+            <!-- Respuesta cruda (expandible) -->
+            <div>
+              <button class="btn btn-outline-secondary btn-sm" (click)="showRespuestaRaw.set(!showRespuestaRaw())">
+                <i class="bi bi-chevron-expand me-1"></i>{{ showRespuestaRaw() ? 'Ocultar' : 'Ver' }} respuesta SOAP completa
+              </button>
+              <pre *ngIf="showRespuestaRaw()" class="mt-2 small border rounded p-2 bg-light" style="max-height:250px;overflow:auto;white-space:pre-wrap;">{{ r.respuesta }}</pre>
+            </div>
+
           </div>
 
           <!-- Errores -->
@@ -485,7 +580,9 @@ export class TrasladosVentasComponent {
 
   preview = signal<PreviewResp | null>(null);
   errores = signal<string[]>([]);
-  resApi = signal<{ ok: boolean; status: number; respuesta: string } | null>(null);
+  resApi = signal<{ ok: boolean; status: number; respuesta: string; printTipoError: number; aprobaciones: any[]; totalTraslados: number; xmlEnviado?: string } | null>(null);
+  showXmlEnviado = signal(false);
+  showRespuestaRaw = signal(false);
 
   loadingPreview = signal(false);
   loadingXml = signal(false);
@@ -765,7 +862,19 @@ export class TrasladosVentasComponent {
     this.http.post<any>(`${this.apiBase}/enviar?${qs}`, fd).subscribe({
       next: (res) => {
         this.loadingApi.set(false);
-        this.resApi.set({ ok: res.ok, status: res.status, respuesta: res.respuesta });
+        const m = (res.respuesta as string)?.match(/printTipoError>(\d+)</);
+        const printTipoError = m ? parseInt(m[1], 10) : -1;
+        this.showXmlEnviado.set(false);
+        this.showRespuestaRaw.set(false);
+        this.resApi.set({
+          ok: printTipoError === 0,
+          status: res.status,
+          respuesta: res.respuesta,
+          printTipoError,
+          aprobaciones: res.aprobaciones ?? [],
+          totalTraslados: res.totalTraslados ?? 0,
+          xmlEnviado: res.xmlEnviado,
+        });
       },
       error: (err) => {
         this.loadingApi.set(false);

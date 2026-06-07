@@ -1,3 +1,6 @@
+# Produccion build
+dist-produccion/
+
 # Angular specific
 /dist/
 /out-tsc/
