@@ -6,6 +6,16 @@ export interface TablePrefs {
   hiddenColumns?: string[];
 }
 
+/** localStorage no existe en SSR (Node); estos helpers evitan crashes. */
+function safeGet(key: string): string | null {
+  if (typeof window === 'undefined' || !window.localStorage) return null;
+  try { return window.localStorage.getItem(key); } catch { return null; }
+}
+function safeSet(key: string, value: string): void {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try { window.localStorage.setItem(key, value); } catch { /* ignore */ }
+}
+
 @Injectable({ providedIn: 'root' })
 export class PreferencesService {
   private readonly PREFIX = 'unoee_';
@@ -21,13 +31,13 @@ export class PreferencesService {
   }
 
   private getBool(key: string, fallback: boolean): boolean {
-    const v = localStorage.getItem(this.getKey(key));
+    const v = safeGet(this.getKey(key));
     return v === null ? fallback : v === 'true';
   }
 
   private getJson<T>(key: string, fallback: T): T {
     try {
-      const v = localStorage.getItem(this.getKey(key));
+      const v = safeGet(this.getKey(key));
       return v ? JSON.parse(v) : fallback;
     } catch {
       return fallback;
@@ -35,7 +45,7 @@ export class PreferencesService {
   }
 
   private setVal(key: string, value: any): void {
-    localStorage.setItem(this.getKey(key), typeof value === 'string' ? value : JSON.stringify(value));
+    safeSet(this.getKey(key), typeof value === 'string' ? value : JSON.stringify(value));
   }
 
   // --- Dark Mode ---
@@ -106,7 +116,7 @@ export class PreferencesService {
   // --- Last visited ---
 
   getLastTable(): string | null {
-    return localStorage.getItem(this.getKey('lastTable'));
+    return safeGet(this.getKey('lastTable'));
   }
 
   setLastTable(tableName: string): void {

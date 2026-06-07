@@ -1,5 +1,5 @@
-import { Component, signal, inject, computed, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, signal, inject, computed, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { filter } from 'rxjs/operators';
@@ -19,6 +19,8 @@ export class App implements OnInit {
   protected readonly title = 'Independiente';
   private apiService = inject(ApiViewerService);
   private router = inject(Router);
+  private platformId = inject(PLATFORM_ID);
+  private isBrowser = isPlatformBrowser(this.platformId);
   prefs = inject(PreferencesService);
   auth = inject(AuthService);
   branding = inject(BrandingService);
@@ -96,6 +98,7 @@ export class App implements OnInit {
   }
 
   private applyDarkMode(dark: boolean) {
+    if (!this.isBrowser) return;
     document.body.classList.toggle('dark-mode', dark);
   }
 
